@@ -299,10 +299,7 @@ footer {
 <body>
 <header>
     <h1>linux-mm Patch Review</h1>
-    <div class="search-bar">
-        <input type="text" id="search" placeholder="Search by subject or author..." autocomplete="off">
-        <select id="subsystem-filter"><option value="">all subsystems</option></select>
-    </div>
+    <input type="text" id="search" placeholder="Search by subject or author..." autocomplete="off">
 </header>
 
 
@@ -7123,7 +7120,7 @@ function copyReview(btn) {
 
 function filterRows() {
     var q = document.getElementById('search').value.toLowerCase();
-    var sub = document.getElementById('subsystem-filter').value.toLowerCase();
+    var sub = '';
     document.querySelectorAll('.series-row').forEach(function(row) {
         var t = row.dataset.title || '';
         var a = row.dataset.author || '';
@@ -7144,7 +7141,6 @@ function filterRows() {
 }
 
 document.getElementById('search').addEventListener('input', filterRows);
-document.getElementById('subsystem-filter').addEventListener('change', filterRows);
 </script>
 </body>
 </html>
