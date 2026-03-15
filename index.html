@@ -28,7 +28,19 @@ header {
     padding-bottom: 0.75rem;
     margin-bottom: 1rem;
 }
-h1 { font-size: 1.25rem; margin-bottom: 0.15rem; }
+h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+#search {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 0.85rem;
+    outline: none;
+}
+#search:focus { border-color: var(--link); }
+#search::placeholder { color: var(--text-muted); }
 .subtitle { color: var(--text-muted); font-size: 0.8rem; }
 .stats-bar {
     display: flex;
@@ -252,12 +264,13 @@ footer {
 <body>
 <header>
     <h1>linux-mm Patch Review</h1>
+    <input type="text" id="search" placeholder="Search by subject or author..." autocomplete="off">
 </header>
 
 
 
 
-<h2 class="date-header">2026-03-14 <span class="date-count">(11)</span></h2><details class="series-row">
+<h2 class="date-header">2026-03-14 <span class="date-count">(11)</span></h2><details class="series-row" data-title="docs/mm/damon: document exclusivity of special-purpose modules" data-author="liew rui yan &lt;aethernet65535@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260314092145.7496-1-aethernet65535@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm/damon: document exclusivity of special-purpose modules</a>
@@ -326,7 +339,7 @@ description block.  The placement looks reasonable; only the commit
 message description is slightly off.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="docs/mm: document shared memory filesystem" data-author="kit dallege &lt;xaum.io@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260314152538.100593-1-xaum.io@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm: document Shared Memory Filesystem</a>
@@ -400,7 +413,7 @@ which preallocates pages beyond i_size without extending it.  Worth
 mentioning for completeness alongside the basic preallocation use case.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/damon: guard thp-specific damos actions with config_transparent_hugepage" data-author="&lt;gutierrez.asier@huawei-partners.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260314093813.1359737-1-gutierrez.asier@huawei-partners.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/damon: guard THP-specific DAMOS actions with CONFIG_TRANSPARENT_HUGEPAGE</a>
@@ -453,7 +466,7 @@ with a &quot;(only when CONFIG_TRANSPARENT_HUGEPAGE is enabled)&quot; clause
 similar to what the design.rst update does?
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="docs/mm: document swap" data-author="kit dallege &lt;xaum.io@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260314152536.100531-1-xaum.io@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm: document Swap</a>
@@ -507,7 +520,7 @@ implementation lives in mm/swap_table.h (an internal header).  Either
 drop the cross-reference or create that document first.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="docs/mm: document page reclaim" data-author="kit dallege &lt;xaum.io@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260314152534.100473-1-xaum.io@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm: document Page Reclaim</a>
@@ -559,7 +572,7 @@ membership at all until folio_add_lru() is called.  Something like
 be more precise.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="docs/mm: document virtually contiguous memory allocation" data-author="kit dallege &lt;xaum.io@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260314152532.100411-1-xaum.io@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm: document Virtually Contiguous Memory Allocation</a>
@@ -637,7 +650,7 @@ including interrupt handlers, but must not be called from NMI
 context.  vfree_atomic() carries the same NMI restriction.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="docs/mm: document page allocation" data-author="kit dallege &lt;xaum.io@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260314152530.100357-1-xaum.io@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm: document Page Allocation</a>
@@ -707,7 +720,7 @@ concentrates.  Something like &quot;leaving a large contiguous free region at
 the lower end of the zone&quot; would be more accurate.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="docs/mm: document boot memory" data-author="kit dallege &lt;xaum.io@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260314152527.100295-1-xaum.io@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm: document Boot Memory</a>
@@ -786,7 +799,7 @@ current wording could mislead readers into expecting cross-kexec
 behavior unconditionally.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="docs/mm: document the oom killer" data-author="kit dallege &lt;xaum.io@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260314152518.100194-1-xaum.io@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm: document the OOM killer</a>
@@ -839,7 +852,7 @@ unmap_page_range() is a different helper used elsewhere in the MM
 code.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="rust_binder: use assertsync for binder_vm_ops" data-author="alice ryhl &lt;aliceryhl@google.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260314111951.4139029-1-aliceryhl@google.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">rust_binder: use AssertSync for BINDER_VM_OPS</a>
@@ -852,7 +865,7 @@ code.
         <div class="row-detail">
             <div class="row-summary">Wraps the BINDER_VM_OPS static in AssertSync&lt;vm_operations_struct&gt; to avoid a Sync compilation failure caused by the new pointer field introduced to vm_operations_struct by the userfaultfd vm_uffd_ops patch. The fix follows the existing pattern used for rust_binder_fops.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/vmalloc: free unused pages on vrealloc() shrink" data-author="shivam kalra via b4 relay &lt;devnull+shivamkalra98.zohomail.in@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260314-vmalloc-shrink-v4-2-c1e2e0bb5455@zohomail.in/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/vmalloc: free unused pages on vrealloc() shrink</a>
@@ -932,7 +945,7 @@ already-freed pages.  Comparing against the live vm-&gt;nr_pages value
 prevents that.
 </pre>
         </div>
-    </details><h2 class="date-header">2026-03-13 <span class="date-count">(11)</span></h2><details class="series-row">
+    </details><h2 class="date-header">2026-03-13 <span class="date-count">(11)</span></h2><details class="series-row" data-title="binfmt_elf: align eligible read-only pt_load segments to pmd_size for thp" data-author="wang rui &lt;r@hev.cc&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260313005211.882831-1-r@hev.cc/" target="_blank" class="row-title" onclick="event.stopPropagation()">binfmt_elf: Align eligible read-only PT_LOAD segments to PMD_SIZE for THP</a>
@@ -1002,7 +1015,7 @@ PIE (ET_DYN) executables?  The benchmark already uses --enable-host-pie
 so the numbers are consistent, but the prose could be clearer.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="zswap pool per-cpu acomp_ctx simplifications" data-author="&quot;kanchana p. sridhar&quot; &lt;kanchanapsridhar2026@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260314051632.17931-1-kanchanapsridhar2026@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">zswap pool per-CPU acomp_ctx simplifications</a>
@@ -1069,7 +1082,7 @@ readers into thinking ERR_PTR returns are expected. Is !acomp_ctx-&gt;req not
 more accurate?
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260314051632.17931-1-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH 0/2] zswap pool per-CPU acomp_ctx simplifications</a></li><li><a href="https://lore.kernel.org/linux-mm/20260314051632.17931-2-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH 1/2] mm: zswap: Tie per-CPU acomp_ctx lifetime to the pool.</a></li><li><a href="https://lore.kernel.org/linux-mm/20260314051632.17931-3-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH 2/2] mm: zswap: Consistently use IS_ERR_OR_NULL() to check acomp_ctx resources.</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="fixup: mm/memory: inline unmap_page_range() into __zap_vma_range()" data-author="seongjae park &lt;sj@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="" target="_blank" class="row-title" onclick="event.stopPropagation()">fixup: mm/memory: inline unmap_page_range() into __zap_vma_range()</a>
@@ -1215,7 +1228,7 @@ faults are handled entirely by the generic page fault path and do not
 require vm_uffd_ops.
 </pre><details class="patches-detail"><summary>6 patches</summary><ul><li><a href="" target="_blank">[PATCH] mm/damon/stat: fix wrong argument to damon_set_regions()</a></li><li><a href="" target="_blank">[PATCH] mm/damon/core: fix wrong damon_set_regions() argument</a></li><li><a href="" target="_blank">[PATCH] tmp</a></li><li><a href="" target="_blank">[PATCH] tmp</a></li><li><a href="" target="_blank">[PATCH] fixup: mm/memory: inline unmap_page_range() into __zap_vma_range()</a></li><li><a href="" target="_blank">[PATCH 1/1] userfaultfd: allow registration of WP_ASYNC for any VMA</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftests/mm: add folio_split() and filemap_get_entry() race test" data-author="zi yan &lt;ziy@nvidia.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260313114037.3593642-1-ziy@nvidia.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: add folio_split() and filemap_get_entry() race test</a>
@@ -1281,7 +1294,7 @@ correctly.  If the test is added under the existing &quot;thp&quot; category tha
 should be fine as-is, but a brief note in the usage() block would help.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="pid_namespace: make init creation more flexible" data-author="pavel tikhomirov &lt;ptikhomirov@virtuozzo.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260313111014.2068913-1-ptikhomirov@virtuozzo.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">pid_namespace: make init creation more flexible</a>
@@ -1376,7 +1389,7 @@ compete to become init is handled correctly: the second gets -EEXIST
 retry.  This is intentional and documented in the commit message.
 </pre><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260313111014.2068913-1-ptikhomirov@virtuozzo.com/" target="_blank">[PATCH v5 0/4] pid_namespace: make init creation more flexible</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313111014.2068913-2-ptikhomirov@virtuozzo.com/" target="_blank">[PATCH v5 1/4] pid_namespace: avoid optimization of accesses to -&gt;child_reaper</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313111014.2068913-3-ptikhomirov@virtuozzo.com/" target="_blank">[PATCH v5 2/4] pid: check init is created first after idr alloc</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313111014.2068913-4-ptikhomirov@virtuozzo.com/" target="_blank">[PATCH v5 3/4] pid_namespace: allow opening pid_for_children before init was created</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313111014.2068913-5-ptikhomirov@virtuozzo.com/" target="_blank">[PATCH v5 4/4] selftests: Add tests for creating pidns init via setns</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="refactor reserved memory regions handling code" data-author="marek szyprowski &lt;m.szyprowski@samsung.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-1-m.szyprowski@samsung.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Refactor reserved memory regions handling code</a>
@@ -1465,7 +1478,7 @@ override.
 Should this read fdt_validate_reserved_mem_node(child, NULL) ?
 </pre><details class="patches-detail"><summary>8 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-1-m.szyprowski@samsung.com/" target="_blank">[PATCH 0/7] Refactor reserved memory regions handling code</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-2-m.szyprowski@samsung.com/" target="_blank">[PATCH 1/7] of: reserved_mem: remove fdt node from the structure</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-3-m.szyprowski@samsung.com/" target="_blank">[PATCH 2/7] of: reserved_mem: use -ENODEV instead of -ENOENT</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-4-m.szyprowski@samsung.com/" target="_blank">[PATCH 3/7] of: reserved_mem: switch to ops based OF_DECLARE()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-5-m.szyprowski@samsung.com/" target="_blank">[PATCH 4/7] of: reserved_mem: replace CMA quirks by generic methods</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-6-m.szyprowski@samsung.com/" target="_blank">[PATCH 5/7] of: reserved_mem: rearrange code a bit</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-7-m.szyprowski@samsung.com/" target="_blank">[PATCH 6/7] of: reserved_mem: clarify fdt_scan_reserved_mem*() functions</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313150802.1121442-8-m.szyprowski@samsung.com/" target="_blank">[PATCH 7/7] of: reserved_mem: rework fdt_init_reserved_mem_node()</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="elf: align et_dyn base to exec folio order for contpte mapping" data-author="wang rui &lt;r@hev.cc&gt;">
         <summary>
             <span class="row-verdict" style="background:#8b5cf6">Needs Discussion</span>
             <a href="https://lore.kernel.org/linux-mm/20260313144213.95686-1-r@hev.cc/" target="_blank" class="row-title" onclick="event.stopPropagation()">elf: align ET_DYN base to exec folio order for contpte mapping</a>
@@ -1539,7 +1552,7 @@ confine the ASLR cost to binaries that were actually linked with
 contpte-eligible layout, while leaving everything else unchanged.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftests/cgroup: skip test_zswap if zswap is globally disabled" data-author="li wang &lt;liwang@redhat.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260313043532.103987-1-liwang@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/cgroup: skip test_zswap if zswap is globally disabled</a>
@@ -1629,7 +1642,7 @@ analogous mem_max_buf snprintf() in the same function correctly uses
 [ patch 7/7 looks fine ]
 </pre><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260313043532.103987-1-liwang@redhat.com/" target="_blank">[PATCH v3 1/7] selftests/cgroup: skip test_zswap if zswap is globally disabled</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313043532.103987-2-liwang@redhat.com/" target="_blank">[PATCH v3 2/7] selftests/cgroup: avoid OOM in test_swapin_nozswap</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313043532.103987-3-liwang@redhat.com/" target="_blank">[PATCH v3 3/7] selftests/cgroup: use runtime page size for zswpin check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313043532.103987-4-liwang@redhat.com/" target="_blank">[PATCH v3 4/7] selftests/cgroup: rename PAGE_SIZE to BUF_SIZE in cgroup_util</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313043532.103987-5-liwang@redhat.com/" target="_blank">[PATCH v3 5/7] selftests/cgroup: replace hardcoded page size values in test_zswap</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313043532.103987-6-liwang@redhat.com/" target="_blank">[PATCH v3 6/7] selftest/cgroup: fix zswap test_no_invasive_cgroup_shrink on large pagesize system</a></li><li><a href="https://lore.kernel.org/linux-mm/20260313043532.103987-7-liwang@redhat.com/" target="_blank">[PATCH v3 7/7] selftest/cgroup: fix zswap attempt_writeback() on 64K pagesize system</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="lib/maple_tree: fix potential null dereference in mas_pop_node()" data-author="josh law &lt;hlcj1234567@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260313073132.159184-1-objecting@objecting.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">lib/maple_tree: fix potential NULL dereference in mas_pop_node()</a>
@@ -1718,7 +1731,7 @@ Could you clarify:
    NULL-return propagation through all callers the intended approach?
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: filemap: fix nr_pages calculation overflow in filemap_map_pages()" data-author="baolin wang &lt;baolin.wang@linux.alibaba.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/066dd2e947ccc1c304b54e847fbe628dccea1d7c.1773370126.git.baolin.wang@linux.alibaba.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: filemap: fix nr_pages calculation overflow in filemap_map_pages()</a>
@@ -1731,7 +1744,7 @@ Could you clarify:
         <div class="row-detail">
             <div class="row-summary">Fixes an unsigned integer underflow in filemap_map_pages() where a race with file truncation could cause end_pgoff to be recomputed to a value smaller than xas.xa_index after next_uptodate_folio() returned, making nr_pages wrap to ~UINT_MAX and corrupting pages beyond the folio boundary.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="lift lookup out of exclive lock for dir ops" data-author="neilbrown &lt;neilb@ownmail.net&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-1-neilb@ownmail.net/" target="_blank" class="row-title" onclick="event.stopPropagation()">lift lookup out of exclive lock for dir ops</a>
@@ -1916,7 +1929,7 @@ that falls through to out_dput_d1 without hitting out_unlock is
 needed).
 </pre><details class="patches-detail"><summary>51 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-1-neilb@ownmail.net/" target="_blank">[PATCH RFC 00/53] lift lookup out of exclive lock for dir ops</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-2-neilb@ownmail.net/" target="_blank">[PATCH 01/53] VFS: fix various typos in documentation for start_creating start_removing etc</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-3-neilb@ownmail.net/" target="_blank">[PATCH 02/53] VFS: enhance d_splice_alias() to handle in-lookup dentries</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-4-neilb@ownmail.net/" target="_blank">[PATCH 03/53] VFS: allow d_alloc_name() to be used with -&gt;d_hash</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-5-neilb@ownmail.net/" target="_blank">[PATCH 04/53] VFS: use global wait-queue table for d_alloc_parallel()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-6-neilb@ownmail.net/" target="_blank">[PATCH 05/53] VFS: introduce d_alloc_noblock()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-7-neilb@ownmail.net/" target="_blank">[PATCH 06/53] VFS: add d_duplicate()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-8-neilb@ownmail.net/" target="_blank">[PATCH 07/53] VFS: Add LOOKUP_SHARED flag.</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-9-neilb@ownmail.net/" target="_blank">[PATCH 08/53] VFS/xfs: drop parent lock across d_alloc_parallel() in d_add_ci()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-10-neilb@ownmail.net/" target="_blank">[PATCH 09/53] nfs: remove d_drop()/d_alloc_parallel() from nfs_atomic_open()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-11-neilb@ownmail.net/" target="_blank">[PATCH 10/53] nfs: use d_splice_alias() in nfs_link()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-12-neilb@ownmail.net/" target="_blank">[PATCH 11/53] nfs: don't d_drop() before d_splice_alias()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-13-neilb@ownmail.net/" target="_blank">[PATCH 12/53] nfs: don't d_drop() before d_splice_alias() in atomic_create.</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-15-neilb@ownmail.net/" target="_blank">[PATCH 14/53] nfs: use d_alloc_noblock() in silly-rename</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-16-neilb@ownmail.net/" target="_blank">[PATCH 15/53] nfs: use d_duplicate()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-17-neilb@ownmail.net/" target="_blank">[PATCH 16/53] ovl: drop dir lock for lookups in impure readdir</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-18-neilb@ownmail.net/" target="_blank">[PATCH 17/53] coda: don't d_drop() early.</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-19-neilb@ownmail.net/" target="_blank">[PATCH 18/53] shmem: use d_duplicate()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-20-neilb@ownmail.net/" target="_blank">[PATCH 19/53] afs: use d_time instead of d_fsdata</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-21-neilb@ownmail.net/" target="_blank">[PATCH 20/53] afs: don't unhash/rehash dentries during unlink/rename</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-22-neilb@ownmail.net/" target="_blank">[PATCH 21/53] afs: use d_splice_alias() in afs_vnode_new_inode()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-23-neilb@ownmail.net/" target="_blank">[PATCH 22/53] afs: use d_alloc_nonblock in afs_sillyrename()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-24-neilb@ownmail.net/" target="_blank">[PATCH 23/53] afs: lookup_atsys to drop and reclaim lock.</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-25-neilb@ownmail.net/" target="_blank">[PATCH 24/53] afs: use d_duplicate()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-26-neilb@ownmail.net/" target="_blank">[PATCH 25/53] smb/client: use d_time to store a timestamp in dentry, not d_fsdata</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-27-neilb@ownmail.net/" target="_blank">[PATCH 26/53] smb/client: don't unhashed and rehash to prevent new opens.</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-28-neilb@ownmail.net/" target="_blank">[PATCH 27/53] smb/client: use d_splice_alias() in atomic_open</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-30-neilb@ownmail.net/" target="_blank">[PATCH 29/53] exfat: simplify exfat_lookup()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-31-neilb@ownmail.net/" target="_blank">[PATCH 30/53] configfs: remove d_add() calls before configfs_attach_group()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-32-neilb@ownmail.net/" target="_blank">[PATCH 31/53] configfs: stop using d_add().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-33-neilb@ownmail.net/" target="_blank">[PATCH 32/53] ext4: move dcache modifying code out of __ext4_link()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-34-neilb@ownmail.net/" target="_blank">[PATCH 33/53] ext4: use on-stack dentries in ext4_fc_replay_link_internal()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-35-neilb@ownmail.net/" target="_blank">[PATCH 34/53] tracefs: stop using d_add().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-36-neilb@ownmail.net/" target="_blank">[PATCH 35/53] cephfs: stop using d_add().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-37-neilb@ownmail.net/" target="_blank">[PATCH 36/53] cephfs: remove d_alloc from CEPH_MDS_OP_LOOKUPNAME handling in ceph_fill_trace()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-38-neilb@ownmail.net/" target="_blank">[PATCH 37/53] cephfs: Use d_alloc_noblock() in ceph_readdir_prepopulate()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-39-neilb@ownmail.net/" target="_blank">[PATCH 38/53] cephfs: Don't d_drop() before d_splice_alias()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-40-neilb@ownmail.net/" target="_blank">[PATCH 39/53] ecryptfs: stop using d_add().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-41-neilb@ownmail.net/" target="_blank">[PATCH 40/53] gfs2: stop using d_add().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-42-neilb@ownmail.net/" target="_blank">[PATCH 41/53] libfs: stop using d_add().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-43-neilb@ownmail.net/" target="_blank">[PATCH 42/53] fuse: don't d_drop() before d_splice_alias()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-45-neilb@ownmail.net/" target="_blank">[PATCH 44/53] hostfs: don't d_drop() before d_splice_alias() in hostfs_mkdir()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-46-neilb@ownmail.net/" target="_blank">[PATCH 45/53] efivarfs: use d_alloc_name()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-47-neilb@ownmail.net/" target="_blank">[PATCH 46/53] Remove references to d_add() in documentation and comments.</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-48-neilb@ownmail.net/" target="_blank">[PATCH 47/53] VFS: make d_alloc() local to VFS.</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-49-neilb@ownmail.net/" target="_blank">[PATCH 48/53] VFS: remove d_add()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-50-neilb@ownmail.net/" target="_blank">[PATCH 49/53] VFS: remove d_rehash()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-51-neilb@ownmail.net/" target="_blank">[PATCH 50/53] VFS: remove lookup_one() and lookup_noperm()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-52-neilb@ownmail.net/" target="_blank">[PATCH 51/53] VFS: use d_alloc_parallel() in lookup_one_qstr_excl().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-53-neilb@ownmail.net/" target="_blank">[PATCH 52/53] VFS: lift d_alloc_parallel above inode_lock</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312214330.3885211-54-neilb@ownmail.net/" target="_blank">[PATCH 53/53] VFS: remove LOOKUP_SHARED</a></li></ul></details>
         </div>
-    </details><h2 class="date-header">2026-03-12 <span class="date-count">(16)</span></h2><details class="series-row">
+    </details><h2 class="date-header">2026-03-12 <span class="date-count">(16)</span></h2><details class="series-row" data-title="mm: migrate: requeue destination folio on deferred split queue" data-author="usama arif &lt;usama.arif@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260312104723.1351321-1-usama.arif@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: migrate: requeue destination folio on deferred split queue</a>
@@ -1929,7 +1942,7 @@ needed).
         <div class="row-detail">
             <div class="row-summary">The patch re-queues the destination folio on the deferred split queue after successful NUMA/folio migration when the source folio was on that queue, fixing a silent loss of underused THP tracking introduced by commit dafff3f4c850.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/damon/stat: monitor all system ram resources" data-author="seongjae park &lt;sj@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260313044449.4038-1-sj@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/damon/stat: monitor all System RAM resources</a>
@@ -1942,7 +1955,7 @@ needed).
         <div class="row-detail">
             <div class="row-summary">This patch fixes DAMON_STAT to monitor the full physical span of all System RAM resources (first start to last end) instead of only the biggest single System RAM resource, which was especially problematic on NUMA systems with multiple equal-sized RAM regions.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="slub: clarify kmem_cache_refill_sheaf() failure behavior" data-author="hao li &lt;hao.li@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260312114309.213731-1-hao.li@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">slub: clarify kmem_cache_refill_sheaf() failure behavior</a>
@@ -1955,7 +1968,7 @@ needed).
         <div class="row-detail">
             <div class="row-summary">Documentation-only patch clarifying the two distinct failure modes of kmem_cache_refill_sheaf(): partial fill on in-place refill failure, and no change to the original sheaf when replacement allocation fails.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu &lt;chuhu@redhat.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260312114027.634559-1-chuhu@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: skip several tests when thp is not available</a>
@@ -2033,7 +2046,7 @@ output will instead produce a spurious &quot;ok N # SKIP&quot; which confuses
 some TAP consumers.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: switch thp shrinker to list_lru" data-author="johannes weiner &lt;hannes@cmpxchg.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260312205321.638053-1-hannes@cmpxchg.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: switch THP shrinker to list_lru</a>
@@ -2139,7 +2152,7 @@ deferred_split_shrinker before destroying the list it depends on:
         shrinker_free(huge_zero_folio_shrinker);
 </pre><details class="patches-detail"><summary>8 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260312205321.638053-1-hannes@cmpxchg.org/" target="_blank">[PATCH v2 0/7] mm: switch THP shrinker to list_lru</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312205321.638053-2-hannes@cmpxchg.org/" target="_blank">[PATCH v2 1/7] mm: list_lru: lock_list_lru_of_memcg() cannot return NULL if !skip_empty</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312205321.638053-3-hannes@cmpxchg.org/" target="_blank">[PATCH v2 2/7] mm: list_lru: deduplicate unlock_list_lru()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312205321.638053-4-hannes@cmpxchg.org/" target="_blank">[PATCH v2 3/7] mm: list_lru: move list dead check to lock_list_lru_of_memcg()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312205321.638053-5-hannes@cmpxchg.org/" target="_blank">[PATCH v2 4/7] mm: list_lru: deduplicate lock_list_lru()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312205321.638053-6-hannes@cmpxchg.org/" target="_blank">[PATCH v2 5/7] mm: list_lru: introduce caller locking for additions and deletions</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312205321.638053-7-hannes@cmpxchg.org/" target="_blank">[PATCH v2 6/7] mm: list_lru: introduce memcg_list_lru_alloc_folio()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312205321.638053-8-hannes@cmpxchg.org/" target="_blank">[PATCH v2 7/7] mm: switch deferred split shrinker to list_lru</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftests/mm: fix failures and robustness improvements" data-author="sayali patil &lt;sayalip@linux.ibm.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/cover.1773305677.git.sayalip@linux.ibm.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: fix failures and robustness improvements</a>
@@ -2287,7 +2300,7 @@ nr_pages &lt; MEMCG_CHARGE_BATCH, rather than requiring exactly
 current == old_current?
 </pre><details class="patches-detail"><summary>14 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 00/13] selftests/mm: fix failures and robustness improvements</a></li><li><a href="https://lore.kernel.org/linux-mm/9d150c91d4fe18732f9a90234e6878b7bd7f61f7.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 01/13] selftests/mm: restore default nr_hugepages value during cleanup in charge_reserved_hugetlb.sh</a></li><li><a href="https://lore.kernel.org/linux-mm/3b34767f2cb705c8de0f085a85bd21bdf6998ca6.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 02/13] selftests/mm: fix hugetlb pathname construction in charge_reserved_hugetlb.sh</a></li><li><a href="https://lore.kernel.org/linux-mm/3ab5781190ea0a6bffda2683b2ca221e0c7f6280.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 03/13] selftests/mm: fix hugetlb pathname construction in hugetlb_reparenting_test.sh</a></li><li><a href="https://lore.kernel.org/linux-mm/3b5b4275fed509e13567bba7471a9130bbfa6841.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 04/13] selftest/mm: fix cgroup task placement and tolerance in hugetlb_reparenting_test.sh</a></li><li><a href="https://lore.kernel.org/linux-mm/94c18dd26cf88f10b4b496cb3de08d81439a8909.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 05/13] selftests/mm: size tmpfs according to PMD page size in split_huge_page_test</a></li><li><a href="https://lore.kernel.org/linux-mm/0ea624c4bf022425b50c50cf8f5e3023106db9c1.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 06/13] selftest/mm: adjust hugepage-mremap test size for large huge pages</a></li><li><a href="https://lore.kernel.org/linux-mm/da7ec96ee85ccfdb9bec704c6dd534b419212f94.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 07/13] selftest/mm: register existing mapping with userfaultfd in hugepage-mremap</a></li><li><a href="https://lore.kernel.org/linux-mm/a9e12dcb25b9be4f146063669b1eb3ff9b776c23.1773305677.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 08/13] selftests/mm: ensure destination is hugetlb-backed in hugepage-mremap</a></li><li><a href="https://lore.kernel.org/linux-mm/ed23ff57a80881c9d087d22709862af40addf49b.1773305678.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 09/13] selftests/mm: skip uffd-wp-mremap if UFFD write-protect is unsupported</a></li><li><a href="https://lore.kernel.org/linux-mm/2516cad1d9dcbe613619a1006aed1991302c9bee.1773305678.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 10/13] selftests/mm: skip uffd-stress test when nr_pages_per_cpu is zero</a></li><li><a href="https://lore.kernel.org/linux-mm/27390ade4251d1f7f6b846bd5836fa79dbf285df.1773305678.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 11/13] selftests/mm: fix double increment in linked list cleanup in compaction_test</a></li><li><a href="https://lore.kernel.org/linux-mm/35a44ccc4d1587255e8f920b22e983f74c024f2e.1773305678.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 12/13] selftests/mm: move hwpoison setup into run_test() and silence modprobe output for memory-failure category</a></li><li><a href="https://lore.kernel.org/linux-mm/e4e655c7d7c4e24b90d51530157d024854bff1cb.1773305678.git.sayalip@linux.ibm.com/" target="_blank">[PATCH v2 13/13] selftests/cgroup: extend test_hugetlb_memcg.c to support all huge page sizes</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: expand mmap_prepare functionality and usage" data-author="&quot;lorenzo stoakes (oracle)&quot; &lt;ljs@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/cover.1773346620.git.ljs@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: expand mmap_prepare functionality and usage</a>
@@ -2448,7 +2461,7 @@ Typo in the RST directive: &quot;Cw&quot; should be &quot;C&quot;.
 Should be &quot;vm_area_desc&quot;, not &quot;vma_area_desc&quot;.
 </pre><details class="patches-detail"><summary>16 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 00/15] mm: expand mmap_prepare functionality and usage</a></li><li><a href="https://lore.kernel.org/linux-mm/56372fe273f775b26675a04652c1229e14680741.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 01/15] mm: various small mmap_prepare cleanups</a></li><li><a href="https://lore.kernel.org/linux-mm/c5bb61cf789df1ecb32facc29df9749987c7ddfc.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 02/15] mm: add documentation for the mmap_prepare file operation callback</a></li><li><a href="https://lore.kernel.org/linux-mm/52a7b9a003ea51521ab3c0baf30337a7800a3af7.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 03/15] mm: document vm_operations_struct-&gt;open the same as close()</a></li><li><a href="https://lore.kernel.org/linux-mm/0e0fe47852e6009f662b1fa42f836447b8d1283a.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 04/15] mm: add vm_ops-&gt;mapped hook</a></li><li><a href="https://lore.kernel.org/linux-mm/4a5fa45119220b9d99ed72a36308aed01a30d2c1.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 05/15] fs: afs: correctly drop reference count on mapping failure</a></li><li><a href="https://lore.kernel.org/linux-mm/461328bd1e62a2be79f4ae9a392c96f62ea35081.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 06/15] mm: add mmap_action_simple_ioremap()</a></li><li><a href="https://lore.kernel.org/linux-mm/0d5534f0baa8761795d2d92b1a8bbad08aae5f8d.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 07/15] misc: open-dice: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/6f9fdf902dede78143c26099b9a2b82ecef35a83.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 08/15] hpet: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/75cdd8bf8833104cb35268a0fe9bd6b969eb8c17.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 09/15] mtdchar: replace deprecated mmap hook with mmap_prepare, clean up</a></li><li><a href="https://lore.kernel.org/linux-mm/671403f4278a7c77ecbb7617e0bc762536ce25da.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 10/15] stm: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/9494da55a9156fc843fa7b48a7026d219959adf9.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 11/15] staging: vme_user: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/d10f5b604ce0ed65dc7d4e49cdf4070b1260a192.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 12/15] mm: allow handling of stacked mmap_prepare hooks in more drivers</a></li><li><a href="https://lore.kernel.org/linux-mm/1f0408ba81f455d35bcf510ccd3dc3cb939b55ca.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 13/15] drivers: hv: vmbus: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/8673929c7fee995e78c1a703949d4ad53363d678.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 14/15] uio: replace deprecated mmap hook with mmap_prepare in uio_info</a></li><li><a href="https://lore.kernel.org/linux-mm/21d8899bb1f4db61203072fb3a56a6c98a61e23d.1773346620.git.ljs@kernel.org/" target="_blank">[PATCH 15/15] mm: add mmap_action_map_kernel_pages[_full]()</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/mempolicy: add sysfs interface to override numa node bandwidth" data-author="yeeli &lt;seven.yi.lee@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260312091207.2016518-1-seven.yi.lee@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/mempolicy: add sysfs interface to override NUMA node bandwidth</a>
@@ -2571,7 +2584,7 @@ iw_node_attr allocations. Should wi_cleanup() also iterate bw_attrs[]
 when CONFIG_NUMA_BW_MANUAL_OVERRIDE is set?
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="lib/idr: fixes for infinite loop and memory leak" data-author="josh law &lt;hlcj1234567@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260312181948.20020-1-objecting@objecting.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">lib/idr: Fixes for infinite loop and memory leak</a>
@@ -2703,7 +2716,7 @@ There is also trailing whitespace on the blank lines inside
 ida_check_leak().
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260312181948.20020-1-objecting@objecting.org/" target="_blank">[PATCH v3 0/2] lib/idr: Fixes for infinite loop and memory leak</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312181948.20020-2-objecting@objecting.org/" target="_blank">[PATCH v3 1/2] lib/idr: fix infinite loop in idr_get_next()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312181948.20020-3-objecting@objecting.org/" target="_blank">[PATCH v3 2/2] lib/idr: fix memory leak in ida_alloc_range() error path</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="tools/testing/vma: add unit tests for vma_flags_[empty, diff_pair, and]()" data-author="&quot;lorenzo stoakes (oracle)&quot; &lt;ljs@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/87517d01b3973aa43f874164d0741d02cb123537.1773340636.git.ljs@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">tools/testing/vma: add unit tests for vma_flags_[empty, diff_pair, and]()</a>
@@ -2745,7 +2758,7 @@ Should this be `const vma_flags_t *flags` to stay consistent with that
 convention, and to make it easier to promote to kernel code later?
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/vma: convert vm_flags_t to vma_flags_t in vma code" data-author="&quot;lorenzo stoakes (oracle)&quot; &lt;ljs@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/cover.1773342102.git.ljs@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/vma: convert vm_flags_t to vma_flags_t in vma code</a>
@@ -2834,7 +2847,7 @@ Two extra blank lines are introduced between the variable
 declarations and the condition below.  Style nit only.
 </pre><details class="patches-detail"><summary>21 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 00/20] mm/vma: convert vm_flags_t to vma_flags_t in vma code</a></li><li><a href="https://lore.kernel.org/linux-mm/94300284a3a2e0dbf30af26a00160ad8b3bc3459.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 01/20] mm/vma: add vma_flags_empty(), vma_flags_and(), vma_flags_diff_pair()</a></li><li><a href="https://lore.kernel.org/linux-mm/ae25ef9cd48e20553babaad3868da1cf74f16af1.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 02/20] tools/testing/vma: add unit tests flag empty, diff_pair, and[_mask]</a></li><li><a href="https://lore.kernel.org/linux-mm/cd3f6777c6a11a425ce5e249a5d315448e954b46.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 03/20] mm/vma: add further vma_flags_t unions</a></li><li><a href="https://lore.kernel.org/linux-mm/26712be0774921d51df284005e90f4a9e3230b20.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 04/20] tools/testing/vma: convert bulk of test code to vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/1c1de926ad498edf8fa4fe9bad3783e922b62aab.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 05/20] mm/vma: use new VMA flags for sticky flags logic</a></li><li><a href="https://lore.kernel.org/linux-mm/a724c44adcc5f3dab4410b469cb812ad1f616a13.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 06/20] tools/testing/vma: fix VMA flag tests</a></li><li><a href="https://lore.kernel.org/linux-mm/eea579f943910c6d41dc6c0cadc33ea3b9b9c89e.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 07/20] mm/vma: add append_vma_flags() helper</a></li><li><a href="https://lore.kernel.org/linux-mm/60ad2ccb9e975247ba52748cafb6b988b79a1168.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 08/20] tools/testing/vma: add simple test for append_vma_flags()</a></li><li><a href="https://lore.kernel.org/linux-mm/d1b222f47c2e52e6bd2b5b077c27ce27913abac3.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 09/20] mm: unexport vm_brk_flags() and eliminate vm_flags parameter</a></li><li><a href="https://lore.kernel.org/linux-mm/64129ea327a7280732291e3481f1fd138aaf4caa.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 10/20] mm/vma: introduce vma_flags_same[_mask/_pair]()</a></li><li><a href="https://lore.kernel.org/linux-mm/b5c3c0f9a2f4b016bdf032dc959b988f585f0afc.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 11/20] mm/vma: introduce [vma_flags,legacy]_to_[legacy,vma_flags]() helpers</a></li><li><a href="https://lore.kernel.org/linux-mm/63f3217453d4797a7ad4705d438a4f8dcbaf1062.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 12/20] tools/testing/vma: test that legacy flag helpers work correctly</a></li><li><a href="https://lore.kernel.org/linux-mm/985d31531a9c1a585b96cfa84fdea900aca6f941.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 13/20] mm: convert do_brk_flags() to use vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/7b2ad0c46854dc39ba9111ad0e94770e7e1b9f66.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 14/20] mm/vma: introduce vma_test[_any[_mask]](), and make inlining consistent</a></li><li><a href="https://lore.kernel.org/linux-mm/693d6e7333f5c8859593753e682a5e7169551b84.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 15/20] tools/testing/vma: update VMA flag tests to test vma_test[_any_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/f8f74622b4ee92e5df2b7546439a1afb3a922cfa.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 16/20] mm/vma: introduce vma_clear_flags[_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/c391ce76c41eef0941d3e6c2e51fec73994a8316.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 17/20] tools/testing/vma: update VMA tests to test vma_clear_flags[_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/6a6d51947f23d6aa3a027808a0e150db4b8d9b14.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 18/20] mm/vma: convert as much as we can in mm/vma.c to vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/b01220a0a0a2f0272026632553ab49142ebd9cf5.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 19/20] mm/vma: convert vma_modify_flags[_uffd]() to use vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/b62003b4a12913f927b48925dc6a8272fcf117be.1773342102.git.ljs@kernel.org/" target="_blank">[PATCH 20/20] mm/vma: convert __mmap_region() to use vma_flags_t</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="lib/idr: fix infinite loop in idr_get_next()" data-author="josh law &lt;hlcj1234567@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
             <a href="https://lore.kernel.org/linux-mm/20260312171238.7961-1-objecting@objecting.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">lib/idr: fix infinite loop in idr_get_next()</a>
@@ -2847,7 +2860,7 @@ declarations and the condition below.  Style nit only.
         <div class="row-detail">
             <div class="row-summary">Failed to parse review JSON: Expecting value: line 1 column 4 (char 3)</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="lib/idr: fix memory leak in ida_alloc_range() error path" data-author="josh law &lt;hlcj1234567@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
             <a href="https://lore.kernel.org/linux-mm/20260312171834.8837-1-objecting@objecting.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">lib/idr: fix memory leak in ida_alloc_range() error path</a>
@@ -2860,7 +2873,7 @@ declarations and the condition below.  Style nit only.
         <div class="row-detail">
             <div class="row-summary">Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="fix race condition in the memory management system" data-author="hubert mazur &lt;hmazur@google.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260312131438.361746-1-hmazur@google.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Fix race condition in the memory management system</a>
@@ -2939,7 +2952,7 @@ as the old __execmem_cache_lookup() did from free_areas, but the full span
 needs to be tracked somewhere so it can eventually be freed.
 </pre><details class="patches-detail"><summary>2 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260312131438.361746-1-hmazur@google.com/" target="_blank">[PATCH v1 0/1] Fix race condition in the memory management system</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312131438.361746-2-hmazur@google.com/" target="_blank">[PATCH v1 1/1] mm: fix race condition in the memory management</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu &lt;chuhu@redhat.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260312112612.633138-1-chuhu@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: skip several tests when thp is not available</a>
@@ -2985,7 +2998,7 @@ after the ksft_print_header() call, matching that pattern?
 [ ... ]
 </pre><details class="patches-detail"><summary>6 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260312112612.633138-1-chuhu@redhat.com/" target="_blank">[PATCH 0/4] selftests/mm: skip several tests when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312112612.633138-2-chuhu@redhat.com/" target="_blank">[PATCH 1/4] selftests/mm/guard-regions: skip collapse test when thp not enabled</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312112612.633138-3-chuhu@redhat.com/" target="_blank">[PATCH 2/4] selftests/mm: soft-dirty: skip two tests when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312112612.633138-4-chuhu@redhat.com/" target="_blank">[PATCH 2/4] selftests/mm: soft-dirty: skip two tests when thp not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312112612.633138-5-chuhu@redhat.com/" target="_blank">[PATCH 3/4] selftests/mm: split_huge_page_test: skip the test when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260312112612.633138-6-chuhu@redhat.com/" target="_blank">[PATCH 4/4] selftests/mm: transhuge_stress: skip the test when thp not available</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/swap: strengthen locking assertions and invariants in cluster allocation" data-author="hui zhu &lt;hui.zhu@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260312023024.903143-1-hui.zhu@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/swap: strengthen locking assertions and invariants in cluster allocation</a>
@@ -2998,7 +3011,7 @@ after the ksft_print_header() call, matching that pattern?
         <div class="row-detail">
             <div class="row-summary">The patch strengthens locking assertions in swap_cluster_alloc_table() by adding a lockdep check for global_cluster_lock on non-SWP_SOLIDSTATE devices and reordering existing assertions to match acquisition order, and adds a VM_WARN_ON_ONCE in isolate_lock_cluster() to enforce that table allocation only occurs for clusters isolated from the free list.</div>
         </div>
-    </details><h2 class="date-header">2026-03-11 <span class="date-count">(22)</span></h2><details class="series-row">
+    </details><h2 class="date-header">2026-03-11 <span class="date-count">(22)</span></h2><details class="series-row" data-title="mm: thp: reduce unnecessary start_stop_khugepaged() calls" data-author="breno leitao &lt;leitao@debian.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260311-thp_logs-v6-0-421e30d881e0@debian.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: thp: reduce unnecessary start_stop_khugepaged() calls</a>
@@ -3064,7 +3077,7 @@ test_and_clear_bit() variants here instead?
 [ ... rest of patch 3 and patch 4 look correct ... ]
 </pre><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311-thp_logs-v6-0-421e30d881e0@debian.org/" target="_blank">[PATCH v6 0/4] mm: thp: reduce unnecessary start_stop_khugepaged() calls</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-thp_logs-v6-1-421e30d881e0@debian.org/" target="_blank">[PATCH v6 1/4] mm: khugepaged: export set_recommended_min_free_kbytes()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-thp_logs-v6-2-421e30d881e0@debian.org/" target="_blank">[PATCH v6 2/4] mm: huge_memory: refactor anon_enabled_store() with change_anon_orders()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-thp_logs-v6-3-421e30d881e0@debian.org/" target="_blank">[PATCH v6 3/4] mm: huge_memory: refactor enabled_store() with change_enabled()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-thp_logs-v6-4-421e30d881e0@debian.org/" target="_blank">[PATCH v6 4/4] mm: ratelimit min_free_kbytes adjustment messages</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/zswap, zsmalloc: per-memcg-lruvec zswap accounting" data-author="joshua hahn &lt;joshua.hahnjy@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-1-joshua.hahnjy@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/zswap, zsmalloc: Per-memcg-lruvec zswap accounting</a>
@@ -3204,7 +3217,7 @@ issued. A guard of if (nids[0] != nids[2]) would avoid the noise.
 Again not a correctness issue.
 </pre><details class="patches-detail"><summary>12 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-1-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 00/11] mm/zswap, zsmalloc: Per-memcg-lruvec zswap accounting</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-2-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 01/11] mm/zsmalloc: Rename zs_object_copy to zs_obj_copy</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-3-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 02/11] mm/zsmalloc: Make all obj_idx unsigned ints</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-4-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 03/11] mm/zsmalloc: Introduce conditional memcg awareness to zs_pool</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-5-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 04/11] mm/zsmalloc: Introduce objcgs pointer in struct zspage</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-6-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 05/11] mm/zsmalloc: Store obj_cgroup pointer in zspage</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-7-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 06/11] mm/zsmalloc, zswap: Redirect zswap_entry-&gt;objcg to zspage</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-8-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 07/11] mm/zsmalloc, zswap: Handle objcg charging and lifetime in zsmalloc</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-9-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 08/11] mm/memcontrol: Track MEMCG_ZSWAPPED in bytes</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-10-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 09/11] mm/vmstat, memcontrol: Track ZSWAP_B, ZSWAPPED_B per-memcg-lruvec</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-11-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 10/11] mm/zsmalloc: Handle single object charge migration in migrate_zspage</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311195153.4013476-12-joshua.hahnjy@gmail.com/" target="_blank">[PATCH 11/11] mm/zsmalloc: Handle charge migration in zpdesc substitution</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="kho: add support for deferred struct page init" data-author="michal clapinski &lt;mclapinski@google.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260311125539.4123672-1-mclapinski@google.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">kho: add support for deferred struct page init</a>
@@ -3286,7 +3299,7 @@ but the simpler form above preserves the original semantics (only
 counting pages that were actually initialized).
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311125539.4123672-1-mclapinski@google.com/" target="_blank">[PATCH v6 0/2] kho: add support for deferred struct page init</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311125539.4123672-2-mclapinski@google.com/" target="_blank">[PATCH v6 1/2] kho: fix deferred init of kho scratch</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311125539.4123672-3-mclapinski@google.com/" target="_blank">[PATCH v6 2/2] kho: make preserved pages compatible with deferred struct page init</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="demotion cleanup and fixes" data-author="alexandre ghiti &lt;alex@ghiti.fr&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260311110314.237315-1-alex@ghiti.fr/" target="_blank" class="row-title" onclick="event.stopPropagation()">Demotion cleanup and fixes</a>
@@ -3349,7 +3362,7 @@ same issue, so this may be pre-existing, but the same fix site seems
 like the natural place to address it if it matters.
 </pre><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311110314.237315-1-alex@ghiti.fr/" target="_blank">[PATCH 0/4] Demotion cleanup and fixes</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311110314.237315-2-alex@ghiti.fr/" target="_blank">[PATCH 1/4] mm: Move demotion related functions in memory-tiers.c</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311110314.237315-3-alex@ghiti.fr/" target="_blank">[PATCH 2/4] mm: Rename node_get_allowed_targets() to make it more explicit</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311110314.237315-4-alex@ghiti.fr/" target="_blank">[PATCH 3/4] mm: Fix demotion gfp by clearing GFP_RECLAIM after setting GFP_TRANSHUGE</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311110314.237315-5-alex@ghiti.fr/" target="_blank">[PATCH 4/4] mm: Fix demotion gfp by preserving initial gfp reclaim policy</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="slab: support memoryless nodes with sheaves" data-author="&quot;vlastimil babka (suse)&quot; &lt;vbabka@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260311-b4-slab-memoryless-barns-v1-0-70ab850be4ce@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">slab: support memoryless nodes with sheaves</a>
@@ -3574,7 +3587,7 @@ just flagging that the newly affected pfmemalloc case deserves a quick
 check.
 </pre><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311-b4-slab-memoryless-barns-v1-0-70ab850be4ce@kernel.org/" target="_blank">[PATCH 0/3] slab: support memoryless nodes with sheaves</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-b4-slab-memoryless-barns-v1-1-70ab850be4ce@kernel.org/" target="_blank">[PATCH 1/3] slab: decouple pointer to barn from kmem_cache_node</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-b4-slab-memoryless-barns-v1-2-70ab850be4ce@kernel.org/" target="_blank">[PATCH 2/3] slab: create barns for online memoryless nodes</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-b4-slab-memoryless-barns-v1-3-70ab850be4ce@kernel.org/" target="_blank">[PATCH 3/3] slab: free remote objects to sheaves on memoryless nodes</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: khugepaged cleanups and mthp prerequisites" data-author="nico pache &lt;npache@redhat.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311211315.450947-1-npache@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: khugepaged cleanups and mTHP prerequisites</a>
@@ -3587,7 +3600,7 @@ check.
         <div class="row-detail">
             <div class="row-summary">Five-patch series refactoring anonymous PTE mapping into reusable helpers, introducing is_pmd_order() and KHUGEPAGED_MAX_PTES_LIMIT constants, renaming hpage_collapse_* to collapse_*, and unifying khugepaged and madvise_collapse via collapse_single_pmd(). Changes are mechanically correct with one intentional behavioral improvement in the madvise path.</div><details class="patches-detail"><summary>6 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311211315.450947-1-npache@redhat.com/" target="_blank">[PATCH mm-unstable v3 0/5] mm: khugepaged cleanups and mTHP prerequisites</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311211315.450947-2-npache@redhat.com/" target="_blank">[PATCH mm-unstable v3 1/5] mm: consolidate anonymous folio PTE mapping into helpers</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311211315.450947-3-npache@redhat.com/" target="_blank">[PATCH mm-unstable v3 2/5] mm: introduce is_pmd_order helper</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311211315.450947-4-npache@redhat.com/" target="_blank">[PATCH mm-unstable v3 3/5] mm/khugepaged: define KHUGEPAGED_MAX_PTES_LIMIT as HPAGE_PMD_NR - 1</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311211315.450947-5-npache@redhat.com/" target="_blank">[PATCH mm-unstable v3 4/5] mm/khugepaged: rename hpage_collapse_* to collapse_*</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311211315.450947-6-npache@redhat.com/" target="_blank">[PATCH mm-unstable v3 5/5] mm/khugepaged: unify khugepaged and madv_collapse with collapse_single_pmd()</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="introduce meminspect" data-author="mukesh ojha &lt;mukesh.ojha@oss.qualcomm.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-0-f91cedc6f99e@oss.qualcomm.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Introduce meminspect</a>
@@ -3706,7 +3719,7 @@ is incorrect for any big-endian build and will generate sparse warnings.
 Should this use cpu_to_le32(e-&gt;id) and le32_to_cpu() on the read side?
 </pre><details class="patches-detail"><summary>26 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-0-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 00/25] Introduce meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-1-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 01/25] kernel: Introduce meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-2-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 02/25] init/version: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-3-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 03/25] mm/percpu: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-4-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 04/25] cpu: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-5-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 05/25] genirq/irqdesc: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-6-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 06/25] timers: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-7-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 07/25] kernel/fork: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-8-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 08/25] mm/page_alloc: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-9-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 09/25] mm/show_mem: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-10-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 10/25] mm/swapfile: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-11-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 11/25] kernel/vmcore_info: Register dynamic information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-12-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 12/25] kernel/configs: Register dynamic information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-13-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 13/25] mm/init-mm: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-14-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 14/25] panic: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-15-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 15/25] kallsyms: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-16-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 16/25] mm/mm_init: Annotate static information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-17-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 17/25] sched/core: Annotate runqueues into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-18-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 18/25] mm/numa: Register node data information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-19-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 19/25] mm/sparse: Register information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-20-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 20/25] printk: Register information into meminspect</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-21-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 21/25] remoteproc: qcom: Move minidump data structures into its own header</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-22-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 22/25] soc: qcom: Add minidump backend driver</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-23-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 23/25] soc: qcom: smem: Add minidump platform device</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-24-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 24/25] dt-bindings: reserved-memory: Add Google Kinfo Pixel reserved memory</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-minidump-v2-v2-25-f91cedc6f99e@oss.qualcomm.com/" target="_blank">[PATCH v2 25/25] meminspect: Add debug kinfo compatible driver</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/mglru: fix cgroup oom during mglru state switching" data-author="leno hou via b4 relay &lt;devnull+lenohou.gmail.com@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260311-b4-switch-mglru-v2-v2-0-080cb9321463@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/mglru: fix cgroup OOM during MGLRU state switching</a>
@@ -3874,7 +3887,7 @@ practice this only affects the brief kexec-free upgrade window, but
 it is worth acknowledging in the commit message.
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311-b4-switch-mglru-v2-v2-0-080cb9321463@gmail.com/" target="_blank">[PATCH v2 0/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-b4-switch-mglru-v2-v2-1-080cb9321463@gmail.com/" target="_blank">[PATCH v2 1/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-b4-switch-mglru-v2-v2-2-080cb9321463@gmail.com/" target="_blank">[PATCH v2 2/2] mm/mglru: maintain workingset refault context across state transitions</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="acpi: add support for acpi ras2 feature table" data-author="&lt;shiju.jose@huawei.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260311155518.1000-1-shiju.jose@huawei.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">ACPI: Add support for ACPI RAS2 feature table</a>
@@ -3946,7 +3959,7 @@ time_delta could then become true and insert an unintended udelay.
 time_delta should be s64 to match the return type of ktime_us_delta().
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311155518.1000-1-shiju.jose@huawei.com/" target="_blank">[PATCH v17 0/2] ACPI: Add support for ACPI RAS2 feature table</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311155518.1000-2-shiju.jose@huawei.com/" target="_blank">[PATCH v17 1/2] ACPI:RAS2: Add driver for the ACPI RAS2 feature table</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311155518.1000-3-shiju.jose@huawei.com/" target="_blank">[PATCH v17 2/2] ras: mem: Add ACPI RAS2 memory driver</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="rdma: enable operation with dma debug enabled" data-author="leon romanovsky &lt;leon@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-0-e00bc2ca346d@nvidia.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">RDMA: Enable operation with DMA debug enabled</a>
@@ -4040,7 +4053,7 @@ map and unmap attrs is worth a comment explaining that DMA_ATTR_WEAK_ORDERING
 is not needed at unmap time.
 </pre><details class="patches-detail"><summary>9 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-0-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 0/8] RDMA: Enable operation with DMA debug enabled</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-1-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 1/8] dma-debug: Allow multiple invocations of overlapping entries</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-2-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 2/8] dma-mapping: handle DMA_ATTR_CPU_CACHE_CLEAN in trace output</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-3-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 3/8] dma-mapping: Clarify valid conditions for CPU cache line overlap</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-4-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 4/8] dma-mapping: Introduce DMA require coherency attribute</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-5-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 5/8] dma-direct: prevent SWIOTLB path when DMA_ATTR_REQUIRE_COHERENT is set</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-6-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 6/8] iommu/dma: add support for DMA_ATTR_REQUIRE_COHERENT attribute</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-7-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 7/8] RDMA/umem: Tell DMA mapping that UMEM requires coherency</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311-dma-debug-overlap-v2-8-e00bc2ca346d@nvidia.com/" target="_blank">[PATCH v2 8/8] mm/hmm: Indicate that HMM requires DMA coherency</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: switch deferred split shrinker to list_lru" data-author="johannes weiner &lt;hannes@cmpxchg.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#8b5cf6">Needs Discussion</span>
             <a href="https://lore.kernel.org/linux-mm/20260311154358.150977-1-hannes@cmpxchg.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: switch deferred split shrinker to list_lru</a>
@@ -4187,7 +4200,7 @@ seem possible:
 Could you describe which path the implementation takes?
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="slab: remove alloc_full_sheaf()" data-author="&quot;vlastimil babka (suse)&quot; &lt;vbabka@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311-b4-slab-remove-alloc_full_sheaf-v1-1-c4c5bb587ae5@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">slab: remove alloc_full_sheaf()</a>
@@ -4200,7 +4213,7 @@ Could you describe which path the implementation takes?
         <div class="row-detail">
             <div class="row-summary">Removes alloc_full_sheaf() by inlining its logic into __pcs_replace_empty_main(), unifying the two code paths (empty sheaf from barn/spare vs freshly allocated) into a single alloc_empty_sheaf()+refill_sheaf() sequence. Also corrects the comment describing when sheaves are returned to the barn.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftests/mm: pagemap_ioctl: remove hungarian notation" data-author="mike rapoport &lt;rppt@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311180737.3767545-1-rppt@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: pagemap_ioctl: remove hungarian notation</a>
@@ -4213,7 +4226,7 @@ Could you describe which path the implementation takes?
         <div class="row-detail">
             <div class="row-summary">Pure rename of Hungarian-notation parameters (lpBaseAddress -&gt; addr, dwRegionSize -&gt; size) in three functions in the pagemap_ioctl selftest. No logic changes.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="slab: fix memory leak when refill_sheaf() fails" data-author="qing wang &lt;wangqing7171@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311093617.4155965-1-wangqing7171@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">slab: fix memory leak when refill_sheaf() fails</a>
@@ -4226,7 +4239,7 @@ Could you describe which path the implementation takes?
         <div class="row-detail">
             <div class="row-summary">Fixes a memory leak when refill_sheaf() partially fills a sheaf and returns -ENOMEM: both alloc_full_sheaf() and __pcs_replace_empty_main() were calling free_empty_sheaf() directly without first freeing the partially-filled objects array. The fix adds sheaf_flush_unused() calls before free_empty_sheaf() in both error paths.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="record non-slab shrinkers for non-root memcgs when kmem is disabled" data-author="haifeng xu &lt;haifeng.xu@shopee.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260311030235.240953-1-haifeng.xu@shopee.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">record non-slab shrinkers for non-root memcgs when kmem is disabled</a>
@@ -4338,7 +4351,7 @@ shrinker_nonslab_idr for the kmem-offline path, only NONSLAB shrinkers
 can ever be returned, making the filter permanently dead.
 </pre><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311030235.240953-1-haifeng.xu@shopee.com/" target="_blank">[PATCH V3 0/4] record non-slab shrinkers for non-root memcgs when kmem is disabled</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311030235.240953-2-haifeng.xu@shopee.com/" target="_blank">[PATCH V3 1/4] mm: shrinker: add one more parameter in shrinker_id()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311030235.240953-3-haifeng.xu@shopee.com/" target="_blank">[PATCH V3 2/4] mm: shrinker: move shrinker_id() code block below memcg_kmem_online()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311030235.240953-4-haifeng.xu@shopee.com/" target="_blank">[PATCH V3 3/4] mm: shrinker: optimize the allocation of shrinker_info when setting cgroup_memory_nokmem</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311030235.240953-5-haifeng.xu@shopee.com/" target="_blank">[PATCH V3 4/4] mm: shrinker: remove unnecessary check in shrink_slab_memcg()</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftest: memcg: skip memcg_sock test if address family not supported" data-author="waiman long &lt;longman@redhat.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311200526.885899-1-longman@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftest: memcg: Skip memcg_sock test if address family not supported</a>
@@ -4351,7 +4364,7 @@ can ever be returned, making the filter permanently dead.
         <div class="row-detail">
             <div class="row-summary">This patch fixes test_memcg_sock to propagate errno from tcp_server to the parent via the control pipe when socket(AF_INET6) fails, and skips the test with KSFT_SKIP when the error is EAFNOSUPPORT, rather than reporting a spurious test failure on systems without IPv6 support.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: improve map count checks" data-author="&quot;lorenzo stoakes (oracle)&quot; &lt;ljs@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/cover.1773249037.git.ljs@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: improve map count checks</a>
@@ -4476,7 +4489,7 @@ the ENOMEM threshold for non-FIXED/DONTUNMAP paths?  Or is the
 added conservatism intentional?
 </pre><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773249037.git.ljs@kernel.org/" target="_blank">[PATCH 0/3] mm: improve map count checks</a></li><li><a href="https://lore.kernel.org/linux-mm/73e218c67dcd197c5331840fb011e2c17155bfb0.1773249037.git.ljs@kernel.org/" target="_blank">[PATCH 1/3] mm/mremap: correct invalid map count check</a></li><li><a href="https://lore.kernel.org/linux-mm/0715259eb37cbdfde4f9e5db92a20ec7110a1ce5.1773249037.git.ljs@kernel.org/" target="_blank">[PATCH 2/3] mm: abstract reading sysctl_max_map_count, and READ_ONCE()</a></li><li><a href="https://lore.kernel.org/linux-mm/18be0b48eaa8e8804eb745974ee729c3ade0c687.1773249037.git.ljs@kernel.org/" target="_blank">[PATCH 3/3] mm/mremap: check map count under mmap write lock and abstract</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: migrate: transfer large_rmappable flag in folio_migrate_flags()" data-author="usama arif &lt;usama.arif@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311132342.3193160-1-usama.arif@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: migrate: transfer large_rmappable flag in folio_migrate_flags()</a>
@@ -4489,7 +4502,7 @@ added conservatism intentional?
         <div class="row-detail">
             <div class="row-summary">The patch fixes a use-after-free on the deferred split queue caused by folio_migrate_flags() not transferring the large_rmappable flag to the migration destination, which prevented folio_unqueue_deferred_split() from removing the stale queue entry when the destination folio was freed.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="zram: recompression cleanups and tweaks" data-author="sergey senozhatsky &lt;senozhatsky@chromium.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-1-senozhatsky@chromium.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">zram: recompression cleanups and tweaks</a>
@@ -4502,7 +4515,7 @@ added conservatism intentional?
         <div class="row-detail">
             <div class="row-summary">This series cleans up zram recompression by fixing missing device locking in algorithm_params_store(), removing silent autocorrection of bad priority parameters, dropping the confusing num_active_comps field in favor of ZRAM_MAX_COMPS, removing chained recompression in favor of single-target priority, and unifying algo/priority parameter handling across both sysfs handlers.</div><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-1-senozhatsky@chromium.org/" target="_blank">[PATCH v2 0/6] zram: recompression cleanups and tweaks</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-2-senozhatsky@chromium.org/" target="_blank">[PATCH v2 1/6] zram: do not permit params change after init</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-3-senozhatsky@chromium.org/" target="_blank">[PATCH v2 2/6] zram: do not autocorrect bad recompression parameters</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-4-senozhatsky@chromium.org/" target="_blank">[PATCH v2 3/6] zram: drop -&gt;num_active_comps</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-5-senozhatsky@chromium.org/" target="_blank">[PATCH v2 4/6] zram: update recompression documentation</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-6-senozhatsky@chromium.org/" target="_blank">[PATCH v2 5/6] zram: remove chained recompression</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-7-senozhatsky@chromium.org/" target="_blank">[PATCH v2 6/6] zram: unify and harden algo/priority params handling</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="binfmt_misc: restore write access before closing files opened by open_exec()" data-author="robert garcia &lt;rob_garcia@163.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311081046.1668003-1-rob_garcia@163.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">binfmt_misc: restore write access before closing files opened by open_exec()</a>
@@ -4515,7 +4528,7 @@ added conservatism intentional?
         <div class="row-detail">
             <div class="row-summary">This backport fixes a missing allow_write_access() call in the bm_register_write() error path: open_exec() decrements i_writecount via deny_write_access(), but the original error path called filp_close() without restoring the write count, permanently blocking writes to the interpreter file. The adaptation to allow_write_access() instead of exe_file_allow_write_access() is correct for 5.15.y, which predates the HSM/pre-content abstraction.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="binfmt_misc: restore write access before closing files opened by open_exec()" data-author="robert garcia &lt;rob_garcia@163.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260311020629.465757-1-rob_garcia@163.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">binfmt_misc: restore write access before closing files opened by open_exec()</a>
@@ -4559,7 +4572,7 @@ same function family and should probably be addressed in a companion
 fix.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="docs: mm: fix typo in numa_memory_policy.rst" data-author="akinobu mita &lt;akinobu.mita@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260310151837.5888-1-akinobu.mita@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">docs: mm: fix typo in numa_memory_policy.rst</a>
@@ -4572,7 +4585,7 @@ fix.
         <div class="row-detail">
             <div class="row-summary">Fixes a typo in numa_memory_policy.rst where the memory policy mode was incorrectly named MPOL_INTERLEAVED instead of the correct MPOL_INTERLEAVE, matching the definition in include/uapi/linux/mempolicy.h.</div>
         </div>
-    </details><h2 class="date-header">2026-03-10 <span class="date-count">(14)</span></h2><details class="series-row">
+    </details><h2 class="date-header">2026-03-10 <span class="date-count">(14)</span></h2><details class="series-row" data-title="arm64/mm: contpte-sized exec folios for 16k and 64k pages" data-author="usama arif &lt;usama.arif@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260310145406.3073394-1-usama.arif@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">arm64/mm: contpte-sized exec folios for 16K and 64K pages</a>
@@ -4683,7 +4696,7 @@ a sentence in the commit message.  If not, could the bump be placed
 inside the if (interpreter) branch only?
 </pre><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310145406.3073394-1-usama.arif@linux.dev/" target="_blank">[PATCH 0/4] arm64/mm: contpte-sized exec folios for 16K and 64K pages</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310145406.3073394-2-usama.arif@linux.dev/" target="_blank">[PATCH 1/4] arm64: request contpte-sized folios for exec memory</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310145406.3073394-3-usama.arif@linux.dev/" target="_blank">[PATCH 2/4] mm: bypass mmap_miss heuristic for VM_EXEC readahead</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310145406.3073394-4-usama.arif@linux.dev/" target="_blank">[PATCH 3/4] elf: align ET_DYN base to exec folio order for contpte mapping</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310145406.3073394-5-usama.arif@linux.dev/" target="_blank">[PATCH 4/4] mm: align file-backed mmap to exec folio order in thp_get_unmapped_area</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/damon: support addr_unit on default monitoring targets for modules" data-author="seongjae park &lt;sj@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260311052927.93921-1-sj@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/damon: support addr_unit on default monitoring targets for modules</a>
@@ -4774,7 +4787,7 @@ The line should remain:
   return damon_set_regions(t, &amp;addr_range, 1, min_region_sz);
 </pre><details class="patches-detail"><summary>6 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311052927.93921-1-sj@kernel.org/" target="_blank">[PATCH 0/5] mm/damon: support addr_unit on default monitoring targets for modules</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311052927.93921-2-sj@kernel.org/" target="_blank">[PATCH 1/5] mm/damon/core: fix wrong end address assignment on walk_system_ram()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311052927.93921-3-sj@kernel.org/" target="_blank">[PATCH 2/5] mm/damon/core: support addr_unit on damon_find_biggest_system_ram()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311052927.93921-4-sj@kernel.org/" target="_blank">[PATCH 3/5] mm/damon/core: receive addr_unit on damon_set_region_biggest_system_ram_default()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311052927.93921-5-sj@kernel.org/" target="_blank">[PATCH 4/5] mm/damon/reclaim: respect addr_unit on default monitoring region setup</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311052927.93921-6-sj@kernel.org/" target="_blank">[PATCH 5/5] mm/damon/lru_sort: respect addr_unit on default monitoring region setup</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="treewide: use is_err_or_null over manual null check - refactor" data-author="philipp hahn &lt;phahn-oss@avm.de&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de/" target="_blank" class="row-title" onclick="event.stopPropagation()">treewide: Use IS_ERR_OR_NULL over manual NULL check - refactor</a>
@@ -4857,7 +4870,7 @@ appear semantically equivalent and the rhashtable walk patterns
 idiom correctly.
 </pre><details class="patches-detail"><summary>62 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de/" target="_blank">[PATCH 00/61] treewide: Use IS_ERR_OR_NULL over manual NULL check - refactor</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-1-bd63b656022d@avm.de/" target="_blank">[PATCH 01/61] Coccinelle: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-2-bd63b656022d@avm.de/" target="_blank">[PATCH 02/61] btrfs: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-3-bd63b656022d@avm.de/" target="_blank">[PATCH 03/61] ceph: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-4-bd63b656022d@avm.de/" target="_blank">[PATCH 04/61] ext4: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-5-bd63b656022d@avm.de/" target="_blank">[PATCH 05/61] smb: Prefer IS_ERR_OR_NULL over manual NULl check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-6-bd63b656022d@avm.de/" target="_blank">[PATCH 06/61] 9p: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-7-bd63b656022d@avm.de/" target="_blank">[PATCH 07/61] erofs: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-8-bd63b656022d@avm.de/" target="_blank">[PATCH 08/61] fuse: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-9-bd63b656022d@avm.de/" target="_blank">[PATCH 09/61] ntfs3: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-10-bd63b656022d@avm.de/" target="_blank">[PATCH 10/61] gfs2: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-11-bd63b656022d@avm.de/" target="_blank">[PATCH 11/61] pstore: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-12-bd63b656022d@avm.de/" target="_blank">[PATCH 12/61] quota: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-13-bd63b656022d@avm.de/" target="_blank">[PATCH 13/61] squashfs: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-14-bd63b656022d@avm.de/" target="_blank">[PATCH 14/61] seq_file: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-15-bd63b656022d@avm.de/" target="_blank">[PATCH 15/61] trace: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-16-bd63b656022d@avm.de/" target="_blank">[PATCH 16/61] sched: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-17-bd63b656022d@avm.de/" target="_blank">[PATCH 17/61] module: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-18-bd63b656022d@avm.de/" target="_blank">[PATCH 18/61] sound: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-19-bd63b656022d@avm.de/" target="_blank">[PATCH 19/61] kvm: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-20-bd63b656022d@avm.de/" target="_blank">[PATCH 20/61] apparmor: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-21-bd63b656022d@avm.de/" target="_blank">[PATCH 21/61] lib/test: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-22-bd63b656022d@avm.de/" target="_blank">[PATCH 22/61] md: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-23-bd63b656022d@avm.de/" target="_blank">[PATCH 23/61] net/ipv6: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-24-bd63b656022d@avm.de/" target="_blank">[PATCH 24/61] net/9p: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-25-bd63b656022d@avm.de/" target="_blank">[PATCH 25/61] net/bluetooth: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-26-bd63b656022d@avm.de/" target="_blank">[PATCH 26/61] net/core: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-27-bd63b656022d@avm.de/" target="_blank">[PATCH 27/61] net/netlink: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-28-bd63b656022d@avm.de/" target="_blank">[PATCH 28/61] net/sched: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-29-bd63b656022d@avm.de/" target="_blank">[PATCH 29/61] net/sctp: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-30-bd63b656022d@avm.de/" target="_blank">[PATCH 30/61] net/sunrpc: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-31-bd63b656022d@avm.de/" target="_blank">[PATCH 31/61] net/tipc: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-32-bd63b656022d@avm.de/" target="_blank">[PATCH 32/61] net/wireless: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-33-bd63b656022d@avm.de/" target="_blank">[PATCH 33/61] mm: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-34-bd63b656022d@avm.de/" target="_blank">[PATCH 34/61] arch/arm: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-35-bd63b656022d@avm.de/" target="_blank">[PATCH 35/61] arch/mips: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-36-bd63b656022d@avm.de/" target="_blank">[PATCH 36/61] arch/sh: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-37-bd63b656022d@avm.de/" target="_blank">[PATCH 37/61] drm: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-38-bd63b656022d@avm.de/" target="_blank">[PATCH 38/61] net: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-39-bd63b656022d@avm.de/" target="_blank">[PATCH 39/61] irqchip: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-40-bd63b656022d@avm.de/" target="_blank">[PATCH 40/61] phy: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-41-bd63b656022d@avm.de/" target="_blank">[PATCH 41/61] pinctrl: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-42-bd63b656022d@avm.de/" target="_blank">[PATCH 42/61] pmdomain: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-43-bd63b656022d@avm.de/" target="_blank">[PATCH 43/61] s390: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-44-bd63b656022d@avm.de/" target="_blank">[PATCH 44/61] target: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-45-bd63b656022d@avm.de/" target="_blank">[PATCH 45/61] thermal: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-46-bd63b656022d@avm.de/" target="_blank">[PATCH 46/61] vfio: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-47-bd63b656022d@avm.de/" target="_blank">[PATCH 47/61] nfc: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-48-bd63b656022d@avm.de/" target="_blank">[PATCH 48/61] mtd: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-49-bd63b656022d@avm.de/" target="_blank">[PATCH 49/61] media: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-50-bd63b656022d@avm.de/" target="_blank">[PATCH 50/61] iommu: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-51-bd63b656022d@avm.de/" target="_blank">[PATCH 51/61] leds: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-52-bd63b656022d@avm.de/" target="_blank">[PATCH 52/61] gpib: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-53-bd63b656022d@avm.de/" target="_blank">[PATCH 53/61] hyperv: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-54-bd63b656022d@avm.de/" target="_blank">[PATCH 54/61] aoe: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-55-bd63b656022d@avm.de/" target="_blank">[PATCH 55/61] interconnect: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-56-bd63b656022d@avm.de/" target="_blank">[PATCH 56/61] clk: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-57-bd63b656022d@avm.de/" target="_blank">[PATCH 57/61] reset: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-58-bd63b656022d@avm.de/" target="_blank">[PATCH 58/61] arch/x86: Prefer IS_ERR_OR_NULL over manual NULL check</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-59-bd63b656022d@avm.de/" target="_blank">[PATCH 59/61] debugobjects: Drop likely() around !IS_ERR_OR_NULL()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-60-bd63b656022d@avm.de/" target="_blank">[PATCH 60/61] Input alps: Drop unlikely() around IS_ERR_OR_NULL()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-b4-is_err_or_null-v1-61-bd63b656022d@avm.de/" target="_blank">[PATCH 61/61] file: Drop unlikely() around IS_ERR_OR_NULL()</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/damon: support hot application detections" data-author="&lt;gutierrez.asier@huawei-partners.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260310162420.4180562-1-gutierrez.asier@huawei-partners.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/damon: Support hot application detections</a>
@@ -5039,7 +5052,7 @@ module name would be &quot;hugepage&quot;, but the documentation example uses
 &quot;damon_dynamic_hotpages&quot;.  These need to be consistent.
 </pre><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310162420.4180562-1-gutierrez.asier@huawei-partners.com/" target="_blank">[RFC PATCH v2 0/4] mm/damon: Support hot application detections</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310162420.4180562-2-gutierrez.asier@huawei-partners.com/" target="_blank">[RFC PATCH v2 1/4] mm/damon: Generic context creation for modules</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310162420.4180562-3-gutierrez.asier@huawei-partners.com/" target="_blank">[RFC PATCH v2 2/4] mm/damon: Support for synchrounous huge pages collapse</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310162420.4180562-4-gutierrez.asier@huawei-partners.com/" target="_blank">[RFC PATCH v2 3/4] mm/damon: New module with hot application detection</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310162420.4180562-5-gutierrez.asier@huawei-partners.com/" target="_blank">[RFC PATCH v2 4/4] DAMON_HOT_HUGEPAGE documentation</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="locking: contended_release tracepoint instrumentation" data-author="dmitry ilvokhin &lt;d@ilvokhin.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/cover.1773164180.git.d@ilvokhin.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">locking: contended_release tracepoint instrumentation</a>
@@ -5111,7 +5124,7 @@ other call sites provide: the tracepoint fires only when at least
 one blocked task is about to be woken.
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773164180.git.d@ilvokhin.com/" target="_blank">[PATCH v2 0/2] locking: contended_release tracepoint instrumentation</a></li><li><a href="https://lore.kernel.org/linux-mm/a065fd88990c0091a168b1d6715cd0cae8e9066c.1773164180.git.d@ilvokhin.com/" target="_blank">[PATCH v2 1/2] locking/percpu-rwsem: Extract __percpu_up_read()</a></li><li><a href="https://lore.kernel.org/linux-mm/cb89caf58885858433711f0ed6238484f5f1a67f.1773164180.git.d@ilvokhin.com/" target="_blank">[PATCH v2 2/2] locking: Add contended_release tracepoint</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: prevent droppable mappings from being locked" data-author="anthony yznaga &lt;anthony.yznaga@oracle.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260310155821.17869-1-anthony.yznaga@oracle.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: prevent droppable mappings from being locked</a>
@@ -5173,7 +5186,7 @@ mmap(); the same pattern should be applied here, e.g.:
 &gt; +}
 </pre><details class="patches-detail"><summary>2 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310155821.17869-1-anthony.yznaga@oracle.com/" target="_blank">[PATCH v2 1/2] mm: prevent droppable mappings from being locked</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310155821.17869-2-anthony.yznaga@oracle.com/" target="_blank">[PATCH v2 2/2] selftests/mm: verify droppable mappings cannot be locked</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/rmap: optimize anonymous large folio unmapping" data-author="dev jain &lt;dev.jain@arm.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#8b5cf6">Needs Discussion</span>
             <a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-1-dev.jain@arm.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/rmap: Optimize anonymous large folio unmapping</a>
@@ -5324,7 +5337,7 @@ does?  If so, please include that function's full diff -- the patch
 appears to be truncated before it is shown.
 </pre><details class="patches-detail"><summary>10 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-1-dev.jain@arm.com/" target="_blank">[PATCH 0/9] mm/rmap: Optimize anonymous large folio unmapping</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-2-dev.jain@arm.com/" target="_blank">[PATCH 1/9] mm/rmap: make nr_pages signed in try_to_unmap_one</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-3-dev.jain@arm.com/" target="_blank">[PATCH 2/9] mm/rmap: initialize nr_pages to 1 at loop start in try_to_unmap_one</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-4-dev.jain@arm.com/" target="_blank">[PATCH 3/9] mm/rmap: refactor lazyfree unmap commit path to commit_ttu_lazyfree_folio()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-5-dev.jain@arm.com/" target="_blank">[PATCH 4/9] mm/memory: Batch set uffd-wp markers during zapping</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-6-dev.jain@arm.com/" target="_blank">[PATCH 5/9] mm/rmap: batch unmap folios belonging to uffd-wp VMAs</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-7-dev.jain@arm.com/" target="_blank">[PATCH 6/9] mm/swapfile: Make folio_dup_swap batchable</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-8-dev.jain@arm.com/" target="_blank">[PATCH 7/9] mm/swapfile: Make folio_put_swap batchable</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-9-dev.jain@arm.com/" target="_blank">[PATCH 8/9] mm/rmap: introduce folio_try_share_anon_rmap_ptes</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310073013.4069309-10-dev.jain@arm.com/" target="_blank">[PATCH 9/9] mm/rmap: enable batch unmapping of anonymous folios</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="kasan: x86: arm64: kasan tag-based mode for x86" data-author="maciej wieczor-retman &lt;m.wieczorretman@pm.me&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/cover.1773164688.git.m.wieczorretman@pm.me/" target="_blank" class="row-title" onclick="event.stopPropagation()">kasan: x86: arm64: KASAN tag-based mode for x86</a>
@@ -5404,7 +5417,7 @@ instead of the open-coded PFN_PHYS(page_to_pfn()) to preserve the
 check.
 </pre><details class="patches-detail"><summary>6 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773164688.git.m.wieczorretman@pm.me/" target="_blank">[PATCH v11 00/15] kasan: x86: arm64: KASAN tag-based mode for x86</a></li><li><a href="https://lore.kernel.org/linux-mm/8033d1ad717800657ce6b80a30e2191d78ec7bcb.1773164688.git.m.wieczorretman@pm.me/" target="_blank">[PATCH v11 01/15] kasan: sw_tags: Use arithmetic shift for shadow computation</a></li><li><a href="https://lore.kernel.org/linux-mm/35fe9ee0bfe99bfa72ac8c1dc5581c850d11c8ed.1773164688.git.m.wieczorretman@pm.me/" target="_blank">[PATCH v11 02/15] kasan: arm64: x86: Make special tags arch specific</a></li><li><a href="https://lore.kernel.org/linux-mm/61a7cecb9f498a565d87508e434ea1d7df9623f1.1773164688.git.m.wieczorretman@pm.me/" target="_blank">[PATCH v11 04/15] x86/kasan: Add arch specific kasan functions</a></li><li><a href="https://lore.kernel.org/linux-mm/b51b60f82bbd99cdcd7f6d0d2bac1d5f3bed0fe0.1773164688.git.m.wieczorretman@pm.me/" target="_blank">[PATCH v11 06/15] kasan: arm64: x86: Make page_to_virt() KASAN aware</a></li><li><a href="https://lore.kernel.org/linux-mm/46124025a71405bd5d830496c79baee047a1f3f3.1773164688.git.m.wieczorretman@pm.me/" target="_blank">[PATCH v11 07/15] mm/execmem: Untag addresses in EXECMEM_ROX related pointer arithmetic</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/userfaultfd: fix hugetlb fault mutex hash calculation" data-author="jianhui zhou &lt;jianhuizzzzz@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260310110526.335749-1-jianhuizzzzz@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/userfaultfd: fix hugetlb fault mutex hash calculation</a>
@@ -5417,7 +5430,7 @@ check.
         <div class="row-detail">
             <div class="row-summary">Fixes a mutex hash mismatch in mfill_atomic_hugetlb() where linear_page_index() was used to compute the page index for hugetlb_fault_mutex_hash(), but returns PAGE_SIZE units instead of the huge-page units the hash function expects. The v4 fix introduces hugetlb_linear_page_index() wrapping hstate_vma() internally, matching the formula already used by vma_hugecache_offset() in the normal fault path.</div><details class="patches-detail"><summary>2 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310110526.335749-1-jianhuizzzzz@gmail.com/" target="_blank">[PATCH v4] mm/userfaultfd: fix hugetlb fault mutex hash calculation</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309033053.220012-1-jianhuizzzzz@gmail.com/" target="_blank">[PATCH v3] mm/userfaultfd: fix hugetlb fault mutex hash calculation</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="kthread, exit: clean up kernel thread exit paths" data-author="christian brauner &lt;brauner@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#8b5cf6">Needs Discussion</span>
             <a href="https://lore.kernel.org/linux-mm/20260310-work-kernel-exit-v2-0-30711759d87b@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">kthread, exit: clean up kernel thread exit paths</a>
@@ -5496,7 +5509,7 @@ probe-by-symbol-name users would otherwise silently stop attaching after
 the rename.
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310-work-kernel-exit-v2-0-30711759d87b@kernel.org/" target="_blank">[PATCH v2 0/2] kthread, exit: clean up kernel thread exit paths</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-work-kernel-exit-v2-1-30711759d87b@kernel.org/" target="_blank">[PATCH v2 1/2] kthread: remove kthread_exit()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310-work-kernel-exit-v2-2-30711759d87b@kernel.org/" target="_blank">[PATCH v2 2/2] tree-wide: rename do_exit() to task_exit()</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftest: memcg: skp memcg_sock test if address family not supported" data-author="waiman long &lt;longman@redhat.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260310143936.720592-1-longman@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftest: memcg: Skp memcg_sock test if address family not supported</a>
@@ -5509,7 +5522,7 @@ the rename.
         <div class="row-detail">
             <div class="row-summary">Converts an unconditional test failure into KSFT_SKIP when socket(AF_INET6, SOCK_STREAM, 0) fails with EAFNOSUPPORT in the server child, by piping errno back to the parent before returning.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="zram: do not permit params change after init" data-author="sergey senozhatsky &lt;senozhatsky@chromium.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260310060407.1133800-1-senozhatsky@chromium.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">zram: do not permit params change after init</a>
@@ -5522,7 +5535,7 @@ the rename.
         <div class="row-detail">
             <div class="row-summary">Adds a missing write lock and post-init guard to algorithm_params_store(), preventing racy and semantically nonsensical parameter changes after device initialization, consistent with every other write sysfs handler in the driver.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="fix kmem over-charging for embedded obj_exts array" data-author="ranxiaokai627@163.com">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260310113804.245647-1-ranxiaokai627@163.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">fix kmem over-charging for embedded obj_exts array</a>
@@ -5608,7 +5621,7 @@ slab_address(slab) + slab_size(slab)), so obj_exts_in_slab() returns
 true for embedded obj_exts as well.  Intentional?
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310113804.245647-1-ranxiaokai627@163.com/" target="_blank">[PATCH 0/2] fix kmem over-charging for embedded obj_exts array</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310113804.245647-2-ranxiaokai627@163.com/" target="_blank">[PATCH 1/2] mm/slab: move obj_exts_in_slab() definition to slab.h</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310113804.245647-3-ranxiaokai627@163.com/" target="_blank">[PATCH 2/2] memcg: fix kmem over-charging for embedded obj_exts array</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="cgroup: improve cgroup_file_notify() scalability" data-author="shakeel butt &lt;shakeel.butt@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#8b5cf6">Needs Discussion</span>
             <a href="https://lore.kernel.org/linux-mm/20260311010101.3306366-1-shakeel.butt@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">cgroup: improve cgroup_file_notify() scalability</a>
@@ -5731,7 +5744,7 @@ the NULL check on kn.  kernfs_get() handles NULL safely (it checks
 bit surprising.  That said, it predates this series.
 </pre><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311010101.3306366-1-shakeel.butt@linux.dev/" target="_blank">[PATCH v2 0/3] cgroup: improve cgroup_file_notify() scalability</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311010101.3306366-2-shakeel.butt@linux.dev/" target="_blank">[PATCH v2 1/3] cgroup: reduce cgroup_file_kn_lock hold time in cgroup_file_notify()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311010101.3306366-3-shakeel.butt@linux.dev/" target="_blank">[PATCH v2 2/3] cgroup: add lockless fast-path checks to cgroup_file_notify()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311010101.3306366-4-shakeel.butt@linux.dev/" target="_blank">[PATCH v2 3/3] cgroup: replace global cgroup_file_kn_lock with per-cgroup_file lock</a></li></ul></details>
         </div>
-    </details><h2 class="date-header">2026-03-09 <span class="date-count">(20)</span></h2><details class="series-row">
+    </details><h2 class="date-header">2026-03-09 <span class="date-count">(20)</span></h2><details class="series-row" data-title="selftests/liveupdate: add memfd tests" data-author="pratyush yadav &lt;pratyush@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260309115441.266805-1-pratyush@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/liveupdate: add memfd tests</a>
@@ -5855,7 +5868,7 @@ but the arguments are reversed: strerror(errno) is passed for the first
 &quot;Failed to open &lt;device path&gt; (&lt;error string&gt;)&quot;.
 </pre><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309115441.266805-1-pratyush@kernel.org/" target="_blank">[PATCH 0/6] selftests/liveupdate: add memfd tests</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309115441.266805-2-pratyush@kernel.org/" target="_blank">[PATCH 1/6] selftests/liveupdate: add framework for memfd tests</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309115441.266805-3-pratyush@kernel.org/" target="_blank">[PATCH 2/6] selftests/liveupdate: add helper functions for memfd tests</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309115441.266805-4-pratyush@kernel.org/" target="_blank">[PATCH 3/6] selftests/liveupdate: add test for memfd content preservation</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309115441.266805-5-pratyush@kernel.org/" target="_blank">[PATCH 4/6] selftests/liveupdate: add test for zero-size memfd preservation</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309115441.266805-6-pratyush@kernel.org/" target="_blank">[PATCH 5/6] selftests/liveupdate: add test for operations on a preserved memfd</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309115441.266805-7-pratyush@kernel.org/" target="_blank">[PATCH 6/6] selftests/liveupdate: add fallocate test for memfd</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="kho: history: track previous kernel version and kexec boot count" data-author="breno leitao &lt;leitao@debian.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260309-kho-v8-0-c3abcf4ac750@debian.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">kho: history: track previous kernel version and kexec boot count</a>
@@ -5953,7 +5966,7 @@ failed metadata subtree abort all of KHO initialisation, or should KHO
 continue and simply omit the metadata on the next kexec?
 </pre><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309-kho-v8-0-c3abcf4ac750@debian.org/" target="_blank">[PATCH v8 0/6] kho: history: track previous kernel version and kexec boot count</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-kho-v8-1-c3abcf4ac750@debian.org/" target="_blank">[PATCH v8 1/6] kho: add size parameter to kho_add_subtree()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-kho-v8-2-c3abcf4ac750@debian.org/" target="_blank">[PATCH v8 2/6] kho: rename fdt parameter to blob in kho_add/remove_subtree()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-kho-v8-3-c3abcf4ac750@debian.org/" target="_blank">[PATCH v8 3/6] kho: persist blob size in KHO FDT</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-kho-v8-4-c3abcf4ac750@debian.org/" target="_blank">[PATCH v8 4/6] kho: fix kho_in_debugfs_init() to handle non-FDT blobs</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-kho-v8-5-c3abcf4ac750@debian.org/" target="_blank">[PATCH v8 5/6] kho: kexec-metadata: track previous kernel chain</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-kho-v8-6-c3abcf4ac750@debian.org/" target="_blank">[PATCH v8 6/6] kho: document kexec-metadata tracking feature</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="guest_memfd: track amount of memory allocated on inode" data-author="ackerley tng &lt;ackerleytng@google.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260309-gmem-st-blocks-v3-0-815f03d9653e@google.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">guest_memfd: Track amount of memory allocated on inode</a>
@@ -6064,7 +6077,7 @@ but a comment explaining the indirect coupling would help future
 readers understand why this flag is set.
 </pre><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309-gmem-st-blocks-v3-0-815f03d9653e@google.com/" target="_blank">[PATCH RFC v3 0/4] guest_memfd: Track amount of memory allocated on inode</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-gmem-st-blocks-v3-1-815f03d9653e@google.com/" target="_blank">[PATCH RFC v3 1/4] KVM: guest_memfd: Track amount of memory allocated on inode</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-gmem-st-blocks-v3-2-815f03d9653e@google.com/" target="_blank">[PATCH RFC v3 2/4] KVM: guest_memfd: Set release always on guest_memfd mappings</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-gmem-st-blocks-v3-3-815f03d9653e@google.com/" target="_blank">[PATCH RFC v3 3/4] KVM: selftests: Wrap fstat() to assert success</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-gmem-st-blocks-v3-4-815f03d9653e@google.com/" target="_blank">[PATCH RFC v3 4/4] KVM: selftests: Test that st_blocks is updated on allocation</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="accelerate page migration with batch copying and hardware offload" data-author="shivank garg &lt;shivankg@amd.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260309120725.308854-3-shivankg@amd.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Accelerate page migration with batch copying and hardware offload</a>
@@ -6213,7 +6226,7 @@ patch from the series entirely and carry it out-of-tree during
 benchmarking.  It must not go upstream as-is.
 </pre><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309120725.308854-3-shivankg@amd.com/" target="_blank">[RFC PATCH v4 0/6] Accelerate page migration with batch copying and hardware offload</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309120725.308854-5-shivankg@amd.com/" target="_blank">[RFC PATCH v4 1/6] mm: introduce folios_mc_copy() for batch folio copying</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309120725.308854-8-shivankg@amd.com/" target="_blank">[RFC PATCH v4 2/6] mm/migrate: skip data copy for already-copied folios</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309120725.308854-10-shivankg@amd.com/" target="_blank">[RFC PATCH v4 3/6] mm/migrate: add batch-copy path in migrate_pages_batch</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309120725.308854-12-shivankg@amd.com/" target="_blank">[RFC PATCH v4 4/6] mm/migrate: add copy offload registration infrastructure</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309120725.308854-14-shivankg@amd.com/" target="_blank">[RFC PATCH v4 5/6] drivers/migrate_offload: add DMA batch copy driver (dcbm)</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309120725.308854-16-shivankg@amd.com/" target="_blank">[RFC PATCH v4 6/6] mm/migrate: adjust NR_MAX_BATCHED_MIGRATION for testing</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/migrate_device: document folio_get requirement before frozen pmd split" data-author="usama arif &lt;usama.arif@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
             <a href="https://lore.kernel.org/linux-mm/20260309212502.3922825-1-usama.arif@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/migrate_device: document folio_get requirement before frozen PMD split</a>
@@ -6226,7 +6239,7 @@ benchmarking.  It must not go upstream as-is.
         <div class="row-detail">
             <div class="row-summary">Failed to parse review JSON: Expecting value: line 1 column 4 (char 3)</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="avoid pagewalk hugepage-split race with vfio dma set" data-author="max boone &lt;mboone@akamai.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#8b5cf6">Needs Discussion</span>
             <a href="https://lore.kernel.org/linux-mm/20260309174949.2514565-1-mboone@akamai.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Avoid pagewalk hugepage-split race with VFIO DMA set</a>
@@ -6317,7 +6330,7 @@ to the guard would close that gap too.
 Is there a reason to keep just the pud_none() check?
 </pre><details class="patches-detail"><summary>2 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309174949.2514565-1-mboone@akamai.com/" target="_blank">[RFC 0/1] Avoid pagewalk hugepage-split race with VFIO DMA set</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309174949.2514565-2-mboone@akamai.com/" target="_blank">[RFC 1/1] mm/pagewalk: don't split device-backed huge pfnmaps</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: move vma_(kernel|mmu)_pagesize() out of hugetlb.c" data-author="&quot;david hildenbrand (arm)&quot; &lt;david@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260309151901.123947-1-david@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: move vma_(kernel|mmu)_pagesize() out of hugetlb.c</a>
@@ -6330,7 +6343,7 @@ Is there a reason to keep just the pud_none() check?
         <div class="row-detail">
             <div class="row-summary">Moves vma_kernel_pagesize() from hugetlb.c to mm.h as a static inline and vma_mmu_pagesize() to vma.c, fixing a bug where CONFIG_DEV_DAX without CONFIG_HUGETLBFS would not invoke vm_ops-&gt;pagesize() and would always return PAGE_SIZE. Removes now-unnecessary hugetlb.h includes from KVM.</div><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309151901.123947-1-david@kernel.org/" target="_blank">[PATCH v2 0/4] mm: move vma_(kernel|mmu)_pagesize() out of hugetlb.c</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309151901.123947-2-david@kernel.org/" target="_blank">[PATCH v2 1/4] mm: move vma_kernel_pagesize() from hugetlb to mm.h</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309151901.123947-3-david@kernel.org/" target="_blank">[PATCH v2 2/4] mm: move vma_mmu_pagesize() from hugetlb to vma.c</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309151901.123947-4-david@kernel.org/" target="_blank">[PATCH v2 3/4] KVM: remove hugetlb.h inclusion</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309151901.123947-5-david@kernel.org/" target="_blank">[PATCH v2 4/4] KVM: PPC: remove hugetlb.h inclusion</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="drivers/vfio_pci_core: change pxd_order check from switch case to if/else block" data-author="&quot;ritesh harjani (ibm)&quot; &lt;ritesh.list@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/b155e19993ee1f5584c72050192eb468b31c5029.1773058761.git.ritesh.list@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">drivers/vfio_pci_core: Change PXD_ORDER check from switch case to if/else block</a>
@@ -6343,7 +6356,7 @@ Is there a reason to keep just the pud_none() check?
         <div class="row-detail">
             <div class="row-summary">This series fixes a PowerPC build failure in vfio_pci_core by replacing a switch/case on PMD_ORDER/PUD_ORDER (which are not compile-time constants on PowerPC) with IS_ENABLED()-guarded if/else, then adds the necessary PowerPC huge pfnmap support (pmd/pud_special, pmd/pud_mkspecial, pmd/pud_pgprot) using the _RPAGE_SW2 software bit and the existing pmd_pte/pud_pte raw-cast helpers.</div><details class="patches-detail"><summary>2 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/b155e19993ee1f5584c72050192eb468b31c5029.1773058761.git.ritesh.list@gmail.com/" target="_blank">[PATCH v2 1/2] drivers/vfio_pci_core: Change PXD_ORDER check from switch case to if/else block</a></li><li><a href="https://lore.kernel.org/linux-mm/6fca726574236f556dd4e1e259692e82a4c29e85.1773058761.git.ritesh.list@gmail.com/" target="_blank">[PATCH v2 2/2] powerpc/64s: Add support for huge pfnmaps</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: optimize the implementation of warn_on_once_gfp()" data-author="xie yuanbin &lt;qq570070308@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260309153811.40958-1-qq570070308@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: optimize the implementation of WARN_ON_ONCE_GFP()</a>
@@ -6356,7 +6369,7 @@ Is there a reason to keep just the pud_none() check?
         <div class="row-detail">
             <div class="row-summary">This patch splits the single unlikely() wrapping three conditions in WARN_ON_ONCE_GFP() into three separate unlikely() checks and reorders them so the condition check comes first, matching the pattern from WARN_ONCE() and improving branch prediction in the common case where cond is false.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/debug: optimize once judgment with clang" data-author="xie yuanbin &lt;qq570070308@gmail.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260309153405.20130-1-qq570070308@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/debug: optimize once judgment with clang</a>
@@ -6369,7 +6382,7 @@ Is there a reason to keep just the pud_none() check?
         <div class="row-detail">
             <div class="row-summary">Ports the split unlikely() optimization from once_lite.h to the four VM_WARN_ON_ONCE_* macros in mmdebug.h, allowing clang to better optimize each branch condition independently. No functional change.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="kho: make sure preservations do not span multiple numa nodes" data-author="pratyush yadav &lt;pratyush@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260309123410.382308-1-pratyush@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">kho: make sure preservations do not span multiple NUMA nodes</a>
@@ -6474,7 +6487,7 @@ That function is reachable from kho_restore_folio() -&gt; kho_restore_page()
 with the new unconstrained info.order, so both sites need the UL fix.
 </pre><details class="patches-detail"><summary>2 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309123410.382308-1-pratyush@kernel.org/" target="_blank">[PATCH 1/2] kho: make sure preservations do not span multiple NUMA nodes</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309123410.382308-2-pratyush@kernel.org/" target="_blank">[PATCH 2/2] kho: drop restriction on maximum page order</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/slab: fix an incorrect check in obj_exts_alloc_size()" data-author="harry yoo &lt;harry.yoo@oracle.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260309072219.22653-1-harry.yoo@oracle.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/slab: fix an incorrect check in obj_exts_alloc_size()</a>
@@ -6487,7 +6500,7 @@ with the new unconstrained info.order, so both sites need the UL fix.
         <div class="row-detail">
             <div class="row-summary">Removes an incorrect early return in obj_exts_alloc_size() that bypassed the same-slab recursion guard when memory allocation profiling is disabled, fixing a slab-never-freed bug on SLUB_TINY with __GFP_RECLAIMABLE|__GFP_ACCOUNT allocations. The remaining is_kmalloc_normal() check is sufficient to scope the size-bump logic correctly.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="[bug] sparsemem broken on risc-v; was:  arch, mm: consolidate initialization of sparse memory model" data-author="thomas =?utf-8?q?wei=c3=9fschuh?= &lt;thomas.weissschuh@linutronix.de&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260309082841-9c542a85-073d-4d08-8b8e-a56621a13c91@linutronix.de/" target="_blank" class="row-title" onclick="event.stopPropagation()">[BUG] SPARSEMEM broken on RISC-V; was:  arch, mm: consolidate initialization of SPARSE memory model</a>
@@ -6500,7 +6513,7 @@ with the new unconstrained info.order, so both sites need the UL fix.
         <div class="row-detail">
             <div class="row-summary">Fixes a RISC-V SPARSEMEM boot crash in patch_map() by replacing the phys_to_page(__pa_symbol(addr)) round-trip for kernel text addresses with a direct __pa_symbol() call, eliminating the dependency on SPARSEMEM being initialized before apply_boot_alternatives() runs. The vmalloc path for module text is unchanged.</div>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/damon: support multiple goal-based quota tuning algorithms" data-author="seongjae park &lt;sj@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260310010529.91162-1-sj@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/damon: support multiple goal-based quota tuning algorithms</a>
@@ -6583,7 +6596,7 @@ multiply or a min(quota-&gt;sz, ULONG_MAX / 10000) * 10000 form to
 match the intent of the else branch?
 </pre><details class="patches-detail"><summary>12 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-1-sj@kernel.org/" target="_blank">[PATCH 00/11] mm/damon: support multiple goal-based quota tuning algorithms</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-2-sj@kernel.org/" target="_blank">[PATCH 01/11] mm/damon/core: introduce damos_quota_goal_tuner</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-3-sj@kernel.org/" target="_blank">[PATCH 02/11] mm/damon/core: allow quota goals set zero effective size quota</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-4-sj@kernel.org/" target="_blank">[PATCH 03/11] mm/damon/core: introduce DAMOS_QUOTA_GOAL_TUNER_TEMPORAL</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-5-sj@kernel.org/" target="_blank">[PATCH 04/11] mm/damon/sysfs-schemes: implement quotas-&gt;goal_tuner file</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-6-sj@kernel.org/" target="_blank">[PATCH 05/11] Docs/mm/damon/design: document the goal-based quota tuner selections</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-7-sj@kernel.org/" target="_blank">[PATCH 06/11] Docs/admin-guide/mm/damon/usage: document goal_tuner sysfs file</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-8-sj@kernel.org/" target="_blank">[PATCH 07/11] Docs/ABI/damon: update for goal_tuner</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-9-sj@kernel.org/" target="_blank">[PATCH 08/11] mm/damon/tests/core-kunit: test goal_tuner commit</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-10-sj@kernel.org/" target="_blank">[PATCH 09/11] selftests/damon/_damon_sysfs: support goal_tuner setup</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-11-sj@kernel.org/" target="_blank">[PATCH 10/11] selftests/damon/drgn_dump_damon_status: support quota goal_tuner dumping</a></li><li><a href="https://lore.kernel.org/linux-mm/20260310010529.91162-12-sj@kernel.org/" target="_blank">[PATCH 11/11] selftests/damon/sysfs.py: test goal_tuner commit</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: do not allocate shrinker info with cgroup.memory=nokmem" data-author="=?utf-8?q?michal_koutn=c3=bd?= &lt;mkoutny@suse.com&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260309-cgroup-ml-nokmem-shrinker-v2-1-3e7a7eefb6c9@suse.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: Do not allocate shrinker info with cgroup.memory=nokmem</a>
@@ -6644,7 +6657,7 @@ So the bullet that describes what lands at non_memcg should read
 &quot;non-slab shrinkers&quot;.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm: batch tlb flushing for dirty folios in vmscan" data-author="zhang peng via b4 relay &lt;devnull+zippermonkey.icloud.com@kernel.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#8b5cf6">Needs Discussion</span>
             <a href="https://lore.kernel.org/linux-mm/20260309-batch-tlb-flush-v1-0-eb8fed7d1a9e@icloud.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: batch TLB flushing for dirty folios in vmscan</a>
@@ -6779,7 +6792,7 @@ ideally a note added explaining why the tail-folio handling changed.
 [ ... ]
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309-batch-tlb-flush-v1-0-eb8fed7d1a9e@icloud.com/" target="_blank">[PATCH 0/2] mm: batch TLB flushing for dirty folios in vmscan</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-batch-tlb-flush-v1-1-eb8fed7d1a9e@icloud.com/" target="_blank">[PATCH 1/2] mm/vmscan: refactor shrink_folio_list for readability and maintainability</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309-batch-tlb-flush-v1-2-eb8fed7d1a9e@icloud.com/" target="_blank">[PATCH 2/2] mm, vmscan: flush TLB for every 31 folios evictions</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="mm/swap: enhance swap cluster allocation checks" data-author="hui zhu &lt;hui.zhu@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/cover.1773040982.git.zhuhui@kylinos.cn/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/swap: enhance swap cluster allocation checks</a>
@@ -6832,7 +6845,7 @@ Also, the surrounding assertions use VM_WARN_ON_ONCE; was the choice of
 VM_WARN_ON (without _ONCE) here intentional?
 </pre><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773040982.git.zhuhui@kylinos.cn/" target="_blank">[PATCH v2 0/2] mm/swap: enhance swap cluster allocation checks</a></li><li><a href="https://lore.kernel.org/linux-mm/25c1be6b4a54a69d4b57189fd84c7502c4412d7a.1773040982.git.zhuhui@kylinos.cn/" target="_blank">[PATCH v2 1/2] mm/swap: Add VM_WARN_ON to isolate_lock_cluster()</a></li><li><a href="https://lore.kernel.org/linux-mm/879eff096e46c02f994de62dc210a95cc58e3f19.1773040982.git.zhuhui@kylinos.cn/" target="_blank">[PATCH v2 2/2] mm/swap: Add lockdep for si-&gt;global_cluster_lock in swap_cluster_alloc_table()</a></li></ul></details>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="selftests/mm: add thp sysfs interface test" data-author="breno leitao &lt;leitao@debian.org&gt;">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260309-thp_selftest_v2-v1-1-a00cef41da44@debian.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: add THP sysfs interface test</a>
@@ -6887,7 +6900,7 @@ of the hugepages guard and handled with its own existence check like
 some other tests do?
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="fix: mm: memcontrol: convert objcg to be per-memcg per-node type" data-author="qi zheng &lt;qi.zheng@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260309112939.31937-1-qi.zheng@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">fix: mm: memcontrol: convert objcg to be per-memcg per-node type</a>
@@ -6931,7 +6944,7 @@ obj_cgroup_get(), but without this NULL assignment __mem_cgroup_free()
 will drop it a second time.
 </pre>
         </div>
-    </details><details class="series-row">
+    </details><details class="series-row" data-title="skip redundant sync ipis when tlb flush sent them" data-author="lance yang &lt;lance.yang@linux.dev&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260309020711.20831-1-lance.yang@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">skip redundant sync IPIs when TLB flush sent them</a>
@@ -6944,7 +6957,7 @@ will drop it a second time.
         <div class="row-detail">
             <div class="row-summary">The series introduces tlb_table_flush_implies_ipi_broadcast() to skip the redundant smp_call_function() broadcast in tlb_remove_table_sync_one/rcu() when the preceding TLB flush (via native_flush_tlb_multi) already sent synchronous IPIs to all CPUs in mm_cpumask. The x86 implementation uses a static key enabled at boot only for native (non-PV, non-INVLPGB) configurations.</div><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260309020711.20831-1-lance.yang@linux.dev/" target="_blank">[PATCH v7 0/2] skip redundant sync IPIs when TLB flush sent them</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309020711.20831-2-lance.yang@linux.dev/" target="_blank">[PATCH v7 1/2] mm/mmu_gather: prepare to skip redundant sync IPIs</a></li><li><a href="https://lore.kernel.org/linux-mm/20260309020711.20831-3-lance.yang@linux.dev/" target="_blank">[PATCH v7 2/2] x86/tlb: skip redundant sync IPIs for native TLB flush</a></li></ul></details>
         </div>
-    </details><h2 class="date-header">2026-03-08 <span class="date-count">(1)</span></h2><details class="series-row">
+    </details><h2 class="date-header">2026-03-08 <span class="date-count">(1)</span></h2><details class="series-row" data-title="md/raid0: use kvzalloc/kvfree for strip_zone and devlist allocations" data-author="gregory price &lt;gourry@gourry.net&gt;">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260308234202.3118119-1-gourry@gourry.net/" target="_blank" class="row-title" onclick="event.stopPropagation()">md/raid0: use kvzalloc/kvfree for strip_zone and devlist allocations</a>
@@ -6963,5 +6976,24 @@ will drop it a second time.
     Patches from <a href="https://lore.kernel.org/linux-mm/" style="color:var(--link)">lore.kernel.org/linux-mm</a>.
     Reviews by Claude &mdash; always verify before acting on suggestions.
 </footer>
+<script>
+document.getElementById('search').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.series-row').forEach(function(row) {
+        const t = row.dataset.title || '';
+        const a = row.dataset.author || '';
+        row.style.display = (t.includes(q) || a.includes(q)) ? '' : 'none';
+    });
+    document.querySelectorAll('.date-header').forEach(function(h) {
+        let el = h.nextElementSibling;
+        let any = false;
+        while (el && !el.classList.contains('date-header')) {
+            if (el.classList.contains('series-row') && el.style.display !== 'none') any = true;
+            el = el.nextElementSibling;
+        }
+        h.style.display = any || !q ? '' : 'none';
+    });
+});
+</script>
 </body>
 </html>
