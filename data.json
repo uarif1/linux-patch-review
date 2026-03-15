@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-15T16:20:02.052015+00:00",
+  "generated_at": "2026-03-15T18:37:22.612149+00:00",
   "days": 1,
-  "total_patches": 96,
+  "total_patches": 97,
   "series": [
     {
       "title": "Docs/mm/damon: document exclusivity of special-purpose modules",
@@ -3282,6 +3282,29 @@
         "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":39079,\"duration_api_ms\":32593,\"num_turns\":12,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"d25922b6-8c16-43b2-977c-aa6e3a720bb2\",\"total_cost_usd\":0.1421808,\"usage\":{\"input_tokens\":1274,\"cache_creation_input_tokens\":22370,\"cache_read_input_tokens\":95521,\"output_tokens\":1721,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5"
       },
       "fetch_date": "2026-03-13"
+    },
+    {
+      "title": "Docs/mm/damon: document exclusivity of special-purpose modules",
+      "author": "SeongJae Park <sj@kernel.org>",
+      "patches": [
+        {
+          "title": "[PATCH v2] Docs/mm/damon: document exclusivity of special-purpose modules",
+          "link": "https://lore.kernel.org/linux-mm/20260315162945.80994-1-sj@kernel.org/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260315162945.80994-1-sj@kernel.org/",
+      "updated": "Sun, 15 Mar 2026 09:29:44 -0700",
+      "subsystems": [
+        "docs"
+      ],
+      "review": {
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
+        "issues": [],
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":76971,\"duration_api_ms\":69569,\"num_turns\":17,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"bc3c959d-fa10-4703-91f9-bd4b5740d1ca\",\"total_cost_usd\":0.16396275,\"usage\":{\"input_tokens\":653,\"cache_creation_input_tokens\":15467,\"cache_read_input_tokens\":146075,\"output_tokens\":4012,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_"
+      },
+      "fetch_date": "2026-03-15"
     }
   ]
 }
