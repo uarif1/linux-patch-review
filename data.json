@@ -1,7 +1,216 @@
 {
-  "generated_at": "2026-03-15T11:03:08.704776+00:00",
-  "hours": 1,
-  "total_messages": 0,
-  "total_patches": 0,
-  "series": []
+  "generated_at": "2026-03-15T12:29:38.744430+00:00",
+  "days": 1,
+  "total_patches": 11,
+  "series": [
+    {
+      "title": "Docs/mm/damon: document exclusivity of special-purpose modules",
+      "author": "Liew Rui Yan <aethernet65535@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs/mm/damon: document exclusivity of special-purpose modules",
+          "link": "https://lore.kernel.org/linux-mm/20260314092145.7496-1-aethernet65535@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314092145.7496-1-aethernet65535@gmail.com/",
+      "updated": "Sat, 14 Mar 2026 17:20:22 +0800",
+      "review": {
+        "verdict": "minor_issues",
+        "summary": "Documentation-only patch that adds a section to design.rst documenting the exclusive-start behavior of DAMON special-purpose modules, adds cross-references from lru_sort.rst, reclaim.rst, and stat.rst, and fixes a Sphinx :depth: syntax error.",
+        "review_inline": "Author: Liew Rui Yan <aethernet65535@gmail.com>\n\nDocs/mm/damon: document exclusivity of special-purpose modules\n\nThe Sphinx syntax fix and the cross-reference plumbing look correct.\nOne accuracy concern follows.\n\n> diff --git a/Documentation/mm/damon/design.rst b/Documentation/mm/damon/design.rst\n\n[ ... ]\n\n> +.. _damon_design_special_purpose_modules_exclusivity:\n> +\n> +Note that these modules currently run in an exclusive manner.  If one of those\n> +is already running, others will return ``-EBUSY`` upon start requests.\n\nThe phrase \"if one of those is already running\" implies mutual exclusivity\nonly among the three special-purpose modules (lru_sort, reclaim, stat).\nBut the actual check in damon_start() is:\n\n    if ((exclusive && nr_running_ctxs) || ...)\n        return -EBUSY;\n\nnr_running_ctxs counts *all* active DAMON contexts, including any\nuser-space DAMON session started via the sysfs interface.  So a user\nrunning their own DAMON monitoring through sysfs will also prevent any\nof these modules from starting, and likewise an exclusive module already\nrunning will block subsequent non-exclusive sysfs starts\n(running_exclusive_ctxs path).\n\nThe same imprecision appears in the three admin-guide files:\n\n> +Note that this module (damon_lru_sort) cannot run simultaneously with other\n> +DAMON-based special-purpose modules.\n\nThis understates the actual restriction.  A user might read this as\n\"safe to enable alongside my own DAMON sysfs session\", which is wrong.\n\nSuggested wording for design.rst:\n\n    Note that these modules request exclusive DAMON access on start.\n    If any DAMON context is already running (whether started by another\n    special-purpose module or via the sysfs interface), the start\n    request will return ``-EBUSY``.\n\nAnd for the three admin-guide files, something like:\n\n    Note that this module cannot run simultaneously with any other active\n    DAMON context, including other special-purpose modules and user-space\n    DAMON sessions started via the sysfs interface.\n\nAlso a minor nit on the commit message: it says the cross-references are\nadded \"at the end of their respective Example sections\", but damon_stat\nhas no Examples section -- the note is placed inside the parameter\ndescription block.  The placement looks reasonable; only the commit\nmessage description is slightly off.\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "Docs/mm: document Shared Memory Filesystem",
+      "author": "Kit Dallege <xaum.io@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs/mm: document Shared Memory Filesystem",
+          "link": "https://lore.kernel.org/linux-mm/20260314152538.100593-1-xaum.io@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314152538.100593-1-xaum.io@gmail.com/",
+      "updated": "Sat, 14 Mar 2026 16:25:38 +0100",
+      "review": {
+        "verdict": "minor_issues",
+        "summary": "This patch fills in the Documentation/mm/shmfs.rst stub with an overview of the shared memory filesystem covering page cache integration, swap, huge page support, accounting, and fallocate. The technical content is mostly accurate but contains a few imprecise statements worth fixing.",
+        "review_inline": "Author: Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document Shared Memory Filesystem\n\nFill in the shmfs.rst stub with an overview of the shared memory\nfilesystem (tmpfs/shmem).\n\n> diff --git a/Documentation/mm/shmfs.rst b/Documentation/mm/shmfs.rst\n> --- a/Documentation/mm/shmfs.rst\n> +++ b/Documentation/mm/shmfs.rst\n\n[ ... ]\n\n> +This design means tmpfs files consume no disk space \u2014 their size is bounded\n> +only by available memory and swap.  It also means tmpfs data does not\n\nThis isn't quite right for mounts with a size= limit.  When max_blocks\nis set, shmem_inode_acct_blocks() enforces it and allocations fail with\nEINOSPC well before memory is exhausted.  The next section covers this,\nbut the sentence here contradicts it.  Something like \"by available\nmemory, swap, and any configured mount limit\" would be more accurate.\n\n> +Each tmpfs inode tracks two key counters: allocated pages (resident in\n> +memory) and swapped pages (evicted to swap).  These are maintained by\n> +the ``shmem_charge()`` and ``shmem_uncharge()`` accounting functions,\n> +which keep the inode's block usage consistent with the filesystem's mount\n> +limits.\n\nshmem_charge() calls shmem_recalc_inode(inode, pages, 0), updating only\nthe alloced counter and the used_blocks limit.  shmem_uncharge() calls\nshmem_recalc_inode(inode, 0, 0), which updates neither counter directly.\nThe swapped counter in shmem_inode_info is incremented by callers of\nshmem_recalc_inode() that pass a non-zero swapped argument (e.g.\nshmem_writeout paths), not by shmem_charge/shmem_uncharge.  Attributing\nboth counters to these two functions is misleading.  Could this be\nrephrased to describe what shmem_charge() and shmem_uncharge() actually\ndo (enforce block limits and trigger freed-page recalculation), and\nseparately note that shmem_recalc_inode() reconciles alloced vs. swapped\nto compute how many pages have been freed?\n\n[ ... ]\n\n> +- ``never``: only base pages (default).\n\nThe per-mount default is TMPFS_HUGE_DEFAULT, which is determined at\nbuild time by CONFIG_TRANSPARENT_HUGEPAGE_SHMEM_HUGE_*.  It is \"never\"\nin the common case (and when THP is not configured), but it can be\n\"always\", \"within_size\", or \"advise\" depending on the kernel\nconfiguration.  Could you qualify this, e.g. \"never: only base pages\n(the default for most configurations)\"?\n\n[ ... ]\n\n> +tmpfs supports ``fallocate()`` to preallocate space for a file.\n> +Preallocated pages are allocated and inserted into the page cache\n> +immediately, guaranteeing that subsequent writes will not fail with\n> +``ENOSPC``.\n\nshmem_fallocate() also accepts FALLOC_FL_KEEP_SIZE (without PUNCH_HOLE),\nwhich preallocates pages beyond i_size without extending it.  Worth\nmentioning for completeness alongside the basic preallocation use case.\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "mm/damon: guard THP-specific DAMOS actions with CONFIG_TRANSPARENT_HUGEPAGE",
+      "author": "<gutierrez.asier@huawei-partners.com>",
+      "patches": [
+        {
+          "title": "[PATCH v1] mm/damon: guard THP-specific DAMOS actions with CONFIG_TRANSPARENT_HUGEPAGE",
+          "link": "https://lore.kernel.org/linux-mm/20260314093813.1359737-1-gutierrez.asier@huawei-partners.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314093813.1359737-1-gutierrez.asier@huawei-partners.com/",
+      "updated": "Sat, 14 Mar 2026 09:38:12 +0000",
+      "review": {
+        "verdict": "minor_issues",
+        "summary": "Guards DAMOS_HUGEPAGE and DAMOS_NOHUGEPAGE with CONFIG_TRANSPARENT_HUGEPAGE since hugepage_madvise() stubs to -EINVAL without that config, making those DAMOS actions silently broken. The enum members, sysfs name table, and switch cases in vaddr.c are all consistently guarded.",
+        "review_inline": "From: Asier Gutierrez <gutierrez.asier@huawei-partners.com>\n\nmm/damon: guard THP-specific DAMOS actions with CONFIG_TRANSPARENT_HUGEPAGE\n\nThe motivation is sound: hugepage_madvise() has a stub that returns\n-EINVAL when CONFIG_TRANSPARENT_HUGEPAGE is not set, so offering\nDAMOS_HUGEPAGE and DAMOS_NOHUGEPAGE to users on such kernels is\nmisleading at best.  All three affected call sites -- the enum in\ndamon.h, the action name table in sysfs-schemes.c, and the switch\nin vaddr.c -- are consistently guarded, and the sysfs interface\nmatches actions by string name rather than by integer ordinal, so\nthe resulting shift in enum values for DAMOS_LRU_PRIO and later\nentries does not affect any ABI.\n\nOne thing was missed:\n\n> diff --git a/include/linux/damon.h b/include/linux/damon.h\n> --- a/include/linux/damon.h\n> +++ b/include/linux/damon.h\n> @@ -138,8 +138,10 @@ enum damos_action {\n>  \tDAMOS_WILLNEED,\n>  \tDAMOS_COLD,\n>  \tDAMOS_PAGEOUT,\n> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE\n>  \tDAMOS_HUGEPAGE,\n>  \tDAMOS_NOHUGEPAGE,\n> +#endif\n\nThe kernel-doc comment block above the enum still lists @DAMOS_HUGEPAGE\nand @DAMOS_NOHUGEPAGE unconditionally:\n\n * @DAMOS_HUGEPAGE:    Call ``madvise()`` for the region with MADV_HUGEPAGE.\n * @DAMOS_NOHUGEPAGE:  Call ``madvise()`` for the region with MADV_NOHUGEPAGE.\n\nWhen CONFIG_TRANSPARENT_HUGEPAGE is not set those members do not\nexist in the enum, so kernel-doc may warn about the dangling\ndocumentation.  Could those two lines be wrapped in a\n/* ifdef CONFIG_TRANSPARENT_HUGEPAGE */ note, or at least augmented\nwith a \"(only when CONFIG_TRANSPARENT_HUGEPAGE is enabled)\" clause\nsimilar to what the design.rst update does?\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "Docs/mm: document Swap",
+      "author": "Kit Dallege <xaum.io@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs/mm: document Swap",
+          "link": "https://lore.kernel.org/linux-mm/20260314152536.100531-1-xaum.io@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314152536.100531-1-xaum.io@gmail.com/",
+      "updated": "Sat, 14 Mar 2026 16:25:36 +0100",
+      "review": {
+        "verdict": "needs_work",
+        "summary": "This patch fills in the Documentation/mm/swap.rst stub with a high-level description of the swap subsystem covering swap entries, devices, cluster allocation, the swap cache, zswap, zero-filled pages, and swap I/O. The description is broadly correct but contains a wrong cluster size, a broken cross-reference, and a misleading characterisation of the swap table entries.",
+        "review_inline": "Author: Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document Swap\n\nThanks for filling in this stub.  A few things need correction before\nthis is accurate.\n\n> +Cluster Allocation\n> +------------------\n> +\n> +Swap space is allocated in clusters (groups of contiguous slots, typically\n> +32 pages).\n\nThis is wrong.  SWAPFILE_CLUSTER is defined in mm/swap.h as:\n\n    #ifdef CONFIG_THP_SWAP\n    #define SWAPFILE_CLUSTER    HPAGE_PMD_NR\n    #else\n    #define SWAPFILE_CLUSTER    256\n    #endif\n\nWith CONFIG_THP_SWAP (the common case on x86_64) each cluster is 512\nslots; without it, 256.  The value 32 does not appear anywhere in the\nswap cluster code.\n\n> +The swap cache is implemented as a per-cluster array of pointers\n> +(the \"swap table\"), providing O(1) lookup by swap entry.\n> +See also Documentation/mm/swap-table.rst.\n\nTwo issues here.\n\nFirst, the swap table entries (atomic_long_t in struct swap_table) are\nnot plain pointers.  Each entry encodes one of four states via type\nbits: NULL (free slot), Shadow (swapped-out, XA-compatible value plus\nrefcount), PFN (cached folio PFN plus refcount), or Bad.  The refcount\nfor copy-on-write sharing is packed into the same word.  Describing\nthem as \"pointers\" loses the most interesting part of the design.\n\nSecond, Documentation/mm/swap-table.rst does not exist.  The\nimplementation lives in mm/swap_table.h (an internal header).  Either\ndrop the cross-reference or create that document first.\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "Docs/mm: document Page Reclaim",
+      "author": "Kit Dallege <xaum.io@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs/mm: document Page Reclaim",
+          "link": "https://lore.kernel.org/linux-mm/20260314152534.100473-1-xaum.io@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314152534.100473-1-xaum.io@gmail.com/",
+      "updated": "Sat, 14 Mar 2026 16:25:34 +0100",
+      "review": {
+        "verdict": "minor_issues",
+        "summary": "This patch fills in the page_reclaim.rst documentation stub with a broad overview of the reclaim subsystem covering kswapd, direct reclaim, LRU lists, shrinkers, and working set detection. The content is largely accurate but contains one factual error regarding the data structure used by the working set shadow entry shrinker.",
+        "review_inline": "Author: Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document Page Reclaim\n\nFilling in the page_reclaim.rst stub.  The content is generally accurate\nand a good read.  One factual error and one imprecision below.\n\n> diff --git a/Documentation/mm/page_reclaim.rst b/Documentation/mm/page_reclaim.rst\n\n[ ... ]\n\n> +Shadow entries consume a small amount of memory.  To prevent them from\n> +accumulating indefinitely, a shrinker reclaims shadow entries from page\n> +cache radix tree nodes that contain only shadows and no actual pages.\n\nThe kernel replaced the radix tree with xarray several kernel releases\nago.  workingset.c tracks these via struct xa_node, xa_lock, and\nXA_CHUNK_SHIFT throughout -- there is no radix_tree_node in sight.\nPlease s/radix tree nodes/xarray nodes/ (or simply \"page cache tree\nnodes\" if you want to stay implementation-agnostic).\n\n[ ... ]\n\n> +Classic LRU\n> +-----------\n> +\n> +The classic scheme uses four LRU lists per lruvec: active and inactive for\n> +both anonymous and file-backed pages.  This approximates a second-chance\n> +(clock) algorithm:\n> +\n> +- Pages start on the inactive list when first allocated.\n\nA nit: pages are placed on the inactive LRU when they are first added\nto the LRU (i.e. at fault time for anonymous pages, or at page-cache\nadd time for file pages), not at allocation time.  Allocation and LRU\ninsertion are distinct events -- a freshly allocated page has no LRU\nmembership at all until folio_add_lru() is called.  Something like\n\"Pages start on the inactive list when first added to the LRU\" would\nbe more precise.\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "Docs/mm: document Virtually Contiguous Memory Allocation",
+      "author": "Kit Dallege <xaum.io@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs/mm: document Virtually Contiguous Memory Allocation",
+          "link": "https://lore.kernel.org/linux-mm/20260314152532.100411-1-xaum.io@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314152532.100411-1-xaum.io@gmail.com/",
+      "updated": "Sat, 14 Mar 2026 16:25:32 +0100",
+      "review": {
+        "verdict": "needs_work",
+        "summary": "This patch fills in the vmalloc.rst stub with an overview of vmalloc internals, covering virtual address management, guard pages, huge page support, lazy TLB flushing, per-CPU allocations, vmap, freeing, page table management, NUMA awareness, and KASAN integration. Several technical claims do not match the current implementation.",
+        "review_inline": "Author: Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document Virtually Contiguous Memory Allocation\n\nThanks for filling in this stub.  A few technical points need\ncorrection against the current implementation in mm/vmalloc.c.\n\n> +Virtual Address Management\n> +--------------------------\n> +\n> +The kernel reserves a large region of virtual address space for vmalloc\n> +(on x86-64 this is hundreds of terabytes).  Within this region, allocated\n> +and free ranges are tracked by ``struct vmap_area`` nodes organized in two\n> +red-black trees \u2014 one sorted by address for the busy areas, and one\n> +augmented with subtree maximum gap size for the free areas.  The augmented\n> +tree allows free-space searches in O(log n) time.\n\nThe description of the busy-area tree is inaccurate.  Since the\nvmap_node sharding work the busy areas are kept in *per-node*\nred-black trees (vn->busy.root inside each struct vmap_node),\nnot a single global tree.  Only the free-area side remains a\nsingle global augmented rbtree (free_vmap_area_root).  The text\nshould reflect this N-way sharding and explain why it was done\n(to reduce lock contention on vmap_area_root).\n\n> +Guard Pages\n> +-----------\n> +\n> +By default, each vmalloc area is surrounded by a guard page \u2014 an unmapped\n> +page that causes an immediate fault if code overruns the allocation.\n\n\"Surrounded\" implies pages on both sides.  The implementation\nadds only one guard page (size += PAGE_SIZE in __get_vm_area_node)\nat the high end of the allocation.  Adjacent allocations share\nthat boundary, so there is no separate lower guard page.  Could\nyou say \"followed by a guard page\" or \"terminated by a guard\npage\" instead?\n\n> +Huge Page Support\n> +-----------------\n> +\n> +On architectures that support it, vmalloc can use PMD- or PUD-level\n> +mappings instead of individual PTEs, reducing TLB pressure for large\n> +allocations.\n\nP4D-level mappings are also supported.  vmap_try_huge_p4d() is\ncalled from vmap_pud_range() and guarded by arch_vmap_p4d_supported().\nThe list should read \"PMD-, PUD-, or P4D-level mappings\".\n\n> +Freeing\n> +=======\n> +\n> +``vfree()`` can be called from any context, including interrupt handlers.\n\nThis is incorrect.  vfree() explicitly forbids NMI context:\n\n    BUG_ON(in_nmi());\n\nThe kernel-doc comment for vfree() says:\n\n    \"Must not be called in NMI context\"\n\nPlease correct this to: vfree() can be called from most contexts,\nincluding interrupt handlers, but must not be called from NMI\ncontext.  vfree_atomic() carries the same NMI restriction.\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "Docs/mm: document Page Allocation",
+      "author": "Kit Dallege <xaum.io@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs/mm: document Page Allocation",
+          "link": "https://lore.kernel.org/linux-mm/20260314152530.100357-1-xaum.io@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314152530.100357-1-xaum.io@gmail.com/",
+      "updated": "Sat, 14 Mar 2026 16:25:30 +0100",
+      "review": {
+        "verdict": "minor_issues",
+        "summary": "Fills in the Documentation/mm/page_allocation.rst stub with a broad overview of the buddy allocator, migratetypes, per-CPU pagesets, GFP flags, the allocation fast/slow paths, watermarks, high-atomic reserves, and compaction. The content is generally accurate but contains two factual errors that should be corrected before merging.",
+        "review_inline": "Author: Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document Page Allocation\n\nGood overview of the page allocator subsystem.  Two factual issues\nbelow worth fixing.\n\n> diff --git a/Documentation/mm/page_allocation.rst b/Documentation/mm/page_allocation.rst\n\n[ ... ]\n\n> +Per-CPU Pagesets\n> +================\n> +\n> +Most order-0 allocations are served from per-CPU page lists (PCP) rather\n> +than the global ``free_area``.  This avoids taking the zone lock on the\n> +common path, which is critical for scalability on large systems.\n> +\n> +Each CPU maintains lists of free pages grouped by migratetype.  Pages are\n> +moved between the per-CPU lists and the buddy in batches.  The batch size\n> +and high watermark for each per-CPU list are tuned based on zone size and\n> +the number of CPUs.\n> +\n> +When a per-CPU list is empty, a batch of pages is taken from the buddy.\n> +When it exceeds its high watermark, excess pages are returned.\n> +``lru_add_drain()`` and ``drain_all_pages()`` flush per-CPU lists when\n> +the system needs an accurate count of free pages, such as during memory\n> +hot-remove.\n\nlru_add_drain() and drain_all_pages() are different per-CPU caches.\ndrain_all_pages() drains the PCP free-page lists (per_cpu_pages).  But\nlru_add_drain() drains the LRU pagevec batches (struct cpu_fbatches in\nmm/swap.c) -- pending LRU list additions that have not yet been\ncommitted to the LRU proper.  These are unrelated to the PCP free-page\nlists described in this section.  Could you either remove lru_add_drain()\nfrom this paragraph, or add a sentence clarifying that it drains a\ndifferent per-CPU cache (pending LRU additions) rather than PCP pages?\n\n[ ... ]\n\n> +Memory compaction (``mm/compaction.c``) creates contiguous free blocks for\n> +high-order allocations by relocating movable pages.  It runs two scanners\n> +across a zone: one walks from the bottom to find movable in-use pages, the\n> +other walks from the top to find free pages.  Movable pages are migrated\n> +to the free locations, consolidating free space in the middle.\n\nThe description of the two scanners is correct, but the final phrase\nlooks wrong.  The migration scanner starts at the low PFN (bottom) and\nwalks upward; the free scanner starts at the high PFN (top) and walks\ndownward.  Movable pages found near the bottom are migrated to the free\nslots found near the top.  After compaction, the region formerly\noccupied by the migrated pages (the lower portion of the zone) is now\nfree, while the upper portion is now populated.  Free space ends up at\nthe bottom of the zone, not in the middle.  The scanners meet in the\nmiddle, but that is the termination condition, not where the free space\nconcentrates.  Something like \"leaving a large contiguous free region at\nthe lower end of the zone\" would be more accurate.\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "Docs/mm: document Boot Memory",
+      "author": "Kit Dallege <xaum.io@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs/mm: document Boot Memory",
+          "link": "https://lore.kernel.org/linux-mm/20260314152527.100295-1-xaum.io@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314152527.100295-1-xaum.io@gmail.com/",
+      "updated": "Sat, 14 Mar 2026 16:25:27 +0100",
+      "review": {
+        "verdict": "needs_work",
+        "summary": "Fills in the Documentation/mm/bootmem.rst stub with an overview of the memblock allocator, its region management, allocation strategy, iterators, and the transition to the buddy allocator. The documentation contains one clear factual error in the CONFIG_DEFERRED_STRUCT_PAGE_INIT description.",
+        "review_inline": "Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document Boot Memory\n\nGood addition overall.  One factual error in the deferred struct-page\ninitialization section; a few smaller nits below.\n\n> diff --git a/Documentation/mm/bootmem.rst b/Documentation/mm/bootmem.rst\n\n[ ... ]\n\n> +When regions are added, overlapping ranges are merged automatically.\n> +Internally, ``memblock_add_range()`` handles insertion, overlap detection,\n> +and merging in a single pass.  If the region array is full, it is doubled\n> +in size \u2014 using memblock itself to allocate the new array.\n\nmemblock_double_array() checks slab_is_available() first.  When slab is\nalready up (which can happen during late boot region additions) it calls\nkmalloc() instead.  Worth noting that the fallback is memblock only\nduring early boot before slab is ready.\n\n[ ... ]\n\n> +With ``CONFIG_DEFERRED_STRUCT_PAGE_INIT``, only pages in the boot node's\n> +lower zones are initialized during early boot \u2014 enough to get the system\n> +running.  The remaining pages are initialized in parallel by worker threads\n> +(via the padata framework) before they are first needed.\n\nThis description has two inaccuracies worth fixing.\n\nFirst, the scope is not limited to the \"boot node\".  defer_init() in\nmm/mm_init.c applies the same logic to every NUMA node: lower zones of\nall nodes are always initialized eagerly (the comment at line 728 reads\n\"Always populate low zones for address-constrained allocations\"), while\nonly the highest zone on each node is subject to deferral.\n\nSecond, deferred pages are not guaranteed to be initialized \"before they\nare first needed\".  The kthread running deferred_init_memmap() works\nthrough the highest zone via padata, but deferred_grow_zone() also\nexists precisely to handle on-demand initialization when an allocation\narrives before the background thread has reached that page-frame range.\nSo pages may be initialized either in the background or on first demand,\nwhichever comes first.\n\nA more accurate description: with CONFIG_DEFERRED_STRUCT_PAGE_INIT,\nall zones except the highest on each node, plus an initial section of\nthat highest zone, are initialized synchronously during boot.  The\nremaining pages in each node's highest zone are then initialized in\nparallel by per-node kthreads using the padata framework, or on demand\nvia deferred_grow_zone() if an allocation arrives first.\n\n[ ... ]\n\n> +Named Reservations\n> +------------------\n> +\n> +The ``reserve_mem`` kernel command line parameter allows firmware or boot\n> +loaders to reserve named memory regions that persist across kexec.\n\nThe persistence across kexec is conditional on CONFIG_KEXEC_HANDOVER\n(via reserve_mem_kho_revive()).  Without that option the reservations\nstill work fine for their primary purpose \u2014 providing named physical\nregions that drivers or subsystems can look up with\nreserve_mem_find_by_name() \u2014 but they do not survive a kexec.  The\ncurrent wording could mislead readers into expecting cross-kexec\nbehavior unconditionally.\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "Docs/mm: document the OOM killer",
+      "author": "Kit Dallege <xaum.io@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs/mm: document the OOM killer",
+          "link": "https://lore.kernel.org/linux-mm/20260314152518.100194-1-xaum.io@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314152518.100194-1-xaum.io@gmail.com/",
+      "updated": "Sat, 14 Mar 2026 16:25:18 +0100",
+      "review": {
+        "verdict": "minor_issues",
+        "summary": "This patch fills in the Documentation/mm/oom.rst stub with prose covering OOM victim selection, the OOM reaper, process_mrelease, and sysctl knobs. The content is mostly accurate but contains two factual errors about the reaper's internal API and the totalpages baseline for constrained OOM scenarios.",
+        "review_inline": "Author: Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document the OOM killer\n\nGood start filling in this stub.  A couple of details do not match\nthe current implementation in mm/oom_kill.c.\n\n> diff --git a/Documentation/mm/oom.rst b/Documentation/mm/oom.rst\n\n[ ... ]\n\n> +The ``totalpages`` baseline depends on the allocation constraint:\n> +\n> +- **Unconstrained**: all RAM plus swap.\n> +- **Cpuset**: memory on nodes in the current cpuset.\n> +- **Memory policy**: memory on nodes in the current mempolicy.\n> +- **Memory cgroup**: the cgroup's memory limit.\n\nThe Cpuset and Memory policy entries are missing swap.  In\nconstrained_alloc() both CONSTRAINT_CPUSET and\nCONSTRAINT_MEMORY_POLICY seed oc->totalpages with total_swap_pages\nbefore summing node_present_pages() over the constrained nodes:\n\n    oc->totalpages = total_swap_pages;\n    for_each_node_mask(nid, cpuset_current_mems_allowed)\n        oc->totalpages += node_present_pages(nid);\n\nSo those bullets should read something like:\n\n- **Cpuset**: swap plus RAM on nodes in the current cpuset.\n- **Memory policy**: swap plus RAM on nodes in the current mempolicy.\n\n> +It walks the victim's VMAs in reverse and calls\n> +``unmap_page_range()`` to release physical pages.\n\nThe function named here is wrong.  __oom_reap_task_mm() iterates\nVMAs with mas_for_each_rev() and calls zap_vma_for_reaping() on\neach anonymous or private VMA, not unmap_page_range().\nunmap_page_range() is a different helper used elsewhere in the MM\ncode.\n"
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "rust_binder: use AssertSync for BINDER_VM_OPS",
+      "author": "Alice Ryhl <aliceryhl@google.com>",
+      "patches": [
+        {
+          "title": "[PATCH] rust_binder: use AssertSync for BINDER_VM_OPS",
+          "link": "https://lore.kernel.org/linux-mm/20260314111951.4139029-1-aliceryhl@google.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314111951.4139029-1-aliceryhl@google.com/",
+      "updated": "Sat, 14 Mar 2026 11:19:51 +0000",
+      "review": {
+        "verdict": "looks_good",
+        "summary": "Wraps the BINDER_VM_OPS static in AssertSync<vm_operations_struct> to avoid a Sync compilation failure caused by the new pointer field introduced to vm_operations_struct by the userfaultfd vm_uffd_ops patch. The fix follows the existing pattern used for rust_binder_fops.",
+        "review_inline": ""
+      },
+      "fetch_date": "2026-03-14"
+    },
+    {
+      "title": "mm/vmalloc: free unused pages on vrealloc() shrink",
+      "author": "Shivam Kalra via B4 Relay <devnull+shivamkalra98.zohomail.in@kernel.org>",
+      "patches": [
+        {
+          "title": "[PATCH v4 2/3] mm/vmalloc: free unused pages on vrealloc() shrink",
+          "link": "https://lore.kernel.org/linux-mm/20260314-vmalloc-shrink-v4-2-c1e2e0bb5455@zohomail.in/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260314-vmalloc-shrink-v4-2-c1e2e0bb5455@zohomail.in/",
+      "updated": "Sat, 14 Mar 2026 14:34:14 +0530",
+      "review": {
+        "verdict": "minor_issues",
+        "summary": "The patch implements physical page reclamation on vrealloc() shrink by unmapping and freeing tail pages when a shrink crosses a page boundary, and fixes a latent grow-in-place bug where post-shrink grows would reference already-freed pages.",
+        "review_inline": "From: Shivam Kalra <shivamkalra98@zohomail.in>\n\nmm/vmalloc: free unused pages on vrealloc() shrink\n\nOverall the direction is correct and the grow-in-place fix is clearly\nnecessary.  A few things worth checking:\n\n> diff --git a/mm/vmalloc.c b/mm/vmalloc.c\n> --- a/mm/vmalloc.c\n> +++ b/mm/vmalloc.c\n\n[ ... ]\n\n> +\t\t/* Free tail pages when shrink crosses a page boundary. */\n> +\t\tif (new_nr_pages < vm->nr_pages && !vm_area_page_order(vm)) {\n> +\t\t\tunsigned long addr = (unsigned long)p;\n> +\n> +\t\t\tvunmap_range(addr + (new_nr_pages << PAGE_SHIFT),\n> +\t\t\t\t     addr + (vm->nr_pages << PAGE_SHIFT));\n> +\n> +\t\t\tvm_area_free_pages(vm, new_nr_pages, vm->nr_pages);\n> +\t\t\tvm->nr_pages = new_nr_pages;\n> +\t\t}\n\nvfree() checks (vm->flags & VM_FLUSH_RESET_PERMS) and, if set, calls\nvm_reset_perms() which iterates over vm->nr_pages pages to reset their\ndirect-map permissions before releasing them to the buddy allocator.\nAfter the partial free updates vm->nr_pages = new_nr_pages, a subsequent\nvfree() will call vm_reset_perms() only on the surviving pages; the\ntail pages freed here would have been released to the buddy allocator\nwithout having their direct-map permissions restored.\n\nDoes vm_area_free_pages() (introduced in patch 1/3) call\nset_area_direct_map() or otherwise reset direct-map permissions for\nthe freed pages when VM_FLUSH_RESET_PERMS is set?  Or should there be\na guard here:\n\n    if (vm->flags & VM_FLUSH_RESET_PERMS)\n        goto skip_partial_free;\n\nto skip the optimisation for allocations that need the direct-map\nreset path in vfree()?\n\nSimilarly, vfree() calls mod_lruvec_page_state(page, NR_VMALLOC, -1)\nfor each freed page (unless VM_MAP_PUT_PAGES is set).  Can you confirm\nthat vm_area_free_pages() mirrors that accounting for the freed tail\npages, so NR_VMALLOC stays accurate?\n\n> +\t\tvm->nr_pages = new_nr_pages;\n\nAfter this update vm->pages[new_nr_pages..old_nr_pages-1] still hold\nthe (now-freed) page pointers.  vfree() won't touch them because it\nstops at vm->nr_pages, so there is no double-free, but should\nvm_area_free_pages() NULL those slots out so that any future debugging\nvisit (e.g. /proc/vmallocinfo or a crash dump) does not see stale\npointers?\n\n[ ... ]\n\n> -\tif (size <= alloced_size) {\n> +\tif (size <= (size_t)vm->nr_pages << PAGE_SHIFT) {\n\nThe grow-in-place fix is correct.  alloced_size captures\nget_vm_area_size(vm) once at entry; after a shrink reduces\nvm->nr_pages, the old comparison would have allowed a grow into\nalready-freed pages.  Comparing against the live vm->nr_pages value\nprevents that.\n"
+      },
+      "fetch_date": "2026-03-14"
+    }
+  ]
 }
