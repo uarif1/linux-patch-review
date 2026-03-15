@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-15T16:10:02.345206+00:00",
+  "generated_at": "2026-03-15T16:20:02.052015+00:00",
   "days": 1,
-  "total_patches": 95,
+  "total_patches": 96,
   "series": [
     {
       "title": "Docs/mm/damon: document exclusivity of special-purpose modules",
@@ -3254,6 +3254,34 @@
         "review_inline": ""
       },
       "fetch_date": "2026-03-08"
+    },
+    {
+      "title": "mm/damon/core: fix wrong damon_set_regions() argument",
+      "author": "SeongJae Park <sj@kernel.org>",
+      "patches": [
+        {
+          "title": "[PATCH] mm/damon/stat: fix wrong argument to damon_set_regions()",
+          "link": ""
+        },
+        {
+          "title": "[PATCH] mm/damon/core: fix wrong damon_set_regions() argument",
+          "link": ""
+        }
+      ],
+      "patch_count": 2,
+      "link": "",
+      "updated": "Fri, 13 Mar 2026 16:41:00 -0700",
+      "subsystems": [
+        "damon/core",
+        "damon/stat"
+      ],
+      "review": {
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
+        "issues": [],
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":39079,\"duration_api_ms\":32593,\"num_turns\":12,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"d25922b6-8c16-43b2-977c-aa6e3a720bb2\",\"total_cost_usd\":0.1421808,\"usage\":{\"input_tokens\":1274,\"cache_creation_input_tokens\":22370,\"cache_read_input_tokens\":95521,\"output_tokens\":1721,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5"
+      },
+      "fetch_date": "2026-03-13"
     }
   ]
 }
