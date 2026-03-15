@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-15T18:37:22.612149+00:00",
+  "generated_at": "2026-03-15T18:39:12.393951+00:00",
   "days": 1,
   "total_patches": 97,
   "series": [
@@ -3302,7 +3302,7 @@
         "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
         "issues": [],
         "verdict": "skip",
-        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":76971,\"duration_api_ms\":69569,\"num_turns\":17,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"bc3c959d-fa10-4703-91f9-bd4b5740d1ca\",\"total_cost_usd\":0.16396275,\"usage\":{\"input_tokens\":653,\"cache_creation_input_tokens\":15467,\"cache_read_input_tokens\":146075,\"output_tokens\":4012,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_"
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":109935,\"duration_api_ms\":96846,\"num_turns\":28,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"34d6b842-2852-4b4e-880e-a7d80a9c1952\",\"total_cost_usd\":0.29228774999999996,\"usage\":{\"input_tokens\":82,\"cache_creation_input_tokens\":28251,\"cache_read_input_tokens\":308035,\"output_tokens\":6246,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"e"
       },
       "fetch_date": "2026-03-15"
     }
