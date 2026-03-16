@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-16T11:47:59.211944+00:00",
+  "generated_at": "2026-03-16T11:52:15.956249+00:00",
   "days": 1,
-  "total_patches": 107,
+  "total_patches": 106,
   "series": [
     {
       "title": "Docs/mm/damon: document exclusivity of special-purpose modules",
@@ -3284,124 +3284,27 @@
       "fetch_date": "2026-03-13"
     },
     {
-      "title": "mm: Free contiguous order-0 pages efficiently",
-      "author": "Muhammad Usama Anjum <usama.anjum@arm.com>",
+      "title": "Docs/mm/damon: document exclusivity of special-purpose modules",
+      "author": "SeongJae Park <sj@kernel.org>",
       "patches": [
         {
-          "title": "[PATCH v2 0/3] mm: Free contiguous order-0 pages efficiently",
-          "link": "https://lore.kernel.org/linux-mm/20260316113209.945853-1-usama.anjum@arm.com/"
-        },
-        {
-          "title": "[PATCH v2 1/3] mm/page_alloc: Optimize free_contig_range()",
-          "link": "https://lore.kernel.org/linux-mm/20260316113209.945853-2-usama.anjum@arm.com/"
-        },
-        {
-          "title": "[PATCH v2 2/3] vmalloc: Optimize vfree",
-          "link": "https://lore.kernel.org/linux-mm/20260316113209.945853-3-usama.anjum@arm.com/"
-        },
-        {
-          "title": "[PATCH v2 3/3] mm/page_alloc: Optimize __free_contig_frozen_range()",
-          "link": "https://lore.kernel.org/linux-mm/20260316113209.945853-4-usama.anjum@arm.com/"
-        }
-      ],
-      "patch_count": 3,
-      "link": "https://lore.kernel.org/linux-mm/20260316113209.945853-1-usama.anjum@arm.com/",
-      "updated": "Mon, 16 Mar 2026 11:31:41 +0000",
-      "subsystems": [
-        "include",
-        "page_alloc",
-        "vmalloc"
-      ],
-      "review": {
-        "summary": "Claude returned empty result after 18 turns. Likely context exhaustion.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-16"
-    },
-    {
-      "title": "mm/userfaultfd: re-validate vma in mfill_atomic() loop under CONFIG_PER_VMA_LOCK",
-      "author": "Deepanshu Kartikey <kartikey406@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH] mm/userfaultfd: re-validate vma in mfill_atomic() loop under CONFIG_PER_VMA_LOCK",
-          "link": "https://lore.kernel.org/linux-mm/20260316070039.549506-1-kartikey406@gmail.com/"
+          "title": "[PATCH v2] Docs/mm/damon: document exclusivity of special-purpose modules",
+          "link": "https://lore.kernel.org/linux-mm/20260315162945.80994-1-sj@kernel.org/"
         }
       ],
       "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260316070039.549506-1-kartikey406@gmail.com/",
-      "updated": "Mon, 16 Mar 2026 12:30:39 +0530",
+      "link": "https://lore.kernel.org/linux-mm/20260315162945.80994-1-sj@kernel.org/",
+      "updated": "Sun, 15 Mar 2026 09:29:44 -0700",
       "subsystems": [
-        "userfaultfd"
+        "docs"
       ],
       "review": {
-        "type": "result",
-        "subtype": "error_max_turns",
-        "duration_ms": 286561,
-        "duration_api_ms": 269537,
-        "is_error": false,
-        "num_turns": 16,
-        "stop_reason": "tool_use",
-        "session_id": "2eceefec-0431-4b71-9648-cf60f7c4f137",
-        "total_cost_usd": 0.5643642000000001,
-        "usage": {
-          "input_tokens": 1369,
-          "cache_creation_input_tokens": 56442,
-          "cache_read_input_tokens": 361149,
-          "output_tokens": 16017,
-          "server_tool_use": {
-            "web_search_requests": 0,
-            "web_fetch_requests": 0
-          },
-          "service_tier": "standard",
-          "cache_creation": {
-            "ephemeral_1h_input_tokens": 0,
-            "ephemeral_5m_input_tokens": 56442
-          },
-          "inference_geo": "",
-          "iterations": [],
-          "speed": "standard"
-        },
-        "modelUsage": {
-          "claude-sonnet-4-6": {
-            "inputTokens": 1369,
-            "outputTokens": 16017,
-            "cacheReadInputTokens": 361149,
-            "cacheCreationInputTokens": 56442,
-            "webSearchRequests": 0,
-            "costUSD": 0.5643642000000001,
-            "contextWindow": 200000,
-            "maxOutputTokens": 32000
-          }
-        },
-        "permission_denials": [],
-        "fast_mode_state": "off",
-        "uuid": "0e499e64-6800-48c2-a507-684b25db73e1",
-        "errors": []
-      },
-      "fetch_date": "2026-03-16"
-    },
-    {
-      "title": "kernel/fork: validate exit_signal in kernel_clone()",
-      "author": "Deepanshu Kartikey <kartikey406@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH v2] kernel/fork: validate exit_signal in kernel_clone()",
-          "link": "https://lore.kernel.org/linux-mm/20260316104536.558108-1-kartikey406@gmail.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260316104536.558108-1-kartikey406@gmail.com/",
-      "updated": "Mon, 16 Mar 2026 16:15:36 +0530",
-      "subsystems": [
-        "kernel"
-      ],
-      "review": {
-        "summary": "Claude returned empty result after 24 turns. Likely context exhaustion.",
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
         "issues": [],
-        "verdict": "skip"
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":109935,\"duration_api_ms\":96846,\"num_turns\":28,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"34d6b842-2852-4b4e-880e-a7d80a9c1952\",\"total_cost_usd\":0.29228774999999996,\"usage\":{\"input_tokens\":82,\"cache_creation_input_tokens\":28251,\"cache_read_input_tokens\":308035,\"output_tokens\":6246,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"e"
       },
-      "fetch_date": "2026-03-16"
+      "fetch_date": "2026-03-15"
     },
     {
       "title": "mm/memcontrol: batch memcg charging in __memcg_slab_post_alloc_hook",
@@ -3419,9 +3322,10 @@
         "memcontrol"
       ],
       "review": {
-        "summary": "Claude returned empty result after 16 turns. Likely context exhaustion.",
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
         "issues": [],
-        "verdict": "skip"
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":406622,\"duration_api_ms\":397233,\"num_turns\":18,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"6d66919c-fef0-4ddd-9ee5-889b648fa03b\",\"total_cost_usd\":0.7141970999999999,\"usage\":{\"input_tokens\":4006,\"cache_creation_input_tokens\":58412,\"cache_read_input_tokens\":402997,\"output_tokens\":24149,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0"
       },
       "fetch_date": "2026-03-16"
     },
@@ -3439,11 +3343,33 @@
       "updated": "Sun, 15 Mar 2026 15:45:06 -0700",
       "subsystems": [],
       "review": {
-        "summary": "Claude returned empty result after 7 turns. Likely context exhaustion.",
+        "summary": "Claude CLI failed: Claude Code at Meta (https://fburl.com/claude.code.users)\n'Latest' native version check (lookup was cached - delete /home/uarif/.cache/claude_code_native_versions/.available_versions to force refresh!",
         "issues": [],
         "verdict": "skip"
       },
       "fetch_date": "2026-03-15"
+    },
+    {
+      "title": "mm/userfaultfd: re-validate vma in mfill_atomic() loop under CONFIG_PER_VMA_LOCK",
+      "author": "Deepanshu Kartikey <kartikey406@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] mm/userfaultfd: re-validate vma in mfill_atomic() loop under CONFIG_PER_VMA_LOCK",
+          "link": "https://lore.kernel.org/linux-mm/20260316070039.549506-1-kartikey406@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260316070039.549506-1-kartikey406@gmail.com/",
+      "updated": "Mon, 16 Mar 2026 12:30:39 +0530",
+      "subsystems": [
+        "userfaultfd"
+      ],
+      "review": {
+        "summary": "Claude CLI failed: Claude Code at Meta (https://fburl.com/claude.code.users)\n'Latest' native version check (lookup was cached - delete /home/uarif/.cache/claude_code_native_versions/.available_versions to force refresh!",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-16"
     },
     {
       "title": "Migrate on fault for device pages",
@@ -3489,9 +3415,10 @@
         "tests"
       ],
       "review": {
-        "summary": "Claude returned empty result after 18 turns. Likely context exhaustion.",
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
         "issues": [],
-        "verdict": "skip"
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":723530,\"duration_api_ms\":708717,\"num_turns\":27,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"99bf764c-d5bd-4119-814e-fa46174bbf2e\",\"total_cost_usd\":1.6011734999999998,\"usage\":{\"input_tokens\":3712,\"cache_creation_input_tokens\":164314,\"cache_read_input_tokens\":1165250,\"output_tokens\":41619,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\""
       },
       "fetch_date": "2026-03-16"
     },
@@ -3530,49 +3457,9 @@
         "mempolicy"
       ],
       "review": {
-        "type": "result",
-        "subtype": "error_max_turns",
-        "duration_ms": 295747,
-        "duration_api_ms": 282511,
-        "is_error": false,
-        "num_turns": 16,
-        "stop_reason": "tool_use",
-        "session_id": "40646a95-3709-436d-9983-64e862924829",
-        "total_cost_usd": 0.5829276,
-        "usage": {
-          "input_tokens": 2785,
-          "cache_creation_input_tokens": 49866,
-          "cache_read_input_tokens": 485067,
-          "output_tokens": 16137,
-          "server_tool_use": {
-            "web_search_requests": 0,
-            "web_fetch_requests": 0
-          },
-          "service_tier": "standard",
-          "cache_creation": {
-            "ephemeral_1h_input_tokens": 0,
-            "ephemeral_5m_input_tokens": 49866
-          },
-          "inference_geo": "",
-          "iterations": [],
-          "speed": "standard"
-        },
-        "modelUsage": {
-          "claude-sonnet-4-6": {
-            "inputTokens": 2785,
-            "outputTokens": 16137,
-            "cacheReadInputTokens": 485067,
-            "cacheCreationInputTokens": 49866,
-            "webSearchRequests": 0,
-            "costUSD": 0.5829276,
-            "contextWindow": 200000,
-            "maxOutputTokens": 32000
-          }
-        },
-        "permission_denials": [],
-        "fast_mode_state": "off",
-        "uuid": "10c112f1-7344-403c-99f0-686a2288cdf8",
-        "errors": []
+        "summary": "Claude CLI failed: Claude Code at Meta (https://fburl.com/claude.code.users)\n'Latest' native version check (lookup was cached - delete /home/uarif/.cache/claude_code_native_versions/.available_versions to force refresh!",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },
@@ -3592,9 +3479,10 @@
         "userfaultfd"
       ],
       "review": {
-        "summary": "Claude returned empty result after 12 turns. Likely context exhaustion.",
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
         "issues": [],
-        "verdict": "skip"
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":151993,\"duration_api_ms\":144809,\"num_turns\":11,\"result\":\"**Verdict: looks_good**\\n\\n**Root cause confirmed:**\\n\\n- `mfill_state` is zero-initialized in `mfill_atomic()` (compound literal, no `.vma` field set), so `state->vma == NULL` on entry to `mfill_get_vma()`\\n- `mfill_put_vma()` early-returns on `!state->vma`, skipping both `up_read(&ctx->map_changing_lock)` and `uffd_mfill_unlock()`\\n- Every `goto out_unlock` path in `mfil"
       },
       "fetch_date": "2026-03-16"
     },
@@ -3614,9 +3502,10 @@
         "drivers"
       ],
       "review": {
-        "summary": "Claude returned empty result after 11 turns. Likely context exhaustion.",
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
         "issues": [],
-        "verdict": "skip"
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":103786,\"duration_api_ms\":95911,\"num_turns\":11,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"fb48d779-7d2e-4258-945e-639518462f0b\",\"total_cost_usd\":0.21349395000000002,\"usage\":{\"input_tokens\":16,\"cache_creation_input_tokens\":25141,\"cache_read_input_tokens\":142124,\"output_tokens\":5102,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"e"
       },
       "fetch_date": "2026-03-16"
     },
@@ -3681,113 +3570,34 @@
         "tests"
       ],
       "review": {
-        "type": "result",
-        "subtype": "error_max_turns",
-        "duration_ms": 178451,
-        "duration_api_ms": 162669,
-        "is_error": false,
-        "num_turns": 16,
-        "stop_reason": "tool_use",
-        "session_id": "393b6d8d-b883-44b6-aeac-18427d5f9c67",
-        "total_cost_usd": 0.40171709999999994,
-        "usage": {
-          "input_tokens": 2057,
-          "cache_creation_input_tokens": 39944,
-          "cache_read_input_tokens": 371937,
-          "output_tokens": 8945,
-          "server_tool_use": {
-            "web_search_requests": 0,
-            "web_fetch_requests": 0
-          },
-          "service_tier": "standard",
-          "cache_creation": {
-            "ephemeral_1h_input_tokens": 0,
-            "ephemeral_5m_input_tokens": 39944
-          },
-          "inference_geo": "",
-          "iterations": [],
-          "speed": "standard"
-        },
-        "modelUsage": {
-          "claude-sonnet-4-6": {
-            "inputTokens": 2057,
-            "outputTokens": 8945,
-            "cacheReadInputTokens": 371937,
-            "cacheCreationInputTokens": 39944,
-            "webSearchRequests": 0,
-            "costUSD": 0.40171709999999994,
-            "contextWindow": 200000,
-            "maxOutputTokens": 32000
-          }
-        },
-        "permission_denials": [],
-        "fast_mode_state": "off",
-        "uuid": "6c09e6a6-6fe9-4eb2-9bc2-ee5c253bc3d3",
-        "errors": []
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
+        "issues": [],
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":233953,\"duration_api_ms\":223992,\"num_turns\":16,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"09b79858-0ed9-438b-99ab-ca3ff727ef5b\",\"total_cost_usd\":0.4403229000000001,\"usage\":{\"input_tokens\":829,\"cache_creation_input_tokens\":40456,\"cache_read_input_tokens\":337203,\"output_tokens\":12331,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,"
       },
       "fetch_date": "2026-03-15"
     },
     {
-      "title": "Docs/mm/damon: document exclusivity of special-purpose modules",
-      "author": "SeongJae Park <sj@kernel.org>",
+      "title": "kernel/fork: validate exit_signal in kernel_clone()",
+      "author": "Deepanshu Kartikey <kartikey406@gmail.com>",
       "patches": [
         {
-          "title": "[PATCH v2] Docs/mm/damon: document exclusivity of special-purpose modules",
-          "link": "https://lore.kernel.org/linux-mm/20260315162945.80994-1-sj@kernel.org/"
+          "title": "[PATCH v2] kernel/fork: validate exit_signal in kernel_clone()",
+          "link": "https://lore.kernel.org/linux-mm/20260316104536.558108-1-kartikey406@gmail.com/"
         }
       ],
       "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260315162945.80994-1-sj@kernel.org/",
-      "updated": "Sun, 15 Mar 2026 09:29:44 -0700",
+      "link": "https://lore.kernel.org/linux-mm/20260316104536.558108-1-kartikey406@gmail.com/",
+      "updated": "Mon, 16 Mar 2026 16:15:36 +0530",
       "subsystems": [
-        "docs"
+        "kernel"
       ],
       "review": {
-        "type": "result",
-        "subtype": "error_max_turns",
-        "duration_ms": 109581,
-        "duration_api_ms": 98217,
-        "is_error": false,
-        "num_turns": 16,
-        "stop_reason": "tool_use",
-        "session_id": "255b305c-ebae-44ff-ab8f-6dc9380d16c6",
-        "total_cost_usd": 0.21797564999999997,
-        "usage": {
-          "input_tokens": 827,
-          "cache_creation_input_tokens": 16745,
-          "cache_read_input_tokens": 219953,
-          "output_tokens": 5781,
-          "server_tool_use": {
-            "web_search_requests": 0,
-            "web_fetch_requests": 0
-          },
-          "service_tier": "standard",
-          "cache_creation": {
-            "ephemeral_1h_input_tokens": 0,
-            "ephemeral_5m_input_tokens": 16745
-          },
-          "inference_geo": "",
-          "iterations": [],
-          "speed": "standard"
-        },
-        "modelUsage": {
-          "claude-sonnet-4-6": {
-            "inputTokens": 827,
-            "outputTokens": 5781,
-            "cacheReadInputTokens": 219953,
-            "cacheCreationInputTokens": 16745,
-            "webSearchRequests": 0,
-            "costUSD": 0.21797564999999997,
-            "contextWindow": 200000,
-            "maxOutputTokens": 32000
-          }
-        },
-        "permission_denials": [],
-        "fast_mode_state": "off",
-        "uuid": "29f4bd7d-bccb-4a35-a760-99257ab94b10",
-        "errors": []
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
-      "fetch_date": "2026-03-15"
+      "fetch_date": "2026-03-16"
     }
   ]
 }
