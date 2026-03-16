@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-16T11:25:35.241266+00:00",
+  "generated_at": "2026-03-16T11:32:28.904739+00:00",
   "days": 1,
   "total_patches": 106,
   "series": [
@@ -3593,7 +3593,7 @@
         "kernel"
       ],
       "review": {
-        "summary": "Claude CLI failed: Claude Code at Meta (https://fburl.com/claude.code.users)\n'Latest' native version check (refetched from Manifold) completed in 8.046535357s (23 versions available)\nResolved 'latest' native version to:",
+        "summary": "Review timed out.",
         "issues": [],
         "verdict": "skip"
       },
