@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-16T13:32:37.735034+00:00",
+  "generated_at": "2026-03-16T13:42:35.363927+00:00",
   "days": 1,
-  "total_patches": 16,
+  "total_patches": 17,
   "series": [
     {
       "title": "kho: history: track previous kernel version and kexec boot count",
@@ -496,6 +496,136 @@
         "verdict": "skip"
       },
       "fetch_date": "2026-03-15"
+    },
+    {
+      "title": "mm/vma: convert vm_flags_t to vma_flags_t in vma code",
+      "author": "\"Lorenzo Stoakes (Oracle)\" <ljs@kernel.org>",
+      "patches": [
+        {
+          "title": "[PATCH v2 00/23] mm/vma: convert vm_flags_t to vma_flags_t in vma code",
+          "link": "https://lore.kernel.org/linux-mm/cover.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 01/23] mm/vma: add vma_flags_empty(), vma_flags_and(), vma_flags_diff_pair()",
+          "link": "https://lore.kernel.org/linux-mm/ede9b0f8a2e2dc72e7fbc1a0ddbeb513364c28a2.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 02/23] tools/testing/vma: add unit tests flag empty, diff_pair, and[_mask]",
+          "link": "https://lore.kernel.org/linux-mm/1d789fcc7dba9f93ec844aa87a48b13451dba211.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 03/23] mm/vma: add further vma_flags_t unions",
+          "link": "https://lore.kernel.org/linux-mm/a37030f2eefc90147e84f9273e325cc289cb9e1d.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 04/23] tools/testing/vma: convert bulk of test code to vma_flags_t",
+          "link": "https://lore.kernel.org/linux-mm/54d2f092b55e29e53916862faa191854b441d8e9.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 05/23] mm/vma: use new VMA flags for sticky flags logic",
+          "link": "https://lore.kernel.org/linux-mm/005cac3e37830a33f473edc780a5dae5e00a3845.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 06/23] tools/testing/vma: fix VMA flag tests",
+          "link": "https://lore.kernel.org/linux-mm/42b963d3229ed39a758f1bea218fd274a7cd3811.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 07/23] mm/vma: add append_vma_flags() helper",
+          "link": "https://lore.kernel.org/linux-mm/756b9c46ee23e00c2fe64d453ff61dd3b98aa3fc.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 08/23] tools/testing/vma: add simple test for append_vma_flags()",
+          "link": "https://lore.kernel.org/linux-mm/8253a553f354e6ef9b1ddea4831c0033e64eb796.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 09/23] mm: unexport vm_brk_flags() and eliminate vm_flags parameter",
+          "link": "https://lore.kernel.org/linux-mm/ba7d1eae0208551c05f4a2015133b926d6650484.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 10/23] mm/vma: introduce vma_flags_same[_mask/_pair]()",
+          "link": "https://lore.kernel.org/linux-mm/393378bdcbb49141304d5eff7b8dad2966b73c30.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 11/23] mm/vma: introduce [vma_flags,legacy]_to_[legacy,vma_flags]() helpers",
+          "link": "https://lore.kernel.org/linux-mm/19cfb4297cb691dc16c75e9e6a24f6564743407e.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 12/23] tools/testing/vma: test that legacy flag helpers work correctly",
+          "link": "https://lore.kernel.org/linux-mm/4f1956b7e1e15293f75bffb5eda3d967a1da6f5d.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 13/23] mm/vma: introduce vma_test[_any[_mask]](), and make inlining consistent",
+          "link": "https://lore.kernel.org/linux-mm/8aeaf08d153c3c3196855fdc9ddbacccf673ef82.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 14/23] tools/testing/vma: update VMA flag tests to test vma_test[_any_mask]()",
+          "link": "https://lore.kernel.org/linux-mm/ecd6e0134c4495310d6914b8177e99886e17d22f.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 15/23] mm: introduce vma_flags_count() and vma[_flags]_test_single_mask()",
+          "link": "https://lore.kernel.org/linux-mm/96e7481026067766bfd7f2d4e395dd89ce845ab2.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 16/23] tools/testing/vma: test vma_flags_count,vma[_flags]_test_single_mask",
+          "link": "https://lore.kernel.org/linux-mm/140b9b77da1ef463f969cbeb2b5fb25627301cd6.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 17/23] mm: convert do_brk_flags() to use vma_flags_t",
+          "link": "https://lore.kernel.org/linux-mm/063af0422d99bee0195589aa63f8f44edaf409fa.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 18/23] mm: update vma_supports_mlock() to use new VMA flags",
+          "link": "https://lore.kernel.org/linux-mm/2f82b5b93599e89b391ee4672928cefdfd2fb2f8.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 19/23] mm/vma: introduce vma_clear_flags[_mask]()",
+          "link": "https://lore.kernel.org/linux-mm/397c67b154a4868e19db9be1012e976148901de2.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 20/23] tools/testing/vma: update VMA tests to test vma_clear_flags[_mask]()",
+          "link": "https://lore.kernel.org/linux-mm/65bc0bbd98698f4dc68c046e6f867274b1497d8a.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 21/23] mm/vma: convert as much as we can in mm/vma.c to vma_flags_t",
+          "link": "https://lore.kernel.org/linux-mm/4d938877d17158a74858af98a6e5bf5d93292fc1.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 22/23] mm/vma: convert vma_modify_flags[_uffd]() to use vma_flags_t",
+          "link": "https://lore.kernel.org/linux-mm/0737c1b5e3b3688ec3839058b95203c9e7622de9.1773665966.git.ljs@kernel.org/"
+        },
+        {
+          "title": "[PATCH v2 23/23] mm/vma: convert __mmap_region() to use vma_flags_t",
+          "link": "https://lore.kernel.org/linux-mm/0dfdae451f825437e042db9b434a7d509dce6841.1773665966.git.ljs@kernel.org/"
+        }
+      ],
+      "patch_count": 23,
+      "link": "https://lore.kernel.org/linux-mm/cover.1773665966.git.ljs@kernel.org/",
+      "updated": "Mon, 16 Mar 2026 13:07:49 +0000",
+      "subsystems": [
+        "arch",
+        "fs",
+        "include",
+        "internal",
+        "ksm",
+        "madvise",
+        "mlock",
+        "mmap",
+        "mprotect",
+        "mremap",
+        "mseal",
+        "security",
+        "tests",
+        "tools",
+        "userfaultfd",
+        "vma",
+        "vma_exec"
+      ],
+      "review": {
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-16"
     },
     {
       "title": "mm/mempolicy: NUMA mempolicy mismatch during remote access",
