@@ -1,8 +1,28 @@
 {
-  "generated_at": "2026-03-16T13:42:35.363927+00:00",
+  "generated_at": "2026-03-16T13:52:33.026266+00:00",
   "days": 1,
   "total_patches": 17,
   "series": [
+    {
+      "title": "mm/mempolicy: NUMA mempolicy mismatch during remote access",
+      "author": "Lin Ruifeng <linruifeng4@huawei.com>",
+      "patches": [
+        {
+          "title": "[RFC PATCH] mm/mempolicy: NUMA mempolicy mismatch during remote access",
+          "link": "https://lore.kernel.org/linux-mm/20260316120424.1535575-1-linruifeng4@huawei.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260316120424.1535575-1-linruifeng4@huawei.com/",
+      "updated": "Mon, 16 Mar 2026 20:04:24 +0800",
+      "subsystems": [],
+      "review": {
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-16"
+    },
     {
       "title": "kho: history: track previous kernel version and kexec boot count",
       "author": "Breno Leitao <leitao@debian.org>",
@@ -620,26 +640,6 @@
         "vma",
         "vma_exec"
       ],
-      "review": {
-        "summary": "Review timed out.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-16"
-    },
-    {
-      "title": "mm/mempolicy: NUMA mempolicy mismatch during remote access",
-      "author": "Lin Ruifeng <linruifeng4@huawei.com>",
-      "patches": [
-        {
-          "title": "[RFC PATCH] mm/mempolicy: NUMA mempolicy mismatch during remote access",
-          "link": "https://lore.kernel.org/linux-mm/20260316120424.1535575-1-linruifeng4@huawei.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260316120424.1535575-1-linruifeng4@huawei.com/",
-      "updated": "Mon, 16 Mar 2026 20:04:24 +0800",
-      "subsystems": [],
       "review": {
         "summary": "Review timed out.",
         "issues": [],
