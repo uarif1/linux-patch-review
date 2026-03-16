@@ -1,28 +1,8 @@
 {
-  "generated_at": "2026-03-16T12:46:25.905403+00:00",
-  "days": 3,
-  "total_patches": 31,
+  "generated_at": "2026-03-16T13:02:30.162328+00:00",
+  "days": 1,
+  "total_patches": 15,
   "series": [
-    {
-      "title": "mm/mempolicy: NUMA mempolicy mismatch during remote access",
-      "author": "Lin Ruifeng <linruifeng4@huawei.com>",
-      "patches": [
-        {
-          "title": "[RFC PATCH] mm/mempolicy: NUMA mempolicy mismatch during remote access",
-          "link": "https://lore.kernel.org/linux-mm/20260316120424.1535575-1-linruifeng4@huawei.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260316120424.1535575-1-linruifeng4@huawei.com/",
-      "updated": "Mon, 16 Mar 2026 20:04:24 +0800",
-      "subsystems": [],
-      "review": {
-        "verdict": "needs_discussion",
-        "summary": "This RFC reports a NUMA mempolicy mismatch in the SVA IOPF path: because page faults are handled asynchronously by kworkers, get_vma_policy() falls back to get_task_policy(current) using the kworker's mempolicy instead of the original process's task-level policy. There is no code diff to review.",
-        "review_inline": "Author: Lin Ruifeng <linruifeng4@huawei.com>\n\nmm/mempolicy: NUMA mempolicy mismatch during remote access\n\nThis RFC has no code diff attached.  The description is a problem report\nasking for suggestions.  I traced the relevant code paths below.\n\nThe diagnosis is correct.  The call chain for SVA IOPF is:\n\n  iommu_sva_handle_iopf()        [kworker context]\n    -> iommu_sva_handle_mm()\n         -> handle_mm_fault(..., FAULT_FLAG_REMOTE, ...)\n              -> do_anonymous_page()\n                   -> alloc_anon_folio()\n                        -> vma_alloc_folio()\n                             -> vma_alloc_folio_noprof()\n                                  -> get_vma_policy(vma, addr, order,\n                                                    &ilx)\n\nIn get_vma_policy():\n\n> struct mempolicy *get_vma_policy(struct vm_area_struct *vma, ...)\n> {\n>     pol = __get_vma_policy(vma, addr, ilx);  /* vma->vm_policy */\n>     if (!pol)\n>         pol = get_task_policy(current);      /* falls back to kworker */\n\nWhen there is no VMA-level policy (mbind() was not called, only\nset_mempolicy() was used by the user process), get_task_policy(current)\nreturns the kworker thread's mempolicy, not the original task's.\nFAULT_FLAG_REMOTE is set at the call site in iommu_sva_handle_mm()\nbut get_vma_policy() has no visibility into it.\n\nThere is a second related issue: vma_alloc_folio_noprof() also passes\nnuma_node_id() as the preferred nid to folio_alloc_mpol_noprof(), which\nis the NUMA node of the kworker, not the faulting process.\n\nSome thoughts on possible fix directions:\n\n  1. mm->owner (struct task_struct __rcu *) is available from the\n     vm_area_struct.  A remote-fault-aware path could read\n     rcu_dereference(vma->vm_mm->owner)->mempolicy in place of\n     current->mempolicy.  mm->owner can be NULL (all threads of a\n     group may have exited while the mm is still alive) so a NULL\n     check and appropriate fallback is required.\n\n  2. A more general approach: add a task_struct * or mempolicy *\n     field to struct vm_fault, populated when FAULT_FLAG_REMOTE is\n     set, and thread it through to get_vma_policy() and\n     vma_alloc_folio_noprof() so the nid hint is also correct.\n\n  3. Bind-time snapshot: capture the mempolicy into the iopf_group\n     or SVA domain at iommu_sva_bind_device() time and use it for\n     all subsequent fault handling in that domain.\n\nThe problem description is accurate.  It would help to include a\nreproducer and a proposed fix in the next revision.\n"
-      },
-      "fetch_date": "2026-03-16"
-    },
     {
       "title": "kho: history: track previous kernel version and kexec boot count",
       "author": "Breno Leitao <leitao@debian.org>",
@@ -67,7 +47,7 @@
         "tests"
       ],
       "review": {
-        "summary": "Claude CLI error: error_max_structured_output_retries after 25 turns.",
+        "summary": "Review timed out.",
         "issues": [],
         "verdict": "skip"
       },
@@ -89,9 +69,9 @@
         "kernel"
       ],
       "review": {
-        "verdict": "minor_issues",
-        "summary": "The patch adds an exit_signal validity check inside kernel_clone() to reject clone() calls with exit_signal values outside [0, _NSIG] (e.g. 128 from clone_flags=0x80), covering all callers including sys_ia32_clone() that were previously unprotected.",
-        "review_inline": "On Mon, Mar 16 2026, Deepanshu Kartikey wrote:\n> kernel/fork: validate exit_signal in kernel_clone()\n\nThe fix is correct in principle.  I checked the following:\n\n- valid_signal() uses \"sig <= _NSIG\", so exit_signal=0 (no death\n  signal) returns true and is correctly accepted by the new check.\n- sys_fork() and sys_vfork() hardcode exit_signal=SIGCHLD (17), which\n  is unaffected.\n- kernel_thread() and user_mode_thread() derive exit_signal from\n  \"(flags & CSIGNAL)\"; in practice callers pass 0 or SIGCHLD, both\n  valid.\n- clone3() already validates in copy_clone_args_from_user(), so the\n  new check is a redundant but harmless double-check on that path.\n- copy_process() sets p->exit_signal=-1 unconditionally for\n  CLONE_THREAD, so the args->exit_signal value is ignored there anyway;\n  rejecting out-of-range values for threaded clones is still correct\n  tightening of the ABI.\n\nOne real issue to address:\n\n> diff --git a/kernel/fork.c b/kernel/fork.c\n> --- a/kernel/fork.c\n> +++ b/kernel/fork.c\n\n[ ... ]\n\n>  /*\n>   *  Ok, this is the main fork-routine.\n>   *\n>   * It copies the process, and if successful kick-starts\n>   * it and waits for it to finish using the VM if required.\n>   *\n>   * args->exit_signal is expected to be checked for sanity by the caller.\n>   */\n\nThis comment directly contradicts what the patch does.  Moving the\ncheck into kernel_clone() is the whole point; the comment should be\nupdated (e.g. \"args->exit_signal is validated inside kernel_clone()\")\nso future callers are not misled into skipping validation or adding\nredundant checks of their own.\n\n> +\tif (!valid_signal(args->exit_signal))\n> +\t\treturn -EINVAL;\n>  \t/*\n>  \t * Determine whether and which event to report to ptracer.  When\n\nNit: a blank line between the new return statement and the opening /*\nof the next block would match the style used throughout the rest of\nkernel_clone()."
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },
@@ -125,9 +105,9 @@
         "vmalloc"
       ],
       "review": {
-        "verdict": "minor_issues",
-        "summary": "This series optimizes vfree() and free_contig_range() by decomposing contiguous order-0 pages into the largest possible power-of-2 aligned chunks before freeing, recovering the high-order PCP/buddy placement that was lost by the earlier split_page() path. Three minor points need clarification before merging.",
-        "review_inline": "Muhammad Usama Anjum <usama.anjum@arm.com>\n\n[PATCH v2 0/3] mm: Free contiguous order-0 pages efficiently\n\nThe approach is sound and the benchmark numbers are compelling.  A few\nthings to clarify:\n\n---\n\n[PATCH v2 1/3] mm/page_alloc: Optimize free_contig_range()\n\n> diff --git a/include/linux/gfp.h b/include/linux/gfp.h\n> @@ -467,6 +467,8 @@ void free_contig_frozen_range(unsigned long pfn,\n>  void free_contig_range(unsigned long pfn, unsigned long nr_pages);\n>  #endif\n>\n> +unsigned long __free_contig_range(unsigned long pfn, unsigned long nr_pages);\n\nThe declaration of __free_contig_range() is placed after the\n#endif /* CONFIG_CONTIG_ALLOC */, so it is visible unconditionally.\nPatch 2 calls it unconditionally from vfree() too.  If the\nimplementation in page_alloc.c sits inside the #ifdef CONFIG_CONTIG_ALLOC\nblock (which currently spans lines 6787-7337), then any config built\nwithout MEMORY_ISOLATION+COMPACTION and without CMA will fail to link\nwhen vmalloc.c references the symbol.\n\nIs free_prepared_contig_range() and __free_contig_range() placed\n*before* that block so that they are always compiled in, regardless of\nCONFIG_CONTIG_ALLOC?\n\n---\n\n[PATCH v2 2/3] vmalloc: Optimize vfree\n\n> -\tfor (i = 0; i < vm->nr_pages; i++) {\n> -\t\tstruct page *page = vm->pages[i];\n>\n>  \t\tBUG_ON(!page);\n> -\t\tif (!(vm->flags & VM_MAP_PUT_PAGES))\n> -\t\t\tmod_lruvec_page_state(page, NR_VMALLOC, -1);\n> -\t\t__free_page(page);\n> -\t\tcond_resched();\n> -\t}\n\nThe old loop called cond_resched() after every single page free.  The\nnew loop accumulates pfns across vm->pages[] and only calls\n__free_contig_range() at segment boundaries.  For a large vmalloc\nregion backed by heavily fragmented physical memory on a PREEMPT_NONE\nkernel, both the accumulation loop (doing mod_lruvec_page_state() per\npage) and the per-segment __free_contig_range() calls (doing\nfree_pages_prepare() per page plus lock acquisitions per chunk) run\nwithout any scheduling point.\n\nWas dropping cond_resched() a deliberate choice?  If so, a short\ncomment explaining why it is safe to remove it (e.g. the new path is\nfast enough that the latency is bounded) would help reviewers and\nbisectors in the future.\n\n> +\t\tfor (i = 1; i < vm->nr_pages; i++) {\n> +\t\t\tpage = vm->pages[i];\n> +\t\t\tBUG_ON(!page);\n> +\t\t\tif (account)\n> +\t\t\t\tmod_lruvec_page_state(page, NR_VMALLOC, -1);\n> +\t\t\tpfn = page_to_pfn(page);\n> +\t\t\tif (start_pfn + nr == pfn) {\n> +\t\t\t\tnr++;\n> +\t\t\t\tcontinue;\n> +\t\t\t}\n> +\t\t\t__free_contig_range(start_pfn, nr);\n> +\t\t\tstart_pfn = pfn;\n> +\t\t\tnr = 1;\n\nnr is declared as int while __free_contig_range() takes unsigned long\nnr_pages.  In practice vm->nr_pages is unsigned int and bounded well\nbelow INT_MAX, so the conversion is harmless, but declaring nr as\nunsigned int (or unsigned long) would avoid any implicit sign-extension\nambiguity.\n\n---\n\n[PATCH v2 3/3] mm/page_alloc: Optimize __free_contig_frozen_range()\n\n> +\tfor (i = 0; i < nr_pages; i++, page++) {\n> +\t\tif (free_pages_prepare(page, 0)) {\n> +\t\t\tif (!start)\n> +\t\t\t\tstart = page;\n> +\t\t} else if (start) {\n> +\t\t\tfree_prepared_contig_range(start, page - start);\n> +\t\t\tstart = NULL;\n> +\t\t}\n> +\t}\n> +\n> +\tif (start)\n> +\t\tfree_prepared_contig_range(start, page - start);\n\nThe expression `page - start` has type ptrdiff_t (signed) and is\npassed where free_prepared_contig_range() expects unsigned long.\nSince start is always assigned before page can advance beyond it,\nthe value is always positive and the implicit conversion is correct.\nAn explicit cast to unsigned long would silence any compiler warnings\nand make the intent explicit.\n\nVerified: free_pages_prepare() calls __free_pages_prepare(page, 0,\nFPI_NONE), matching the flags used by the old free_frozen_pages() path.\nThe HWPoison handling is correct: poisoned pages cause a false return,\nthe pending prepared run is flushed before the bad page, and a fresh\nrun starts after it.  The post-loop flush of the final run is present\nand correct.\n"
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },
@@ -147,9 +127,9 @@
         "userfaultfd"
       ],
       "review": {
-        "verdict": "minor_issues",
-        "summary": "The patch fixes a real race under CONFIG_PER_VMA_LOCK where a concurrent UFFDIO_UNREGISTER can split the VMA in the narrow window inside vma_start_read(), returning a stale VMA with a shrunk vm_end to mfill_atomic()'s loop, causing folio_add_new_anon_rmap() to WARN when dst_addr falls outside the bounds. The fix re-validates dst_addr on each iteration and re-acquires the VMA lock when a split is detected.",
-        "review_inline": "From: reviewer\nSubject: Re: [PATCH] mm/userfaultfd: re-validate vma in mfill_atomic() loop\n         under CONFIG_PER_VMA_LOCK\n\nI traced the race through vma_start_read() in mm/mmap_lock.c.\nThe first seqcount check (READ_ONCE(vma->vm_lock_seq) ==\nREAD_ONCE(mm->mm_lock_seq.sequence)) passes, vm_refcnt is\nincremented, then __vma_start_write() runs concurrently: it sets\nWRITE_ONCE(vma->vm_lock_seq, mm_lock_seq) and shrinks vma->vm_end\nvia __split_vma(). After mmap_write_unlock() increments mm_lock_seq,\nthe second seqcount check in vma_start_read() sees vm_lock_seq !=\nmm_lock_seq (they diverged), so vma_start_read() returns success\nwith a stale, already-split VMA. The bug is real.\n\n> +\t       /*\n> +\t\t* Under CONFIG_PER_VMA_LOCK, a concurrent UFFDIO_UNREGISTER can\n\nThe opening /* is indented with a tab followed by seven spaces\ninstead of two tabs. The rest of the comment body uses two tabs\ncorrectly. checkpatch.pl will flag this.\n\n> +\t\tif (state.dst_addr < state.vma->vm_start ||\n> +\t\t    state.dst_addr >= state.vma->vm_end) {\n> +\t\t\tmfill_put_vma(&state);\n> +\t\t\tstate.dst_start = state.dst_addr;\n> +\t\t\tstate.len = dst_start + len - state.dst_addr;\n> +\t\t\terr = mfill_get_vma(&state);\n> +\t\t\tif (err)\n> +\t\t\t\tbreak;\n> +\t\t}\n\nI verified that mfill_get_vma() calls uffd_mfill_lock(ctx->mm,\nstate->dst_start, state->len), which calls validate_dst_vma(vma,\ndst_start + len). Setting state.len to the remaining length means\nvalidate_dst_vma checks that the full remaining range fits in the\nnew VMA. If the split-off VMA is smaller or is no longer\nuffd-registered, mfill_get_vma() returns -ENOENT, the loop breaks,\nand mfill_atomic() returns the bytes copied so far. That is the\ncorrect behavior.\n\nNote that the initial call to mfill_get_vma() before the loop\npasses state.len == 0 (zero-initialized), so validate_dst_vma\ntrivially passes there. The re-lookup after a split is therefore\nstricter than the original first call. That asymmetry is\npre-existing and not introduced by this patch.\n\nThe new block is not guarded by #ifdef CONFIG_PER_VMA_LOCK. Under\n!CONFIG_PER_VMA_LOCK the loop holds mmap_read_lock throughout,\nwhich excludes concurrent mmap_write_lock(), so the condition can\nnever trigger -- dead code, not a regression. Wrapping it in\n#ifdef CONFIG_PER_VMA_LOCK would make the intent match the commit\nmessage and the comment.\n\nI also verified mfill_copy_folio_retry(): after the patch fires and\nsets state.dst_start = state.dst_addr, any subsequent retry uses\nthe updated dst_start. uffd_lock_vma() is called with the updated\nstate.dst_start (still within the re-locked VMA), and\nvalidate_dst_vma checks state.dst_start + state.len == the original\ndst_start + len, so the retry re-lock is consistent.\n\nFix the comment indentation (tab + 7 spaces -> two tabs); optionally\nadd the #ifdef CONFIG_PER_VMA_LOCK guard. The functional fix is\ncorrect.\n"
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },
@@ -169,33 +149,11 @@
         "memcontrol"
       ],
       "review": {
-        "verdict": "minor_issues",
-        "summary": "Batch memcg charging in __memcg_slab_post_alloc_hook by scanning ahead to find contiguous objects whose slabs share the same pgdat, then issuing one __obj_cgroup_charge/__consume_obj_stock call per run. The approach is correct but batch_bytes is declared as unsigned int instead of size_t, silently truncating obj_size * run_len on 64-bit when the product exceeds 2^32.",
-        "review_inline": "Hui Zhu <zhuhui@kylinos.cn>\n\nmm/memcontrol: batch memcg charging in __memcg_slab_post_alloc_hook\n\nThe batching approach is sound.  I verified:\n\n - Error path: kmem_cache_free_bulk() uncharges only objects whose\n   obj_ext->objcg was assigned, so objects in the current batch (not\n   yet assigned when __obj_cgroup_charge() fails) are correctly left\n   uncharged.  Objects skipped due to alloc_slab_obj_exts() failure\n   have obj_exts == 0, so memcg_slab_free_hook() returns early and\n   never touches their obj_exts -- same as before.\n\n - get/put_slab_obj_exts() are not refcounted (they call\n   metadata_access_enable/disable()); calling them once per object in\n   the inner assignment loop is fine.\n\n - skip_next advancement: i = i + run_len + 1 correctly skips the one\n   object whose alloc_slab_obj_exts() failed in the lookahead loop.\n\n - Stock paths (__refill_obj_stock sets cached_objcg before\n   __account_obj_stock is called) satisfy the \"call after\n   __refill_obj_stock\" precondition in both the stock-hit and\n   stock-miss branches.\n\nOne type issue:\n\n> diff --git a/mm/memcontrol.c b/mm/memcontrol.c\n> --- a/mm/memcontrol.c\n> +++ b/mm/memcontrol.c\n\n[ ... ]\n\n> +\t\tunsigned int batch_bytes;\n> +\t\tsize_t run_len = 0;\n\n> +\t\tbatch_bytes = obj_size * run_len;\n\nbatch_bytes is unsigned int, but obj_size is size_t and run_len is\nsize_t, so obj_size * run_len is evaluated as size_t and then truncated\nto 32 bits.  On a 64-bit kernel any batch where obj_size * run_len >=\n4 GB wraps silently, causing memcg to be undercharged for the whole\nrun.  This is the same truncation that already exists in the\nsingle-object path where obj_size is passed to __consume_obj_stock()\n(which also takes unsigned int), but multiplication makes it reachable\nat much smaller per-object sizes.\n\nThe truncated value then propagates to:\n\n> +\t\tif (!stock || !__consume_obj_stock(objcg, stock, batch_bytes)) {\n> +\t\t\tif (__obj_cgroup_charge(objcg, flags, batch_bytes, &remainder))\n\n__obj_cgroup_charge() takes size_t so batch_bytes is zero-extended back\nto 64 bits, but the value is already wrong.\n\n> +\t\t__account_obj_stock(objcg, stock, batch_bytes,\n> +\t\t\t\t    pgdat, cache_vmstat_idx(s));\n\n__account_obj_stock() takes int nr.  If the truncated unsigned int\nvalue exceeds INT_MAX, the implicit conversion makes nr negative,\ndecrementing NR_SLAB_RECLAIMABLE_B or NR_SLAB_UNRECLAIMABLE_B rather\nthan incrementing it.\n\nShould batch_bytes be declared as size_t instead of unsigned int?"
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
-    },
-    {
-      "title": "Docs/mm: document the OOM killer",
-      "author": "Kit Dallege <xaum.io@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH] Docs/mm: document the OOM killer",
-          "link": "https://lore.kernel.org/linux-mm/20260314152518.100194-1-xaum.io@gmail.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314152518.100194-1-xaum.io@gmail.com/",
-      "updated": "Sat, 14 Mar 2026 16:25:18 +0100",
-      "subsystems": [
-        "docs"
-      ],
-      "review": {
-        "verdict": "minor_issues",
-        "summary": "This patch fills in the Documentation/mm/oom.rst stub with an overview of OOM killer victim selection, the OOM reaper, process_mrelease, and sysctl knobs. One function name in the OOM reaper description is factually wrong.",
-        "review_inline": "Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document the OOM killer\n\nVerified against mm/oom_kill.c:\n\n- oom_badness() scoring: RSS + swap entries + pgtable pages, adjusted\n  by oom_score_adj * totalpages / 1000.  Matches the description.\n- oom_unkillable_task(): checks is_global_init() and PF_KTHREAD.  The\n  claim \"Kernel threads and init are never eligible\" is correct.\n- constrained_alloc(): totalpages baseline per constraint type is\n  accurate.\n- MMF_UNSTABLE is set at the top of __oom_reap_task_mm(), MMF_OOM_SKIP\n  is set at the end of oom_reap_task() after all retries.  Ordering in\n  the docs matches.\n- sysctl table: panic_on_oom range [0,2], oom_dump_tasks defaults to 1,\n  oom_kill_allocating_task defaults to 0.  All match.\n- process_mrelease() calls __oom_reap_task_mm() directly.  Description\n  is accurate.\n\nOne factual error in the OOM reaper section:\n\n> +It walks the victim's VMAs in reverse and calls\n> +``unmap_page_range()`` to release physical pages.\n\nThe reaper does not call unmap_page_range().  The actual call is\nzap_vma_for_reaping().  The loop in __oom_reap_task_mm() is:\n\n  mas_for_each_rev(&mas, vma, 0) {\n          if (vma->vm_flags & (VM_HUGETLB|VM_PFNMAP))\n                  continue;\n          if (vma_is_anonymous(vma) || !(vma->vm_flags & VM_SHARED)) {\n                  if (zap_vma_for_reaping(vma))\n                          ret = false;\n          }\n  }\n\nAlso worth noting in the docs: hugetlb and pfnmap VMAs are skipped\nentirely by the reaper.\n\nPlease replace ``unmap_page_range()`` with ``zap_vma_for_reaping()``\nand mention that hugetlb/pfnmap VMAs are not reaped.\n"
-      },
-      "fetch_date": "2026-03-14"
     },
     {
       "title": "Docs: mmap_prepare: don't italicize structs",
@@ -211,58 +169,11 @@
       "updated": "Sun, 15 Mar 2026 15:45:06 -0700",
       "subsystems": [],
       "review": {
-        "verdict": "looks_good",
-        "summary": "Pure documentation fix that removes backtick quoting around 'struct page' references in mmap_prepare.rst so kernel-doc automarkup renders them as bold monospace instead of italic HTML output.",
-        "review_inline": "Randy Dunlap <rdunlap@infradead.org>\n\nDocs: mmap_prepare: don't italicize structs\n\nDocumentation-only change. No code paths, locking, or resource\nmanagement to verify.\n\n> --- linux-next.orig/Documentation/filesystems/mmap_prepare.rst\n> +++ linux-next/Documentation/filesystems/mmap_prepare.rst\n> -* mmap_action_map_kernel_pages() - Maps a specified array of `struct page`\n> +* mmap_action_map_kernel_pages() - Maps a specified array of struct page\n>    pointers in the VMA from a specific offset.\n>\n> -* mmap_action_map_kernel_pages_full() - Maps a specified array of `struct\n> -  page` pointers over the entire VMA. The caller must ensure there are\n> +* mmap_action_map_kernel_pages_full() - Maps a specified array of struct\n> +  page pointers over the entire VMA. The caller must ensure there are\n\nThis is correct. In RST, single backticks produce italic HTML, while\nbare \"struct xyz\" text is picked up by kernel-doc's automarkup and\nrendered as bold monospace. The fix is applied consistently to all\naffected struct references.\n\nReviewed-by: <reviewer>"
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-15"
-    },
-    {
-      "title": "mm/damon: guard THP-specific DAMOS actions with CONFIG_TRANSPARENT_HUGEPAGE",
-      "author": "<gutierrez.asier@huawei-partners.com>",
-      "patches": [
-        {
-          "title": "[PATCH v1] mm/damon: guard THP-specific DAMOS actions with CONFIG_TRANSPARENT_HUGEPAGE",
-          "link": "https://lore.kernel.org/linux-mm/20260314093813.1359737-1-gutierrez.asier@huawei-partners.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314093813.1359737-1-gutierrez.asier@huawei-partners.com/",
-      "updated": "Sat, 14 Mar 2026 09:38:12 +0000",
-      "subsystems": [
-        "damon/sysfs-schemes",
-        "damon/vaddr",
-        "docs",
-        "include"
-      ],
-      "review": {
-        "verdict": "minor_issues",
-        "summary": "The patch guards DAMOS_HUGEPAGE and DAMOS_NOHUGEPAGE behind CONFIG_TRANSPARENT_HUGEPAGE in the enum, sysfs name table, and vaddr.c switch, preventing users from setting those actions on THP=n kernels where the underlying madvise() calls would silently fail with -EINVAL.",
-        "review_inline": "From: Asier Gutierrez <gutierrez.asier@huawei-partners.com>\n\nmm/damon: guard THP-specific DAMOS actions with CONFIG_TRANSPARENT_HUGEPAGE\n\nThe motivation and approach look correct: on CONFIG_TRANSPARENT_HUGEPAGE=n\nkernels, madvise.c guards MADV_HUGEPAGE/MADV_NOHUGEPAGE under #ifdef in\nboth its validation and its dispatch switch, so any damon_madvise() call\nwith those values would silently return -EINVAL.  Hiding the enum values\nand the sysfs action names under the same guard is the right fix.\n\nA couple of things to look at:\n\n> diff --git a/include/linux/damon.h b/include/linux/damon.h\n> --- a/include/linux/damon.h\n> +++ b/include/linux/damon.h\n\n[ ... ]\n\n>  * @DAMOS_HUGEPAGE:\tCall ``madvise()`` for the region with MADV_HUGEPAGE.\n>  * @DAMOS_NOHUGEPAGE:\tCall ``madvise()`` for the region with MADV_NOHUGEPAGE.\n\nThe kernel-doc comment lines for @DAMOS_HUGEPAGE and @DAMOS_NOHUGEPAGE are\nnot wrapped in #ifdef CONFIG_TRANSPARENT_HUGEPAGE, while the corresponding\nenum values below are.  Documenting enum values that do not exist in a\ngiven build is a minor inconsistency; consider guarding these two lines as\nwell.\n\n> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE\n>  \tDAMOS_HUGEPAGE,\n>  \tDAMOS_NOHUGEPAGE,\n> +#endif\n>  \tDAMOS_LRU_PRIO,\n\nRemoving DAMOS_HUGEPAGE and DAMOS_NOHUGEPAGE from the enum shifts the\ninteger values of DAMOS_LRU_PRIO and all later actions by -2 on\nCONFIG_TRANSPARENT_HUGEPAGE=n builds.  The sysfs interface is string-based\n(action_show/action_store iterate damos_sysfs_action_names matching by\n.action enum value, not by table index), so the kernel sysfs ABI is not\nbroken.\n\nHowever, tools/testing/selftests/damon/sysfs.py contains a hardcoded\ninteger mapping used to validate the drgn-dumped kernel struct field:\n\n    action_val = {\n        'willneed': 0, 'cold': 1, 'pageout': 2,\n        'hugepage': 3, 'nohugeapge': 4,\n        'lru_prio': 5, 'lru_deprio': 6,\n        ...\n    }\n    assert_true(dump['action'] == action_val[scheme.action], ...)\n\nOn a CONFIG_TRANSPARENT_HUGEPAGE=n kernel, DAMOS_LRU_PRIO is 3, not 5,\nso every entry after 'pageout' is wrong.  The existing test case only uses\naction='pageout' (value 2, unaffected by this patch), so it will not fail\ntoday -- but any future test exercising lru_prio or higher on a THP=n\nbuild will assert incorrectly.  Should this mapping be made conditional on\nCONFIG_TRANSPARENT_HUGEPAGE, or replaced with a dynamic lookup?\n\n> diff --git a/mm/damon/vaddr.c b/mm/damon/vaddr.c\n\n[ ... ]\n\n> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE\n>  \tcase DAMOS_HUGEPAGE:\n>  \t\tmadv_action = MADV_HUGEPAGE;\n>  \t\tbreak;\n>  \tcase DAMOS_NOHUGEPAGE:\n>  \t\tmadv_action = MADV_NOHUGEPAGE;\n>  \t\tbreak;\n> +#endif\n\nThe existing default: branch returns 0 for unsupported actions, so on\nTHP=n builds removing these case labels is safe -- no missing case, no\nfallthrough.  Verified that damos_sysfs_action_names is guarded the same\nway, so scheme->action can never hold these values on THP=n.\n\nMinor note on the commit message: MADV_HUGEPAGE and MADV_NOHUGEPAGE are\ndefined unconditionally in include/uapi/asm-generic/mman-common.h; what\nis guarded by CONFIG_TRANSPARENT_HUGEPAGE is their dispatch in madvise.c.\nThe description would be slightly more precise if it said \"their madvise()\nhandling is guarded\" rather than \"they are not available\".\n"
-      },
-      "fetch_date": "2026-03-14"
-    },
-    {
-      "title": "Docs/mm: document Boot Memory",
-      "author": "Kit Dallege <xaum.io@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH] Docs/mm: document Boot Memory",
-          "link": "https://lore.kernel.org/linux-mm/20260314152527.100295-1-xaum.io@gmail.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314152527.100295-1-xaum.io@gmail.com/",
-      "updated": "Sat, 14 Mar 2026 16:25:27 +0100",
-      "subsystems": [
-        "docs"
-      ],
-      "review": {
-        "verdict": "minor_issues",
-        "summary": "Fills in the bootmem.rst documentation stub with a description of the memblock allocator, its data structures, iteration macros, and the transition to the buddy allocator. Two factual inaccuracies need to be corrected before merging.",
-        "review_inline": "Author: Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document Boot Memory\n\nThanks for filling in this stub.  I cross-checked the described functions\nand macros against mm/memblock.c and include/linux/memblock.h and found\ntwo factual errors.\n\n> diff --git a/Documentation/mm/bootmem.rst b/Documentation/mm/bootmem.rst\n> --- a/Documentation/mm/bootmem.rst\n> +++ b/Documentation/mm/bootmem.rst\n\n[ ... ]\n\n> +- ``for_each_mem_range()`` iterates over free ranges (memory minus\n> +  reserved).\n\nThis is not what the macro does.  Looking at include/linux/memblock.h:\n\n  #define for_each_mem_range(i, p_start, p_end) \\\n    __for_each_mem_range(i, &memblock.memory, NULL, NUMA_NO_NODE, \\\n                         MEMBLOCK_HOTPLUG | MEMBLOCK_DRIVER_MANAGED, \\\n                         p_start, p_end, NULL)\n\nThe type_b argument is NULL, so no region type is subtracted.  The\nmacro iterates over all memory regions while skipping those flagged\nHOTPLUG or DRIVER_MANAGED.  Reserved regions are not excluded.  The\n\"memory minus reserved\" description belongs to a different iterator\n(__for_each_mem_range with &memblock.reserved as type_b).  Could you\ncorrect the description?\n\n[ ... ]\n\n> +The function ``free_area_init()`` is called by architecture code to set up\n> +nodes and zones.\n\nIn the current tree, free_area_init() is a static function in mm/mm_init.c\ninvoked from mm_core_init_early(), which is itself called from\nstart_kernel() in init/main.c.  Architecture code does not call it\ndirectly.  Could you update this to reflect the actual call chain?\n"
-      },
-      "fetch_date": "2026-03-14"
     },
     {
       "title": "selftests/mm: skip several tests when thp is not available",
@@ -300,7 +211,7 @@
         "tests"
       ],
       "review": {
-        "summary": "Claude CLI error: error_max_structured_output_retries after 26 turns.",
+        "summary": "Review timed out.",
         "issues": [],
         "verdict": "skip"
       },
@@ -350,9 +261,9 @@
         "tests"
       ],
       "review": {
-        "verdict": "needs_work",
-        "summary": "This series adds HMM_PFN_REQ_MIGRATE to enable combined fault+migration in a single page-table walk via hmm_range_fault(), eliminating the extra walks currently required. The approach is sound but the implementation has a compilation error in the !CONFIG_MIGRATION stub, a deadlock in the test driver, and a missing error check before migration proceeds.",
-        "review_inline": "From: <reviewer>\nSubject: Re: [PATCH v6 0/6] Migrate on fault for device pages\n\nThanks for the series.  I reviewed the page-table walk locking,\nfolio refcount symmetry in the PMD migration path, and the test\ndriver plumbing.  A few issues below.\n\n--- [PATCH v6 3/6] mm/hmm: do the plumbing for HMM to participate in migration ---\n\n> diff --git a/include/linux/migrate.h b/include/linux/migrate.h\n> --- a/include/linux/migrate.h\n> +++ b/include/linux/migrate.h\n> @@ -104,6 +104,15 @@ static inline void softleaf_entry_wait_on_locked(...)\n>  \tWARN_ON_ONCE(1);\n>\n>  \tspin_unlock(ptl);\n> +\n> +enum migrate_vma_info {\n> +\tMIGRATE_VMA_SELECT_NONE = 0,\n> +\tMIGRATE_VMA_SELECT_COMPOUND = MIGRATE_VMA_SELECT_NONE,\n> +};\n> +\n> +static inline enum migrate_vma_info hmm_select_migrate(struct hmm_range *range)\n> +{\n> +\treturn MIGRATE_VMA_SELECT_NONE;\n>  }\n\nThis hunk places the enum declaration and the hmm_select_migrate() stub\ninside the body of softleaf_entry_wait_on_locked(), between\nspin_unlock(ptl) and the closing brace.  A function definition nested\ninside another function is not valid C; this will fail to compile with\nCONFIG_MIGRATION=n.  The enum and the stub need to appear after the\nclosing brace of softleaf_entry_wait_on_locked(), before the\n#endif /* CONFIG_MIGRATION */ line.\n\n--- [PATCH v6 5/6] mm: add new testcase for the migrate on fault case ---\n\n> +static int do_fault_and_migrate(struct dmirror *dmirror,\n> +\t\t\t\tstruct hmm_range *range)\n> +{\n> +\tstruct migrate_vma *migrate = range->migrate;\n> +\tint ret;\n> +\n> +\tmmap_read_lock(dmirror->notifier.mm);\n> +\n> +\t/* Fault-in pages for migration and update device page table */\n> +\tret = dmirror_range_fault(dmirror, range);\n\ndmirror_range_fault() calls mmap_read_lock(mm) internally before each\ncall to hmm_range_fault().  The outer mmap_read_lock() already taken\nabove means the same task tries to acquire mm->mmap_lock for read\ntwice.  If a writer is enqueued between the two acquisitions, the task\nblocks on the inner down_read() while still holding the outer one,\ndeadlocking against the waiting writer.  Either remove the outer\nmmap_read_lock() here and call hmm_range_fault() directly (after\nsetting range->notifier_seq), or keep the outer lock and call\nhmm_range_fault() directly so the inner lock is not attempted.\n\n> +\tpr_debug(\"Migrating from sys mem to device mem\\n\");\n> +\tmigrate_hmm_range_setup(range);\n> +\n> +\tdmirror_migrate_alloc_and_copy(migrate, dmirror);\n> +\tmigrate_vma_pages(migrate);\n> +\tdmirror_migrate_finalize_and_map(migrate, dmirror);\n> +\tmigrate_vma_finalize(migrate);\n\nThe return value of dmirror_range_fault() is saved in ret but not\nchecked before calling the migration helpers.  If dmirror_range_fault()\nreturns an error, the hmm_pfns array is in an indeterminate state yet\nmigrate_hmm_range_setup() still reads it to populate migrate->src[].\nThe existing dmirror_migrate_to_device() checks the error from\nmigrate_vma_setup() before proceeding.  Should there be an early return\non ret != 0 here?\n\n> +static int dmirror_fault_and_migrate_to_device(struct dmirror *dmirror,\n> +\t\t\t\t\t       struct hmm_dmirror_cmd *cmd)\n> +{\n> +\tunsigned long src_pfns[PFNS_ARRAY_SIZE] = { 0 };\n> +\tunsigned long dst_pfns[PFNS_ARRAY_SIZE] = { 0 };\n> +\tstruct migrate_vma migrate = { 0 };\n\n[ ... ]\n\n> +\tmigrate.src = src_pfns;\n> +\tmigrate.dst = dst_pfns;\n> +\tmigrate.flags = MIGRATE_VMA_SELECT_SYSTEM;\n> +\n> +\trange.migrate = &migrate;\n> +\trange.hmm_pfns = src_pfns;\n\nmigrate.start and migrate.end are left at zero from the\nzero-initializer and are never set in this function or in the\ndo_fault_and_migrate() loop.  migrate_hmm_range_setup() then computes:\n\n    migrate->npages = (migrate->end - migrate->start) >> PAGE_SHIFT;\n\nwhich is 0/0 >> PAGE_SHIFT = 0, so the conversion loop never runs and\nmigrate->src[] is never populated.  migrate_vma_pages() and\nmigrate_vma_finalize() then operate on an empty set, making the\nmigration a silent no-op.  Do patches 3 or 4 arrange for\nhmm_range_fault() to write back range->start/end into\nmigrate->start/end?  If not, migrate_hmm_range_setup() should use\nrange->start and range->end instead of migrate->start/end for the\nnpages calculation, or the caller must set them per iteration.\n\n> diff --git a/lib/test_hmm_uapi.h b/lib/test_hmm_uapi.h\n> -#define HMM_DMIRROR_MIGRATE_TO_SYS   _IOWR('H', 0x03, ...)\n> -#define HMM_DMIRROR_SNAPSHOT         _IOWR('H', 0x04, ...)\n> -#define HMM_DMIRROR_EXCLUSIVE        _IOWR('H', 0x05, ...)\n> +#define HMM_DMIRROR_MIGRATE_ON_FAULT_TO_DEV _IOWR('H', 0x03, ...)\n> +#define HMM_DMIRROR_MIGRATE_TO_SYS           _IOWR('H', 0x04, ...)\n> +#define HMM_DMIRROR_SNAPSHOT                 _IOWR('H', 0x05, ...)\n\nThis renumbers every ioctl from 0x03 onward.  The selftests are updated\nin the same patch so they stay in sync, but existing compiled test\nbinaries will silently invoke the wrong operation.  Could the new ioctl\nbe appended at the end of the existing list to avoid the renumbering?\n"
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },
@@ -391,9 +302,9 @@
         "mempolicy"
       ],
       "review": {
-        "verdict": "needs_work",
-        "summary": "This series introduces socket-aware weighted interleave by restricting candidate nodes to the current CPU's physical package before applying weights, backed by a new memory_package topology layer and CXL initiator-based registration. Several correctness issues need addressing before it is ready.",
-        "review_inline": "From: Rakie Kim <rakie.kim@sk.com>\nSubject: [RFC PATCH 0/4] mm/mempolicy: introduce socket-aware\n         weighted interleave\n\nHi Rakie,\n\nThanks for posting this.  The idea is sound and the benchmark numbers\nare compelling.  A few issues to work through before this is ready.\n\n--- Patch 1/4 ---\n\n> diff --git a/include/linux/numa.h b/include/linux/numa.h\n> +static inline int nearest_nodes_nodemask(int node,\n> +\t\t\t\t\t const nodemask_t *mask,\n> +\t\t\t\t\t nodemask_t *out)\n> +{\n> +\treturn 0;\n> +}\n\nThe real implementation begins with nodes_clear(*out), but this\nnon-NUMA stub leaves *out uninitialised on a \"successful\" 0 return.\nAny future caller that checks return == 0 and then iterates *out\nwill read garbage.  Please add nodes_clear(*out) here.\n\n--- Patch 2/4 ---\n\nThe stubs added under the !CONFIG_NUMA section of memory-tiers.h:\n\n> +static inline int mp_get_package_nodes(int nid, nodemask_t *out)\n> +{\n> +\treturn 0;\n> +}\n\nSame pattern: returns 0-success without initialising *out.\nmp_get_package_cpu_nodes and mp_get_package_memory_only_nodes have\nthe same problem.  For !CONFIG_NUMA these are dead through\nmempolicy.c, but the stubs should still be safe.  Please add\nnodes_clear(*out) to each.\n\n--- Patch 3/4 ---\n\n> +static int cxl_region_find_nearest_node(struct cxl_region *cxlr)\n> +{\n> +\tstruct cxl_region_params *p = &cxlr->params;\n> +\tint i, numa_node;\n> +\n> +\tfor (i = 0; i < p->nr_targets; i++) {\n> +\t\tcxled = p->targets[i];\n> +\t\tcxlmd = cxled_to_memdev(cxled);\n> +\t\tnuma_node = dev_to_node(&cxlmd->dev);\n> +\t\tif (numa_node != NUMA_NO_NODE)\n> +\t\t\treturn numa_node;\n> +\t}\n> +\treturn NUMA_NO_NODE;\n> +}\n\nThis picks the NUMA node of the first endpoint with a valid nid as\nthe initiator for the entire region.  For a CXL region interleaved\nacross endpoints attached to different CPU sockets, this single\ninitiator nid determines which package the DAX node is registered\nwith.  If targets[0] happens to land on socket 1 while the majority\nof interleave targets serve socket 0, the region ends up in the\nwrong package.  Is a single-initiator heuristic sufficient here?\nIf so, could you document the selection criterion and explain why it\nis correct for cross-socket interleaved regions?\n\n--- Patch 4/4 ---\n\n> +static int policy_resolve_package_nodes(struct mempolicy *policy,\n> +\t\t\t\t\tnodemask_t *mask)\n> +{\n> +\tunsigned int node, ret = 0;\n\nret is unsigned but receives the return value of mp_get_package_nodes()\nwhich returns int.  The function itself is declared to return int, so\nplease make ret int to match.\n\n> +\t\t\tif (nodes_empty(*mask))\n> +\t\t\t\tgoto out;\n\nThis goto exits with ret == 0 and *mask empty -- a silent success\nwith no usable nodes.  The callers only test the return value:\n\n> +\tif (policy_resolve_package_nodes(policy, &mask))\n> +\t\tmask = policy->nodes;\n\nA zero return with an empty mask is treated as success.  In\nweighted_interleave_nodes() the subsequent next_node_in(node,\nempty_mask) then returns MAX_NUMNODES, which propagates back out\nthrough mempolicy_slab_node() as an invalid node.  The empty-mask\npath should either return a non-zero error or be documented as\nstructurally unreachable (i.e., if mp_get_package_nodes always\nincludes the queried node in its output mask, explain why the second\nintersection can never be empty).\n\nThe same zero-return-empty-mask risk exists in\nread_once_policy_package_nodemask(): if policy_resolve_package_nodes\nreturns 0 with an empty package_mask, nodes_weight() returns 0 and\nweighted_interleave_nid() silently falls back to numa_node_id(),\nignoring the user's configured policy nodes entirely.\n\n> +static unsigned int read_once_policy_package_nodemask(\n> +\t\t\t\tstruct mempolicy *pol, nodemask_t *mask)\n> +{\n> +\tnodemask_t package_mask;\n> +\n> +\tbarrier();\n> +\tif (policy_resolve_package_nodes(pol, &package_mask))\n> +\t\tmemcpy(mask, &pol->nodes, sizeof(nodemask_t));\n> +\telse\n> +\t\tmemcpy(mask, &package_mask, sizeof(nodemask_t));\n> +\tbarrier();\n\nThe barriers are meant to stabilise pol->nodes for safe iteration,\nmatching the approach in read_once_policy_nodemask().  But\npolicy_resolve_package_nodes() reads pol->nodes again independently\ninside its body, without any barrier relative to the outer pair.\nUnder a concurrent cpuset rebind the two reads of pol->nodes could\nobserve different values, making package_mask inconsistent with the\nsnapshot used for the weight loop.  Would it make sense to snapshot\npol->nodes once (as read_once_policy_nodemask does) and pass that\nsnapshot into policy_resolve_package_nodes() rather than letting it\nre-read pol->nodes?\n"
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },
@@ -413,9 +324,9 @@
         "userfaultfd"
       ],
       "review": {
-        "verdict": "looks_good",
-        "summary": "mfill_get_vma() failed to release mmap_lock and map_changing_lock on validation failure because state->vma was only assigned at the out: label, causing mfill_put_vma() to bail early when state->vma is NULL. The fix moves the assignment to immediately after uffd_mfill_lock() succeeds so all error paths release locks correctly.",
-        "review_inline": "Edward Adam Davis <eadavis@qq.com>\n\nuserfaultfd: unassigned vma leads to a potential unreleased locks\n\nVerified the lock release paths in mfill_get_vma() and mfill_put_vma().\n\n> diff --git a/mm/userfaultfd.c b/mm/userfaultfd.c\n> @@ -218,6 +218,7 @@ static int mfill_get_vma(struct mfill_state *state)\n>  \tif (IS_ERR(dst_vma))\n>  \t\treturn PTR_ERR(dst_vma);\n>  \n> +\tstate->vma = dst_vma;\n\nMoving this here is correct.  mfill_put_vma() guards on state->vma == NULL\nand returns immediately without calling up_read() or uffd_mfill_unlock().\nBefore this patch, any failure path that jumped to out_unlock before\nreaching the original out: label left both mmap_lock and map_changing_lock\nunreleased.\n\n> @@ -257,7 +258,6 @@ static int mfill_get_vma(struct mfill_state *state)\n>  \t\tgoto out_unlock;\n>  \n>  out:\n> -\tstate->vma = dst_vma;\n>  \treturn 0;\n>  \n>  out_unlock:\n>  \tmfill_put_vma(state);\n\nVerified that every goto out_unlock in mfill_get_vma() is only reachable\nafter down_read(&ctx->map_changing_lock) at line 226, so the up_read()\ninside mfill_put_vma() is always balanced.  The release order in\nmfill_put_vma() -- up_read(map_changing_lock) first, then mmap_lock via\nuffd_mfill_unlock() -- is correct.\n\nmfill_state is zero-initialized in mfill_atomic(), so state->vma starts\nas NULL and there is no double-assignment issue.\n\nReviewed-by: <reviewer>"
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },
@@ -435,38 +346,11 @@
         "drivers"
       ],
       "review": {
-        "verdict": "looks_good",
-        "summary": "Changes read_from_bdev_async() from void to int so allocation failures (-ENOMEM) propagate up through read_from_bdev() to the existing error-handling chain in zram_bio_read(), fixing a silent data-corruption bug where failed async reads were previously reported as success.",
-        "review_inline": "Sergey Senozhatsky <senozhatsky@chromium.org>\n\nzram: propagate read_from_bdev_async() errors\n\nVerified the patch against the call chain:\n  read_from_bdev_async() -> read_from_bdev() -> zram_read_page()\n  -> zram_bvec_read() -> zram_bio_read()\n\n> -static void read_from_bdev_async(struct zram *zram, struct page *page,\n> -\t\t\t\t u32 index, unsigned long blk_idx,\n> -\t\t\t\t struct bio *parent)\n> +static int read_from_bdev_async(struct zram *zram, struct page *page,\n> +\t\t\t\tu32 index, unsigned long blk_idx,\n> +\t\t\t\tstruct bio *parent)\n\nBoth early failure returns (kmalloc_obj and bio_alloc) occur before\nbio_inc_remaining(parent), so the parent bio's remaining count is\nnot affected on the error path.  No accounting imbalance.\n\n> -\tread_from_bdev_async(zram, page, index, blk_idx, parent);\n> -\treturn 0;\n> +\treturn read_from_bdev_async(zram, page, index, blk_idx, parent);\n\nzram_bio_read() already checks zram_bvec_read() < 0 and sets\nbio->bi_status = BLK_STS_IOERR, which is the right place to handle\nthis.  In the mixed case (some bvecs submitted async before the\nfailing one), the parent bio completes only after all outstanding\nchild bios call bio_endio(parent), so bi_remaining stays balanced.\n\nPreviously the silent return-0 on allocation failure let the parent\nbio complete successfully with unread page data.  The fix is correct."
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
-    },
-    {
-      "title": "mm/damon/core: fix wrong damon_set_regions() argument",
-      "author": "SeongJae Park <sj@kernel.org>",
-      "patches": [
-        {
-          "title": "[PATCH] mm/damon/stat: fix wrong argument to damon_set_regions()",
-          "link": ""
-        },
-        {
-          "title": "[PATCH] mm/damon/core: fix wrong damon_set_regions() argument",
-          "link": ""
-        }
-      ],
-      "patch_count": 2,
-      "link": "",
-      "updated": "Fri, 13 Mar 2026 16:41:00 -0700",
-      "subsystems": [
-        "damon/core",
-        "damon/stat"
-      ],
-      "review": {
-        "verdict": "looks_good",
-        "summary": "This two-patch series fixes a copy-paste bug where addr_unit (a scale factor, not a count) was wrongly passed as the nr_ranges argument to damon_set_regions() in both core.c and stat.c; in both call sites only a single damon_addr_range is passed, so the correct value is 1.",
-        "review_inline": "SeongJae Park <sj@kernel.org>\n\nmm/damon: fix wrong damon_set_regions() nr_ranges argument\n\nVerified the damon_set_regions() signature:\n\n  int damon_set_regions(struct damon_target *t,\n          struct damon_addr_range *ranges,\n          unsigned int nr_ranges, unsigned long min_region_sz)\n\nThe third parameter is nr_ranges -- the length of the ranges array.\n\n> diff --git a/mm/damon/core.c b/mm/damon/core.c\n> --- a/mm/damon/core.c\n> +++ b/mm/damon/core.c\n\n[ ... ]\n\n> -\treturn damon_set_regions(t, &addr_range, addr_unit, min_region_sz);\n> +\treturn damon_set_regions(t, &addr_range, 1, min_region_sz);\n\nIn damon_set_region_biggest_system_ram_default(), &addr_range is a\npointer to a single on-stack struct damon_addr_range, so nr_ranges must\nbe 1.  Passing addr_unit is wrong: damon_set_regions() iterates\nranges[0]..ranges[nr_ranges-1], so when addr_unit != 1 (e.g. PAGE_SIZE,\nwhich lru_sort.c allows via module_param) the loop walks far past the\nsingle valid element.  The fix is correct.\n\n> diff --git a/mm/damon/stat.c b/mm/damon/stat.c\n> --- a/mm/damon/stat.c\n> +++ b/mm/damon/stat.c\n\n[ ... ]\n\n> -\treturn damon_set_regions(t, &addr_range, addr_unit, min_region_sz);\n> +\treturn damon_set_regions(t, &addr_range, 1, min_region_sz);\n\nSame bug, same fix.  No locking, refcount, or error-path concerns in\neither change -- both are single-line constant argument corrections.\n"
-      },
-      "fetch_date": "2026-03-13"
     },
     {
       "title": "mm/damon: let DAMON be paused and resumed",
@@ -529,122 +413,11 @@
         "tests"
       ],
       "review": {
-        "verdict": "minor_issues",
-        "summary": "This series introduces a damon_ctx->pause flag that lets kdamond idle (sleeping one sample_interval per loop iteration, processing only damon_call() callbacks) while preserving all internal state, and exposes it via a new 'pause' sysfs file under each context directory.",
-        "review_inline": "From: <reviewer>\nTo: SeongJae Park <sj@kernel.org>\nSubject: Re: [RFC PATCH 01/10] mm/damon/core: introduce damon_ctx->paused\n\nThanks for the series.  The core mechanism is clean and the threading\nmodel is sound: ctx->pause is read and written exclusively from the\nkdamond thread (writes happen inside damon_commit_ctx(), invoked from\nkdamond_call() callbacks), so there is no data race.  Two items below\nare worth addressing before posting non-RFC.\n\n> diff --git a/include/linux/damon.h b/include/linux/damon.h\n> --- a/include/linux/damon.h\n> +++ b/include/linux/damon.h\n> @@ -811,6 +811,8 @@ struct damon_ctx {\n>  \t * intervals tuning\n>  \t */\n>  \tunsigned long next_intervals_tune_sis;\n> +\t/* pause kdamond main loop */\n> +\tbool pause;\n>  \t/* for waiting until the execution of the kdamond_fn is started */\n>  \tstruct completion kdamond_started;\n\nThe new field lands in the '/* private: internal use only */' section,\nbut 'pause' is a user-settable API parameter in the same sense as\n'ops', 'addr_unit', 'min_region_sz', 'adaptive_targets', and 'schemes',\nall of which live in the '/* public: */' section.  Should 'pause' be\nmoved to the public section and added to the struct kdoc comment\nalongside the other @-tagged public fields?\n\n> diff --git a/mm/damon/core.c b/mm/damon/core.c\n> --- a/mm/damon/core.c\n> +++ b/mm/damon/core.c\n> @@ -2978,6 +2979,13 @@ static int kdamond_fn(void *data)\n>  \t\t * kdamond_merge_regions() if possible, to reduce overhead\n>  \t\t */\n>  \t\tkdamond_call(ctx, false);\n> +\t\twhile (ctx->pause) {\n> +\t\t\tif (kdamond_need_stop(ctx))\n> +\t\t\t\tgoto done;\n> +\t\t\tkdamond_usleep(ctx->attrs.sample_interval);\n> +\t\t\t/* allow caller unset pause via damon_call() */\n> +\t\t\tkdamond_call(ctx, false);\n> +\t\t}\n>  \t\tif (!list_empty(&ctx->schemes))\n>  \t\t\tkdamond_apply_schemes(ctx);\n> +\t\telse\n> +\t\t\tdamos_walk_cancel(ctx);\n\nThe pause loop calls kdamond_call() but never damos_walk_cancel().\nConsider the following sequence: a kernel thread calls damos_walk(),\nwhich installs ctx->walk_control and then blocks in\nwait_for_completion().  Concurrently, a second thread queues a\ndamon_call() callback that calls damon_commit_ctx() with pause=true.\nkdamond processes that callback in the kdamond_call() call just before\nthe pause check, sets ctx->pause = true, and then enters the pause\nloop with ctx->walk_control still non-NULL.  Since neither\nkdamond_apply_schemes() nor the else-branch damos_walk_cancel() is ever\nreached, the damos_walk() caller sits in wait_for_completion()\nindefinitely -- until the context is unpaused or the kdamond is\nstopped (which eventually reaches damos_walk_cancel() at the 'done:'\nlabel).\n\nShould the pause loop call damos_walk_cancel() once before entering\nthe first kdamond_usleep(), so a pending walk is released promptly\nrather than for the entire pause duration?\n\nEverything else checks out.  The kdamond_usleep(sample_interval) in\nthe pause loop with a potentially-zero interval is consistent with the\nexisting usleep call in the main loop.  The stop path via\nkdamond_need_stop() -> goto done -> damos_walk_cancel() is correct.\nThe sysfs ctx->pause = sys_ctx->pause assignment in\ndamon_sysfs_apply_inputs() runs inside a damon_call() callback, so\nit is safe."
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-15"
-    },
-    {
-      "title": "Docs/mm: document Page Allocation",
-      "author": "Kit Dallege <xaum.io@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH] Docs/mm: document Page Allocation",
-          "link": "https://lore.kernel.org/linux-mm/20260314152530.100357-1-xaum.io@gmail.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314152530.100357-1-xaum.io@gmail.com/",
-      "updated": "Sat, 14 Mar 2026 16:25:30 +0100",
-      "subsystems": [
-        "docs"
-      ],
-      "review": {
-        "summary": "Claude CLI error: error_max_structured_output_retries after 30 turns.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-14"
-    },
-    {
-      "title": "Docs/mm: document Virtually Contiguous Memory Allocation",
-      "author": "Kit Dallege <xaum.io@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH] Docs/mm: document Virtually Contiguous Memory Allocation",
-          "link": "https://lore.kernel.org/linux-mm/20260314152532.100411-1-xaum.io@gmail.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314152532.100411-1-xaum.io@gmail.com/",
-      "updated": "Sat, 14 Mar 2026 16:25:32 +0100",
-      "subsystems": [
-        "docs"
-      ],
-      "review": {
-        "summary": "Claude CLI error: error_max_structured_output_retries after 30 turns.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-14"
-    },
-    {
-      "title": "Docs/mm: document Page Reclaim",
-      "author": "Kit Dallege <xaum.io@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH] Docs/mm: document Page Reclaim",
-          "link": "https://lore.kernel.org/linux-mm/20260314152534.100473-1-xaum.io@gmail.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314152534.100473-1-xaum.io@gmail.com/",
-      "updated": "Sat, 14 Mar 2026 16:25:34 +0100",
-      "subsystems": [
-        "docs"
-      ],
-      "review": {
-        "output_type": "review",
-        "verdict": "looks_good",
-        "summary": "This patch fills in the page_reclaim.rst documentation stub with a high-level overview of the page reclaim subsystem, covering kswapd/direct reclaim triggers, priority-based scanning, LRU lists (classic and multi-gen), shrinkers, memcg reclaim, and NUMA demotion.",
-        "review_inline": "On Mon, Mar 16 2026, Kit Dallege wrote:\n\n[PATCH] Docs/mm: document Page Reclaim\n\nFill in the page_reclaim.rst stub created in commit 481cc97349d6\n(\"mm,doc: Add new documentation structure\") as part of\nthe structured memory management documentation following\nMel Gorman's book outline.\n\n> diff --git a/Documentation/mm/page_reclaim.rst b/Documentation/mm/page_reclaim.rst\n> --- a/Documentation/mm/page_reclaim.rst\n> +++ b/Documentation/mm/page_reclaim.rst\n\n[ ... ]\n\n> +Reclaim Priority\n> +================\n> +\n> +The reclaim path operates at decreasing priority levels (from\n> +``DEF_PRIORITY`` down to 0).  At each level, a larger fraction of the LRU\n> +lists is scanned.  At the default priority, only 1/4096th of pages are\n> +considered; at priority 0, the entire list is scanned.\n\nVerified: DEF_PRIORITY=12 in include/linux/mmzone.h; scan fraction\nis computed as (total >> sc->priority), giving 1/4096 at priority\n12 and the full list at priority 0.  Correct.\n\n[ ... ]\n\n> +Classic LRU\n> +-----------\n> +\n> +The classic scheme uses four LRU lists per lruvec: active and inactive for\n> +both anonymous and file-backed pages.  This approximates a second-chance\n> +(clock) algorithm:\n> +\n> +- Pages start on the inactive list when first allocated.\n> +- If accessed again while on the inactive list, they are promoted to the\n> +  active list.\n\nVerified against mm/swap.c: folio_add_lru() does not set the active\nflag for classic LRU (only the MGLRU in-fault path does so), so new\nfolios land on the inactive list.  folio_mark_accessed() promotes an\ninactive folio to active.  Correct.\n\n> +LRU Batching\n> +------------\n> +\n> +To avoid taking the lruvec lock on every page access, LRU operations are\n> +batched per-CPU (``mm/swap.c``).  Functions like ``folio_add_lru()`` and\n> +``folio_mark_accessed()`` queue pages into per-CPU folio batches that are\n> +drained to the actual LRU lists periodically or when the batch is full.\n\nVerified: cpu_fbatches in mm/swap.c holds per-CPU folio_batch\nfields (lru_add, lru_activate, etc.); folio_add_lru() calls\nfolio_batch_add_and_move() which drains when the batch is full.\nCorrect.\n\n[ ... ]\n\n> +Memory Cgroup Reclaim\n> +---------------------\n> +\n> +When memory cgroup limits are exceeded, reclaim targets only the pages\n> +belonging to that cgroup.  Each memory cgroup has its own lruvec per node,\n> +so the scanner can isolate its pages without disturbing the rest of the\n> +system.  ``try_to_free_mem_cgroup_pages()`` is the entry point for\n> +cgroup-scoped reclaim.\n\nVerified: try_to_free_mem_cgroup_pages() exists in mm/vmscan.c and\ncalls do_try_to_free_pages() with sc.target_mem_cgroup set.  Correct.\n\nAlso verified: shrinker callbacks count_objects()/scan_objects() are\ndeclared in include/linux/shrinker.h and the implementation lives in\nmm/shrinker.c.  Cross-references to Documentation/mm/oom.rst,\nDocumentation/mm/multigen_lru.rst, and\nDocumentation/mm/unevictable-lru.rst all resolve to existing files.\n\nNote: the diff supplied for review is truncated at the Shrinkers\nsection; any content below that point was not visible.\n\nThe technical content visible in the patch is accurate and the\ncross-references are valid.\n\nReviewed-by: (your name here)"
-      },
-      "fetch_date": "2026-03-14"
-    },
-    {
-      "title": "Docs/mm: document Swap",
-      "author": "Kit Dallege <xaum.io@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH] Docs/mm: document Swap",
-          "link": "https://lore.kernel.org/linux-mm/20260314152536.100531-1-xaum.io@gmail.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314152536.100531-1-xaum.io@gmail.com/",
-      "updated": "Sat, 14 Mar 2026 16:25:36 +0100",
-      "subsystems": [
-        "docs"
-      ],
-      "review": {
-        "summary": "Claude CLI error: error_max_structured_output_retries after 43 turns.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-14"
-    },
-    {
-      "title": "Docs/mm: document Shared Memory Filesystem",
-      "author": "Kit Dallege <xaum.io@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH] Docs/mm: document Shared Memory Filesystem",
-          "link": "https://lore.kernel.org/linux-mm/20260314152538.100593-1-xaum.io@gmail.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314152538.100593-1-xaum.io@gmail.com/",
-      "updated": "Sat, 14 Mar 2026 16:25:38 +0100",
-      "subsystems": [
-        "docs"
-      ],
-      "review": {
-        "verdict": "minor_issues",
-        "summary": "Fills in the shmem.rst documentation stub with a description of tmpfs/shmem internals covering page cache integration, swap, huge pages, accounting, and fallocate. Two factual inaccuracies were found: the shadow-entry description misplaces where shadows land for shmem evictions, and the fallocate section omits the FALLOC_FL_KEEP_SIZE flag.",
-        "review_inline": "Author: Kit Dallege <xaum.io@gmail.com>\n\nDocs/mm: document Shared Memory Filesystem\n\nGood start filling in the stub.  Two factual issues worth fixing:\n\n> +Page Cache Integration\n> +======================\n> +\n> +tmpfs uses the kernel's page cache (xarray) to index its pages by file\n> +offset.  When a page is read or faulted in, the page cache is checked\n> +first.  If the page has been swapped out, a swap entry is found in its\n> +place, and the page is swapped back in transparently.\n> +\n> +When a page is added to the cache for a tmpfs file, it replaces any\n> +existing swap entry at that offset.  When a page is evicted by reclaim,\n> +a swap entry takes its place.  Shadow entries (see\n> +Documentation/mm/page_reclaim.rst) may also be stored to support working\n> +set detection.\n\nThe shadow-entry claim is misleading for shmem.  For regular file\npages, workingset_eviction() stores a shadow in the xarray slot via\n__filemap_remove_folio().  For shmem, however, the eviction path in\nvmscan.c goes through the folio_test_swapcache() branch and passes the\nshadow to __swap_cache_del_folio(), which stores it in the swap table\n(shadow_to_swp_tb()), not in the shmem inode's xarray.  The xarray\nslot for a swapped-out shmem page holds only the swap entry, never a\nshadow entry.  Could the paragraph clarify that working-set shadows\nfor shmem are stored in the swap cache rather than in the page-cache\nxarray?\n\n> +fallocate\n> +=========\n> +\n> +tmpfs supports ``fallocate()`` to preallocate space for a file.\n> +Preallocated pages are allocated and inserted into the page cache\n> +immediately, guaranteeing that subsequent writes will not fail with\n> +``ENOSPC``.\n> +\n> +``FALLOC_FL_PUNCH_HOLE`` is also supported: it removes pages from a range\n> +of the file and returns them to the filesystem's free pool.  This is used\n> +by applications that want to release portions of a tmpfs file without\n> +truncating it.\n\nshmem_fallocate() accepts two flags:\n\n  if (mode & ~(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE))\n          return -EOPNOTSUPP;\n\nFALLOC_FL_KEEP_SIZE is missing from the description.  When set, space\nis reserved beyond the current i_size without extending it.  The\nsection says fallocate \"guarantees subsequent writes will not fail with\nENOSPC\", but that guarantee only holds for the pre-reserved range; it\nwould be clearer to mention FALLOC_FL_KEEP_SIZE and note that it\npreallocates without changing the visible file size."
-      },
-      "fetch_date": "2026-03-14"
     },
     {
       "title": "mm/damon/stat: monitor all System RAM resources",
@@ -662,9 +435,9 @@
         "damon/stat"
       ],
       "review": {
-        "verdict": "minor_issues",
-        "summary": "This patch fixes damon_stat to monitor all System RAM regions rather than just the biggest one, by walking all System RAM resources and computing a single bounding range from the first region's start to the last region's end. The fix is correct for the stated goal.",
-        "review_inline": "SeongJae Park <sj@kernel.org>\n\nmm/damon/stat: monitor all System RAM resources\n\nThe approach of walking all System RAM regions and using a single\nbounding range [first.start, last.end] is correct.  I verified the\nfollowing:\n\n- walk_system_ram_res() traverses resources in ascending address order\n  (via walk_res_desc/find_next_res with start = res.end + 1 after each\n  step), so damon_stat_system_ram_walk_fn() correctly captures the\n  lowest start and the highest end across all System RAM regions.\n\n- The arg.walked boolean correctly detects the no-System-RAM case and\n  the return value of walk_system_ram_res() does not need to be checked\n  separately.\n\n- damon_add_target() is called before damon_stat_set_monitoring_region(),\n  and damon_destroy_ctx() calls damon_destroy_targets() internally, so\n  the error path through free_out: is leak-free.\n\n- addr_range.end = damon_stat_res_to_core_addr(arg.res.end + 1, addr_unit)\n  produces a correct exclusive end, consistent with damon_addr_range\n  semantics.\n\n- damon_set_regions() is called with nr_ranges=1, which is correct.\n\nOne question:\n\n> +static unsigned long damon_stat_res_to_core_addr(resource_size_t ra,\n> +\t\tunsigned long addr_unit)\n> +{\n> +\t/*\n> +\t * Use div_u64() for avoiding linking errors related with __udivdi3,\n> +\t * __aeabi_uldivmod, or similar problems.  This should also improve the\n> +\t * performance optimization (read div_u64() comment for the detail).\n> +\t */\n> +\tif (sizeof(ra) == 8 && sizeof(addr_unit) == 4)\n> +\t\treturn div_u64(ra, addr_unit);\n> +\treturn ra / addr_unit;\n> +}\n\ndamon_res_to_core_addr() in mm/damon/core.c is byte-for-byte identical\nto this new helper.  It is currently static, so stat.c cannot call it\ndirectly.  Would it make sense to make damon_res_to_core_addr() non-static\nand declare it in include/linux/damon.h, rather than duplicating the\nlogic here?\n\nAside from that code-duplication question the logic looks correct to me.\n"
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-15"
     },
@@ -696,9 +469,9 @@
         "workingset"
       ],
       "review": {
-        "verdict": "needs_work",
-        "summary": "Two-patch series introducing a draining state for MGLRU enable/disable transitions to prevent cgroup OOM kills by ensuring folios remain visible to at least one reclaim mechanism, plus shadow entry context tracking to preserve workingset refault semantics across state changes.",
-        "review_inline": "From: Reviewer\n\nmm/mglru: fix cgroup OOM during MGLRU state switching\nmm/mglru: maintain workingset refault context across state transitions\n\nThe problem statement is real and the general approach (intermediate\ndraining state + per-folio gen check instead of global flag) is\nsound. A few issues need addressing before this is ready.\n\n> diff --git a/include/linux/mm_inline.h b/include/linux/mm_inline.h\n> +static inline bool lru_gen_draining(void)\n> +{\n> +\tDECLARE_STATIC_KEY_FALSE(lru_drain_core);\n> +\n> +\treturn static_branch_unlikely(&lru_drain_core);\n> +}\n\nDECLARE_STATIC_KEY_FALSE is an extern declaration; the corresponding\nDEFINE_STATIC_KEY_FALSE(lru_drain_core) must live in a .c file.  The\nvmscan.c diff is truncated so I cannot confirm the definition is\nthere.  Similarly, lru_gen_change_state() must be modified to call\nstatic_branch_enable/disable for lru_drain_core at the beginning and\nend of the transition -- those changes are also not visible.  If\neither is missing the feature never activates and the fix is a no-op.\nCan you confirm both are present in the full patch?\n\n> diff --git a/mm/swap.c b/mm/swap.c\n> -\tif (lru_gen_enabled()) {\n> +\tif (folio_lru_gen(folio) != -1) {\n>  \t\tlru_gen_inc_refs(folio);\n>  \t\treturn;\n>  \t}\n\nThis change in folio_mark_accessed() is correct.  When enabling MGLRU,\nlru_gen_enabled() becomes true before fill_evictable() completes, so\nsome folios are still on traditional LRU (gen == -1).  The old code\nwould have called lru_gen_inc_refs() on such folios incorrectly; the\nnew code falls through to the traditional path.  The symmetric case\nduring disable (folio still on MGLRU lists after lru_gen_enabled()\nbecomes false) is also handled correctly.\n\n> -\tbool active = folio_test_active(folio) || lru_gen_enabled();\n> +\tbool active = folio_test_active(folio) || (folio_lru_gen(folio) != -1);\n\nSame reasoning applies to lru_deactivate_file(): checking per-folio\ngen state is more precise than the global flag during transitions.\nLooks correct.\n\n> diff --git a/mm/vmscan.c b/mm/vmscan.c\n> +\t/* whether in lru gen scan context */\n> +\tunsigned int lru_gen:1;\n\n[ ... ]\n\n> +\tsc->lru_gen = 0;\n>  \tnr_reclaimed = shrink_folio_list(&folio_list, pgdat, sc, &stat, false,\n\nThis sets lru_gen on the shared scan_control that was allocated by the\ntop-level reclaim entry point and threaded down.  The traditional and\nMGLRU eviction paths are mutually exclusive within one shrink_lruvec\ncall, so for current code this is safe.  If the draining mechanism\n(not visible in the truncated diff) calls both shrink_inactive_list\nand evict_folios sequentially on the same sc, the ordering of these\nassignments (0 then 1) must be carefully verified to ensure the flag\nis set correctly before each shrink_folio_list call.\n\n> +\t\t.lru_gen = lru_gen_enabled(),\n>  \t};\n\nThis appears in both reclaim_clean_pages_from_list() and\nreclaim_folio_list().  These functions receive a list of folios that\nmay have come from either MGLRU or traditional LRU lists regardless\nof the current global state -- particularly during transitions.  Using\nlru_gen_enabled() as a proxy tags all evictions from these paths as\nMGLRU (or not) based solely on the current global flag, which will be\nwrong for folios from the other system.  A per-folio check\n(folio_lru_gen(folio) != -1) at the point of eviction would be more\ncorrect, though I acknowledge these are not the primary paths\nresponsible for the reported OOM.\n\n> diff --git a/mm/workingset.c b/mm/workingset.c\n> -void *workingset_eviction(struct folio *folio,\n>                            struct mem_cgroup *target_memcg);\n> +void *workingset_eviction(struct folio *folio,\n>                            struct mem_cgroup *target_memcg, bool lru_gen);\n\nThe workingset.c diff for patch 2 is not shown.  The current code\nin workingset_refault() dispatches based on lru_gen_enabled():\n\n    if (lru_gen_enabled()) {\n        lru_gen_refault(folio, shadow);\n        return;\n    }\n\nand workingset_test_recent() does the same.  The whole point of patch\n2 is to instead dispatch based on the is_mglru bit encoded in the\nshadow entry.  If workingset_refault() and workingset_test_recent()\nstill use lru_gen_enabled() after the patch, an MGLRU shadow entry\nthat refaults after MGLRU is disabled will be unpacked by the\ntraditional path against the nonresident_age counter, producing a\ngarbage refault distance and incorrect activation decisions.  Please\nshare the full workingset.c diff so this critical path can be\nverified.\n\nAlso, lru_gen_eviction() and the traditional eviction path produce\ndifferent-format shadow entries (gen token with LRU_REFS_WIDTH bits vs\nnonresident_age counter).  Adding the is_mglru bit on top of the\nexisting pack_shadow() encoding needs to fit within the EVICTION_SHIFT\nbit budget.  The existing BUILD_BUG_ON in lru_gen_eviction() checks\nLRU_GEN_WIDTH + LRU_REFS_WIDTH against the remaining bits; adding\nWORKINGSET_MGLRU_SHIFT tightens that bound and likely needs a\ncorresponding update to that assertion.\n\nSummary of items to address:\n1. Confirm DEFINE_STATIC_KEY_FALSE(lru_drain_core) and the\n   lru_gen_change_state() enable/disable calls are in the full diff.\n2. Show the full workingset.c diff, particularly whether\n   workingset_refault() and workingset_test_recent() dispatch on the\n   is_mglru shadow bit rather than lru_gen_enabled().\n3. Consider per-folio gen check in reclaim_clean_pages_from_list()\n   and reclaim_folio_list() instead of lru_gen_enabled().\n4. Verify the shadow entry bit layout with the added is_mglru bit and\n   update the BUILD_BUG_ON accordingly."
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },
@@ -718,192 +491,11 @@
         "docs"
       ],
       "review": {
-        "summary": "Claude CLI error: error_max_structured_output_retries after 28 turns.",
+        "summary": "Review timed out.",
         "issues": [],
         "verdict": "skip"
       },
       "fetch_date": "2026-03-15"
-    },
-    {
-      "title": "zswap pool per-CPU acomp_ctx simplifications",
-      "author": "\"Kanchana P. Sridhar\" <kanchanapsridhar2026@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH 0/2] zswap pool per-CPU acomp_ctx simplifications",
-          "link": "https://lore.kernel.org/linux-mm/20260314051632.17931-1-kanchanapsridhar2026@gmail.com/"
-        },
-        {
-          "title": "[PATCH 1/2] mm: zswap: Tie per-CPU acomp_ctx lifetime to the pool.",
-          "link": "https://lore.kernel.org/linux-mm/20260314051632.17931-2-kanchanapsridhar2026@gmail.com/"
-        },
-        {
-          "title": "[PATCH 2/2] mm: zswap: Consistently use IS_ERR_OR_NULL() to check acomp_ctx resources.",
-          "link": "https://lore.kernel.org/linux-mm/20260314051632.17931-3-kanchanapsridhar2026@gmail.com/"
-        }
-      ],
-      "patch_count": 2,
-      "link": "https://lore.kernel.org/linux-mm/20260314051632.17931-1-kanchanapsridhar2026@gmail.com/",
-      "updated": "Fri, 13 Mar 2026 22:16:30 -0700",
-      "subsystems": [
-        "zswap"
-      ],
-      "review": {
-        "verdict": "minor_issues",
-        "summary": "This two-patch series simplifies zswap per-CPU acomp_ctx lifetime by persisting resources until pool destruction rather than freeing on CPU offline, and makes IS_ERR_OR_NULL() usage consistent in allocation checks. The core design is sound but two issues need attention.",
-        "review_inline": "Author: Kanchana P. Sridhar <kanchanapsridhar2026@gmail.com>\n\n[PATCH 1/2] mm: zswap: Tie per-CPU acomp_ctx lifetime to the pool.\n\nThe core approach -- keeping acomp_ctx alive until pool destruction so\nzswap_compress/decompress never race with teardown -- is correct.\nRemoving the acomp_ctx_get_cpu_lock() retry loop is justified because\nthere is no longer a zswap_cpu_comp_dead() that can race to zero\nacomp_ctx->req under a compress/decompress caller.\n\nOne concern about acomp_ctx_dealloc():\n\n> +static void acomp_ctx_dealloc(struct crypto_acomp_ctx *acomp_ctx)\n> +{\n> +\tif (IS_ERR_OR_NULL(acomp_ctx))\n> +\t\treturn;\n> +\n> +\tif (!IS_ERR_OR_NULL(acomp_ctx->req))\n> +\t\tacomp_request_free(acomp_ctx->req);\n> +\n> +\tif (!IS_ERR_OR_NULL(acomp_ctx->acomp))\n> +\t\tcrypto_free_acomp(acomp_ctx->acomp);\n> +\n> +\tkfree(acomp_ctx->buffer);\n> +}\n\nUnlike the old zswap_cpu_comp_dead(), which copied the pointers to\nlocals, zeroed the acomp_ctx fields under the mutex, and then freed\nvia the locals, acomp_ctx_dealloc() frees through the live fields\nwithout zeroing them afterward.\n\nIf the new zswap_cpu_comp_prepare() writes directly into acomp_ctx->acomp\nand acomp_ctx->buffer (as the patch 2 context confirms it does), and then\nthe req allocation fails, the fail path calls acomp_ctx_dealloc().  That\nfrees acomp_ctx->acomp but leaves it as a stale non-NULL, non-ERR_PTR\nvalue -- a dangling pointer.  If a subsequent call to acomp_ctx_dealloc()\nis made for the same slot (e.g. from a pool error-cleanup path iterating\nfor_each_possible_cpu), the IS_ERR_OR_NULL() guard passes for a dangling\npointer and crypto_free_acomp() is called on already-freed memory.\ncrypto_free_acomp() only skips the free for NULL and ERR_PTR; it does\nnot handle stale valid pointers.\n\nCould you confirm that the error-cleanup path in zswap_pool_create()\ndoes not call acomp_ctx_dealloc() for CPUs whose\nzswap_cpu_comp_prepare() already invoked it from the fail path?\n\nThe safest fix is to null out the fields after freeing inside\nacomp_ctx_dealloc(), mirroring the pattern zswap_cpu_comp_dead() used:\n\n    if (!IS_ERR_OR_NULL(acomp_ctx->req)) {\n        acomp_request_free(acomp_ctx->req);\n        acomp_ctx->req = NULL;\n    }\n    if (!IS_ERR_OR_NULL(acomp_ctx->acomp)) {\n        crypto_free_acomp(acomp_ctx->acomp);\n        acomp_ctx->acomp = NULL;\n    }\n    kfree(acomp_ctx->buffer);\n    acomp_ctx->buffer = NULL;\n\n[ ... ]\n\n[PATCH 2/2] mm: zswap: Consistently use IS_ERR_OR_NULL() to check\n            acomp_ctx resources.\n\n> -\tif (IS_ERR(acomp_ctx->acomp)) {\n> +\tif (IS_ERR_OR_NULL(acomp_ctx->acomp)) {\n>  \t\tpr_err(\"could not alloc crypto acomp %s : %pe\\n\",\n>  \t\t\t\tpool->tfm_name, acomp_ctx->acomp);\n>  \t\tret = PTR_ERR(acomp_ctx->acomp);\n>  \t\tgoto fail;\n\ncrypto_alloc_acomp_node() is documented to return ERR_PTR on failure,\nnever NULL (include/crypto/acompress.h: \"IS_ERR() is true in case of\nan error, PTR_ERR() returns the error code\").  So the added NULL branch\nof IS_ERR_OR_NULL() can never trigger in practice.\n\nHowever, if it did trigger, PTR_ERR(NULL) == 0, so ret would be 0 and\nzswap_cpu_comp_prepare() would return success to the cpuhp framework\nwith acomp_ctx->acomp == NULL.  The pool slot would be broken and\nsubsequent compress/decompress would fault on the NULL pointer.\n\nSince the NULL case is currently unreachable, this is latent rather\nthan active.  But it seems cleaner to keep IS_ERR() for acomp (where\nthe API guarantees ERR_PTR, never NULL) and use IS_ERR_OR_NULL() only\nfor req (which is documented to return NULL on failure).\n\n> -\tif (!acomp_ctx->req) {\n> +\tif (IS_ERR_OR_NULL(acomp_ctx->req)) {\n\nThis change is safe: acomp_request_alloc() returns NULL on failure and\nnever an ERR_PTR (include/crypto/acompress.h: \"NULL in case of an\nerror\"), so IS_ERR_OR_NULL() is equivalent to !req here.\n"
-      },
-      "fetch_date": "2026-03-13"
-    },
-    {
-      "title": "selftests/mm: add folio_split() and filemap_get_entry() race test",
-      "author": "Zi Yan <ziy@nvidia.com>",
-      "patches": [
-        {
-          "title": "[PATCH] selftests/mm: add folio_split() and filemap_get_entry() race test",
-          "link": "https://lore.kernel.org/linux-mm/20260313114037.3593642-1-ziy@nvidia.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260313114037.3593642-1-ziy@nvidia.com/",
-      "updated": "Fri, 13 Mar 2026 07:40:37 -0400",
-      "subsystems": [
-        "tests"
-      ],
-      "review": {
-        "verdict": "minor_issues",
-        "summary": "Adds a selftest for the race condition between folio_split() and filemap_get_entry(), where shmem hole-punching via MADV_REMOVE triggers folio_split() concurrently with lockless xarray reads in 16 reader threads.",
-        "review_inline": "Author: Zi Yan <ziy@nvidia.com>\n\nselftests/mm: add folio_split() and filemap_get_entry() race test\n\nThe test structure looks correct: parent punches holes to drive\nfolio_split(), child runs 16 reader threads exercising\nfilemap_get_entry() locklessly.  The page-pattern fill/verify approach\ncleanly distinguishes corruption from zeroing.  One logic issue below.\n\n> diff --git a/tools/testing/selftests/mm/folio_split_race_test.c b/tools/testing/selftests/mm/folio_split_race_test.c\n> new file mode 100644\n\n[ ... ]\n\n> +static void *reader_thread(void *arg)\n> +{\n> +\tstruct reader_arg *ra = (struct reader_arg *)arg;\n> +\t[...]\n> +\t\tfor (page_idx = (size_t)tid; page_idx < TOTAL_PAGES;\n> +\t\t     page_idx += NUM_READER_THREADS) {\n> +\t\t\tif (page_idx % PUNCH_INTERVAL >= 0 &&\n> +\t\t\t    page_idx % PUNCH_INTERVAL < PUNCH_SIZE_FACTOR)\n> +\t\t\t\tcontinue;\n\n`page_idx` is `size_t` (unsigned).  PUNCH_INTERVAL expands to the\ninteger literal 50, which is converted to size_t in the % expression,\nyielding an unsigned result.  That means `page_idx % PUNCH_INTERVAL\n>= 0` is always true -- it is a tautological comparison.  Clang with\n-Wall warns about this (-Wtautological-unsigned-zero-compare).  The\nintended guard is just:\n\n    if (page_idx % PUNCH_INTERVAL < PUNCH_SIZE_FACTOR)\n        continue;\n\nThe run-time behaviour is unaffected (the always-true half does not\nchange which pages are skipped), but the dead sub-expression should be\ndropped.\n"
-      },
-      "fetch_date": "2026-03-13"
-    },
-    {
-      "title": "Refactor reserved memory regions handling code",
-      "author": "Marek Szyprowski <m.szyprowski@samsung.com>",
-      "patches": [
-        {
-          "title": "[PATCH 0/7] Refactor reserved memory regions handling code",
-          "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-1-m.szyprowski@samsung.com/"
-        },
-        {
-          "title": "[PATCH 1/7] of: reserved_mem: remove fdt node from the structure",
-          "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-2-m.szyprowski@samsung.com/"
-        },
-        {
-          "title": "[PATCH 2/7] of: reserved_mem: use -ENODEV instead of -ENOENT",
-          "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-3-m.szyprowski@samsung.com/"
-        },
-        {
-          "title": "[PATCH 3/7] of: reserved_mem: switch to ops based OF_DECLARE()",
-          "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-4-m.szyprowski@samsung.com/"
-        },
-        {
-          "title": "[PATCH 4/7] of: reserved_mem: replace CMA quirks by generic methods",
-          "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-5-m.szyprowski@samsung.com/"
-        },
-        {
-          "title": "[PATCH 5/7] of: reserved_mem: rearrange code a bit",
-          "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-6-m.szyprowski@samsung.com/"
-        },
-        {
-          "title": "[PATCH 6/7] of: reserved_mem: clarify fdt_scan_reserved_mem*() functions",
-          "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-7-m.szyprowski@samsung.com/"
-        },
-        {
-          "title": "[PATCH 7/7] of: reserved_mem: rework fdt_init_reserved_mem_node()",
-          "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-8-m.szyprowski@samsung.com/"
-        }
-      ],
-      "patch_count": 7,
-      "link": "https://lore.kernel.org/linux-mm/20260313150802.1121442-1-m.szyprowski@samsung.com/",
-      "updated": "Fri, 13 Mar 2026 16:07:55 +0100",
-      "subsystems": [
-        "drivers",
-        "include",
-        "kernel"
-      ],
-      "review": {
-        "summary": "Claude CLI error: error_max_structured_output_retries after 19 turns.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-13"
-    },
-    {
-      "title": "rust_binder: use AssertSync for BINDER_VM_OPS",
-      "author": "Alice Ryhl <aliceryhl@google.com>",
-      "patches": [
-        {
-          "title": "[PATCH] rust_binder: use AssertSync for BINDER_VM_OPS",
-          "link": "https://lore.kernel.org/linux-mm/20260314111951.4139029-1-aliceryhl@google.com/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260314111951.4139029-1-aliceryhl@google.com/",
-      "updated": "Sat, 14 Mar 2026 11:19:51 +0000",
-      "subsystems": [
-        "drivers"
-      ],
-      "review": {
-        "verdict": "looks_good",
-        "summary": "The patch wraps BINDER_VM_OPS in AssertSync<vm_operations_struct> to satisfy Rust's Sync requirement for immutable statics, which broke after 'userfaultfd: introduce vm_uffd_ops' added a raw pointer field to vm_operations_struct. No functional change is introduced.",
-        "review_inline": "Author: Alice Ryhl <aliceryhl@google.com>\n\nrust_binder: use AssertSync for BINDER_VM_OPS\n\nVerified the following:\n\n> -static BINDER_VM_OPS: bindings::vm_operations_struct = pin_init::zeroed();\n> +static BINDER_VM_OPS: AssertSync<bindings::vm_operations_struct> = AssertSync(pin_init::zeroed());\n\nAssertSync is declared #[repr(transparent)], so &BINDER_VM_OPS.0 is the\nsame address as &BINDER_VM_OPS. The identity check in check_vma() and\nthe assignment in register_with_vma() are therefore consistent and\ncorrect.\n\n> -    if !ptr::eq(vm_ops, &BINDER_VM_OPS) {\n> +    if !ptr::eq(vm_ops, &BINDER_VM_OPS.0) {\n\nBoth sides of the comparison refer to the same address via the\ntransparent wrapper, so the VMA identity check is unchanged.\n\nThe broader SAFETY comment on `unsafe impl<T> Sync for AssertSync<T>`\nis accurate: the same pattern was already in use for file_operations,\nand wrapping zeroed C structs in a global is safe regardless of whether\nthe struct gains new pointer fields.\n\nLooks good to me."
-      },
-      "fetch_date": "2026-03-14"
-    },
-    {
-      "title": "mm/vmalloc: free unused pages on vrealloc() shrink",
-      "author": "Shivam Kalra via B4 Relay <devnull+shivamkalra98.zohomail.in@kernel.org>",
-      "patches": [
-        {
-          "title": "[PATCH v4 0/3] mm/vmalloc: free unused pages on vrealloc() shrink",
-          "link": "https://lore.kernel.org/linux-mm/20260314-vmalloc-shrink-v4-0-c1e2e0bb5455@zohomail.in/"
-        },
-        {
-          "title": "[PATCH v4 1/3] mm/vmalloc: extract vm_area_free_pages() helper from vfree()",
-          "link": "https://lore.kernel.org/linux-mm/20260314-vmalloc-shrink-v4-1-c1e2e0bb5455@zohomail.in/"
-        },
-        {
-          "title": "[PATCH v4 2/3] mm/vmalloc: free unused pages on vrealloc() shrink",
-          "link": "https://lore.kernel.org/linux-mm/20260314-vmalloc-shrink-v4-2-c1e2e0bb5455@zohomail.in/"
-        },
-        {
-          "title": "[PATCH v4 3/3] lib/test_vmalloc: add vrealloc test case",
-          "link": "https://lore.kernel.org/linux-mm/20260314-vmalloc-shrink-v4-3-c1e2e0bb5455@zohomail.in/"
-        }
-      ],
-      "patch_count": 3,
-      "link": "https://lore.kernel.org/linux-mm/20260314-vmalloc-shrink-v4-0-c1e2e0bb5455@zohomail.in/",
-      "updated": "Sat, 14 Mar 2026 14:34:12 +0530",
-      "subsystems": [
-        "tests",
-        "vmalloc"
-      ],
-      "review": {
-        "summary": "Claude CLI error: error_max_structured_output_retries after 22 turns.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-14"
-    },
-    {
-      "title": "elf: align ET_DYN base to exec folio order for contpte mapping",
-      "author": "WANG Rui <r@hev.cc>",
-      "patches": [
-        {
-          "title": "[PATCH 3/4] elf: align ET_DYN base to exec folio order for contpte mapping",
-          "link": "https://lore.kernel.org/linux-mm/20260313144213.95686-1-r@hev.cc/"
-        }
-      ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260313144213.95686-1-r@hev.cc/",
-      "updated": "Fri, 13 Mar 2026 22:42:13 +0800",
-      "subsystems": [],
-      "review": {
-        "verdict": "needs_discussion",
-        "summary": "Patch 3/4 bumps the ET_DYN alignment to at least PAGE_SIZE << exec_folio_order() so that the PIE load_bias is contpte-boundary aligned on arm64. The approach unconditionally applies this alignment to all ET_DYN binaries regardless of their segment alignment, which both reduces ASLR entropy for binaries that cannot benefit and forces a probe-mmap on every static-PIE exec on arm64/4K pages.",
-        "review_inline": "Usama Arif <uarif@meta.com>\n\nelf: align ET_DYN base to exec folio order for contpte mapping\n\n> +\t\t\tif (exec_folio_order())\n> +\t\t\t\talignment = max(alignment,\n> +\t\t\t\t\t(unsigned long)PAGE_SIZE << exec_folio_order());\n\nThis sits right after the maximum_alignment() call in the first-PT_LOAD\nET_DYN block, so it feeds into both the PIE path (load_bias masking)\nand the static-PIE path (the alignment > ELF_MIN_ALIGN branch). On\narm64 with 4K pages exec_folio_order() returns 4, so alignment is\nalways at least 64K after this change regardless of what the binary\nrequested.\n\nWANG Rui's concern is well-founded. I see two concrete problems with\nthe unconditional bump:\n\n1. Static-PIE probe-mmap regression.\n\n   For ET_DYN without PT_INTERP the two paths are:\n\n     if (alignment > ELF_MIN_ALIGN) {\n         load_bias = elf_load(...);    /* probe mmap at addr 0 */\n         vm_munmap(load_bias, total_size);\n         load_bias &= ~(alignment - 1);\n         elf_flags |= MAP_FIXED_NOREPLACE;\n     } else\n         load_bias = 0;               /* fast, no extra calls */\n\n   Before this patch, a binary with p_align=4K produces\n   maximum_alignment()=ELF_MIN_ALIGN=PAGE_SIZE, so the fast path is\n   taken. After this patch alignment is always 64K > ELF_MIN_ALIGN,\n   so every static-PIE exec on arm64/4K goes through an extra\n   elf_load() probe and vm_munmap() even when the segments are only\n   4K-aligned and contpte cannot fire. That is two extra syscalls on\n   every exec for static-PIE binaries (ld.so invoked directly,\n   static-pie applications) on arm64 with 4K pages.\n\n2. ASLR entropy reduced for binaries that cannot benefit from contpte.\n\n   For PIE (ET_DYN with PT_INTERP) the masking is:\n\n     load_bias = ELF_ET_DYN_BASE + arch_mmap_rnd();\n     if (alignment)\n         load_bias &= ~(alignment - 1);\n\n   A 64K-aligned load_bias only produces a 64K-aligned VMA if the\n   segment vaddr is itself 0 mod 64K. A binary with p_align=4K can\n   have a vaddr of e.g. 0x1000, so the mapped VMA starts at\n   load_bias+0x1000 which is not 64K-aligned even after masking.\n   Contpte does not fire for that mapping, yet exec_folio_order()\n   bits of ASLR entropy are consumed on every exec of that binary.\n\nBoth problems would go away if the alignment bump were conditional on\nthe segments already being exec-folio-order aligned (vaddr, file\noffset, and memsz all 64K-aligned), as WANG Rui suggests. Binaries\nlinked with p_align>=64K get the benefit; everything else keeps full\nASLR entropy and the static-PIE fast path.\n\nOne way to do this inside maximum_alignment() would be to only apply\nthe exec_folio_order floor when at least one PT_LOAD has\np_align >= (PAGE_SIZE << exec_folio_order()), so the ELF_MIN_ALIGN\nguard in the static-PIE path still saves the fast path for\nsmall-alignment binaries.\n\nCould you clarify the intended scope? Is the goal to benefit binaries\nthat are already built with 64K-aligned segments (in which case the\nconstraint is needed), or to incentivise toolchains to adopt 64K\nalignment (in which case the probe-mmap overhead is a deliberate\ntrade-off worth calling out in the commit message)?\n"
-      },
-      "fetch_date": "2026-03-13"
     }
   ]
 }
