@@ -310,7 +310,136 @@ footer {
 
 
 
-<h2 class="date-header">2026-03-16 <span class="date-count">(13)</span></h2><details class="series-row" id="s-f1beedda" data-title="mm/mempolicy: numa mempolicy mismatch during remote access" data-author="lin ruifeng" data-subsystems="" data-verdict="skip">
+<h2 class="date-header">2026-03-16 <span class="date-count">(13)</span></h2><details class="series-row" id="s-b2ab3b63" data-title="mm/vma: convert vm_flags_t to vma_flags_t in vma code" data-author="&quot;lorenzo stoakes (oracle)&quot;" data-subsystems="arch fs include internal ksm madvise mlock mmap mprotect mremap mseal security tests tools userfaultfd vma vma_exec" data-verdict="minor_issues">
+        <summary>
+            <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
+            <a href="https://lore.kernel.org/linux-mm/cover.1773665966.git.ljs@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/vma: convert vm_flags_t to vma_flags_t in vma code</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-b2ab3b63')">&#128279;</span>
+                <span class="row-author">&quot;Lorenzo Stoakes (Oracle)&quot;</span>
+                <span class="row-patches">23p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">This series converts vm_flags_t to vma_flags_t throughout mm/vma.c and related code, adding bitmap-based helper functions and union aliases for backward compatibility during the transition. The type-system plumbing is sound, but vma_flags_empty() is missing the const qualifier that every other query helper in the same file carries.</div><div class="subsystem-tags"><span class="subsystem-tag">arch</span> <span class="subsystem-tag">fs</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">internal</span> <span class="subsystem-tag">ksm</span> <span class="subsystem-tag">madvise</span> <span class="subsystem-tag">mlock</span> <span class="subsystem-tag">mmap</span> <span class="subsystem-tag">mprotect</span> <span class="subsystem-tag">mremap</span> <span class="subsystem-tag">mseal</span> <span class="subsystem-tag">security</span> <span class="subsystem-tag">tests</span> <span class="subsystem-tag">tools</span> <span class="subsystem-tag">userfaultfd</span> <span class="subsystem-tag">vma</span> <span class="subsystem-tag">vma_exec</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Lorenzo Stoakes (Oracle) &lt;ljs@kernel.org&gt;
+
+mm/vma: convert vm_flags_t to vma_flags_t in vma code
+
+I cross-referenced the diff against the base mm-new tree.  Verified
+the union layout assumptions, sticky-flags semantics, and the
+interaction with existing callers.
+
+--- [PATCH v2 01/23] mm/vma: add vma_flags_empty(), vma_flags_and(),
+    vma_flags_diff_pair() ---
+
+&gt; diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+&gt; +/* Are no flags set in the specified VMA flags? */
+&gt; +static __always_inline bool vma_flags_empty(vma_flags_t *flags)
+&gt; +{
+&gt; +	unsigned long *bitmap = flags-&gt;__vma_flags;
+&gt; +
+&gt; +	return bitmap_empty(bitmap, NUM_VMA_FLAG_BITS);
+&gt; +}
+
+Every other pure-query function in mm_types.h and mm.h takes a const
+pointer: vma_flags_test(), vma_flags_test_any_mask(), and
+vma_flags_test_all_mask() all declare &quot;const vma_flags_t *&quot;.
+vma_flags_empty() only reads the bitmap, so should the signature be:
+
+  bool vma_flags_empty(const vma_flags_t *flags)
+
+with a matching &quot;const unsigned long *bitmap&quot;?  As written, callers
+that hold a const-qualified vma_flags_t cannot pass it without a cast.
+
+&gt; diff --git a/include/linux/mm.h b/include/linux/mm.h
+&gt; +static __always_inline vma_flags_t vma_flags_and_mask(
+&gt; +		const vma_flags_t *flags, vma_flags_t to_and)
+&gt; +{
+&gt; +	vma_flags_t dst;
+&gt; +	unsigned long *bitmap_dst = dst.__vma_flags;
+&gt; +	const unsigned long *bitmap = flags-&gt;__vma_flags;
+&gt; +	const unsigned long *bitmap_to_and = to_and.__vma_flags;
+&gt; +
+&gt; +	bitmap_and(bitmap_dst, bitmap, bitmap_to_and, NUM_VMA_FLAG_BITS);
+&gt; +	return dst;
+&gt; +}
+
+Checked: with NUM_VMA_FLAG_BITS == BITS_PER_LONG this reduces to a
+single-word AND.  bitmap_and() handles that correctly.
+vma_flags_diff_pair() via bitmap_xor() is the same story.  Both look
+correct.
+
+[ ... ]
+
+--- [PATCH v2 03/23] mm/vma: add further vma_flags_t unions ---
+
+&gt; diff --git a/mm/vma.h b/mm/vma.h
+&gt; +	union {
+&gt; +		/* Temporary while VMA flags are being converted. */
+&gt; +		vm_flags_t vm_flags;
+&gt; +		vma_flags_t vma_flags;
+&gt; +	};
+
+Checked the layout: vm_flags_t is &quot;unsigned long&quot;; vma_flags_t is
+{ unsigned long __vma_flags[1] } because NUM_VMA_FLAG_BITS ==
+BITS_PER_LONG.  Both are the same size with the same bit layout, so
+reads and writes through either union member are safe.  The same
+reasoning applies to the mm_struct def_flags/def_vma_flags union in
+mm_types.h.  Existing callers of def_flags such as check_brk_limits()
+and brk() continue to work through the vm_flags_t member unchanged.
+
+[ ... ]
+
+--- [PATCH v2 05/23] mm/vma: use new VMA flags for sticky flags logic ---
+
+&gt; -#define VM_STICKY (VM_SOFTDIRTY | VM_MAYBE_GUARD)
+&gt; +#ifdef CONFIG_MEM_SOFT_DIRTY
+&gt; +#define VMA_STICKY_FLAGS mk_vma_flags(VMA_SOFTDIRTY_BIT, \
+&gt; +                                      VMA_MAYBE_GUARD_BIT)
+&gt; +#else
+&gt; +#define VMA_STICKY_FLAGS mk_vma_flags(VMA_MAYBE_GUARD_BIT)
+&gt; +#endif
+
+Verified: without CONFIG_MEM_SOFT_DIRTY, VM_SOFTDIRTY is defined as 0
+so the old VM_STICKY collapsed to VM_MAYBE_GUARD.  VMA_STICKY_FLAGS
+in that configuration is mk_vma_flags(VMA_MAYBE_GUARD_BIT), the same
+single bit.  The sticky-flag accumulation logic in
+vma_merge_existing_range() and vma_expand() is semantically unchanged.
+
+Checked vma_supports_mlock() (patch 18): the current code tests
+  vma-&gt;vm_flags &amp; (VM_SPECIAL | VM_DROPPABLE)
+When VM_DROPPABLE is not configured it is VM_NONE (0), so that term
+is always false.  vma_test_single_mask() is defined to return false
+when the input mask is empty, preserving that behaviour exactly.
+
+[ ... ]
+
+--- [PATCH v2 17/23] mm: convert do_brk_flags() to use vma_flags_t ---
+
+In the base tree, do_brk_flags() contains:
+
+  vm_flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm-&gt;def_flags;
+  vm_flags = ksm_vma_flags(mm, NULL, vm_flags);
+
+ksm_vma_flags() is declared in ksm.h returning vm_flags_t.  The
+cover letter notes include/linux/ksm.h has 10 lines changed and
+mm/ksm.c has 43 lines changed in this series.  Could you confirm
+whether ksm_vma_flags() is updated to return vma_flags_t here, or
+whether patch 17 uses a vma_flags_to_legacy()/legacy_to_vma_flags()
+conversion at the call site?  The diff stats suggest it is addressed,
+but the truncated patch text makes it hard to verify the exact
+boundary between the two approaches.
+
+[ ... ]
+
+Overall: the union aliasing, sticky-flags conversion, the
+vma_test_single_mask() empty-mask semantics, and the new bitmap
+helpers all look correct.  The only clear defect is the missing const
+on vma_flags_empty().</pre></div><details class="patches-detail"><summary>24 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 00/23] mm/vma: convert vm_flags_t to vma_flags_t in vma code</a></li><li><a href="https://lore.kernel.org/linux-mm/ede9b0f8a2e2dc72e7fbc1a0ddbeb513364c28a2.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 01/23] mm/vma: add vma_flags_empty(), vma_flags_and(), vma_flags_diff_pair()</a></li><li><a href="https://lore.kernel.org/linux-mm/1d789fcc7dba9f93ec844aa87a48b13451dba211.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 02/23] tools/testing/vma: add unit tests flag empty, diff_pair, and[_mask]</a></li><li><a href="https://lore.kernel.org/linux-mm/a37030f2eefc90147e84f9273e325cc289cb9e1d.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 03/23] mm/vma: add further vma_flags_t unions</a></li><li><a href="https://lore.kernel.org/linux-mm/54d2f092b55e29e53916862faa191854b441d8e9.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 04/23] tools/testing/vma: convert bulk of test code to vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/005cac3e37830a33f473edc780a5dae5e00a3845.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 05/23] mm/vma: use new VMA flags for sticky flags logic</a></li><li><a href="https://lore.kernel.org/linux-mm/42b963d3229ed39a758f1bea218fd274a7cd3811.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 06/23] tools/testing/vma: fix VMA flag tests</a></li><li><a href="https://lore.kernel.org/linux-mm/756b9c46ee23e00c2fe64d453ff61dd3b98aa3fc.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 07/23] mm/vma: add append_vma_flags() helper</a></li><li><a href="https://lore.kernel.org/linux-mm/8253a553f354e6ef9b1ddea4831c0033e64eb796.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 08/23] tools/testing/vma: add simple test for append_vma_flags()</a></li><li><a href="https://lore.kernel.org/linux-mm/ba7d1eae0208551c05f4a2015133b926d6650484.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 09/23] mm: unexport vm_brk_flags() and eliminate vm_flags parameter</a></li><li><a href="https://lore.kernel.org/linux-mm/393378bdcbb49141304d5eff7b8dad2966b73c30.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 10/23] mm/vma: introduce vma_flags_same[_mask/_pair]()</a></li><li><a href="https://lore.kernel.org/linux-mm/19cfb4297cb691dc16c75e9e6a24f6564743407e.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 11/23] mm/vma: introduce [vma_flags,legacy]_to_[legacy,vma_flags]() helpers</a></li><li><a href="https://lore.kernel.org/linux-mm/4f1956b7e1e15293f75bffb5eda3d967a1da6f5d.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 12/23] tools/testing/vma: test that legacy flag helpers work correctly</a></li><li><a href="https://lore.kernel.org/linux-mm/8aeaf08d153c3c3196855fdc9ddbacccf673ef82.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 13/23] mm/vma: introduce vma_test[_any[_mask]](), and make inlining consistent</a></li><li><a href="https://lore.kernel.org/linux-mm/ecd6e0134c4495310d6914b8177e99886e17d22f.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 14/23] tools/testing/vma: update VMA flag tests to test vma_test[_any_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/96e7481026067766bfd7f2d4e395dd89ce845ab2.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 15/23] mm: introduce vma_flags_count() and vma[_flags]_test_single_mask()</a></li><li><a href="https://lore.kernel.org/linux-mm/140b9b77da1ef463f969cbeb2b5fb25627301cd6.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 16/23] tools/testing/vma: test vma_flags_count,vma[_flags]_test_single_mask</a></li><li><a href="https://lore.kernel.org/linux-mm/063af0422d99bee0195589aa63f8f44edaf409fa.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 17/23] mm: convert do_brk_flags() to use vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/2f82b5b93599e89b391ee4672928cefdfd2fb2f8.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 18/23] mm: update vma_supports_mlock() to use new VMA flags</a></li><li><a href="https://lore.kernel.org/linux-mm/397c67b154a4868e19db9be1012e976148901de2.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 19/23] mm/vma: introduce vma_clear_flags[_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/65bc0bbd98698f4dc68c046e6f867274b1497d8a.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 20/23] tools/testing/vma: update VMA tests to test vma_clear_flags[_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/4d938877d17158a74858af98a6e5bf5d93292fc1.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 21/23] mm/vma: convert as much as we can in mm/vma.c to vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/0737c1b5e3b3688ec3839058b95203c9e7622de9.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 22/23] mm/vma: convert vma_modify_flags[_uffd]() to use vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/0dfdae451f825437e042db9b434a7d509dce6841.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 23/23] mm/vma: convert __mmap_region() to use vma_flags_t</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-f1beedda" data-title="mm/mempolicy: numa mempolicy mismatch during remote access" data-author="lin ruifeng" data-subsystems="" data-verdict="skip">
         <summary>
             <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
             <a href="https://lore.kernel.org/linux-mm/20260316120424.1535575-1-linruifeng4@huawei.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/mempolicy: NUMA mempolicy mismatch during remote access</a>
@@ -323,7 +452,7 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div>
+            <div class="row-summary">Claude CLI error: error_max_structured_output_retries after 41 turns.</div>
         </div>
     </details><details class="series-row" id="s-9f734b18" data-title="kho: history: track previous kernel version and kexec boot count" data-author="breno leitao" data-subsystems="docs include kernel memblock tests" data-verdict="skip">
         <summary>
@@ -338,11 +467,11 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">docs</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">kernel</span> <span class="subsystem-tag">memblock</span> <span class="subsystem-tag">tests</span></div><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-0-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 0/6] kho: history: track previous kernel version and kexec boot count</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-1-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 1/6] kho: add size parameter to kho_add_subtree()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-2-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 2/6] kho: rename fdt parameter to blob in kho_add/remove_subtree()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-3-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 3/6] kho: persist blob size in KHO FDT</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-4-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 4/6] kho: fix kho_in_debugfs_init() to handle non-FDT blobs</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-5-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 5/6] kho: kexec-metadata: track previous kernel chain</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-6-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 6/6] kho: document kexec-metadata tracking feature</a></li></ul></details>
+            <div class="row-summary">Claude CLI error: error_max_structured_output_retries after 26 turns.</div><div class="subsystem-tags"><span class="subsystem-tag">docs</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">kernel</span> <span class="subsystem-tag">memblock</span> <span class="subsystem-tag">tests</span></div><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-0-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 0/6] kho: history: track previous kernel version and kexec boot count</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-1-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 1/6] kho: add size parameter to kho_add_subtree()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-2-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 2/6] kho: rename fdt parameter to blob in kho_add/remove_subtree()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-3-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 3/6] kho: persist blob size in KHO FDT</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-4-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 4/6] kho: fix kho_in_debugfs_init() to handle non-FDT blobs</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-5-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 5/6] kho: kexec-metadata: track previous kernel chain</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-kho-v9-6-ed6dcd951988@debian.org/" target="_blank">[PATCH v9 6/6] kho: document kexec-metadata tracking feature</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-4a8da494" data-title="kernel/fork: validate exit_signal in kernel_clone()" data-author="deepanshu kartikey" data-subsystems="kernel" data-verdict="skip">
+    </details><details class="series-row" id="s-4a8da494" data-title="kernel/fork: validate exit_signal in kernel_clone()" data-author="deepanshu kartikey" data-subsystems="kernel" data-verdict="minor_issues">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260316104536.558108-1-kartikey406@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">kernel/fork: validate exit_signal in kernel_clone()</a>
             <span class="row-right">
                 
@@ -353,7 +482,51 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">kernel</span></div>
+            <div class="row-summary">The patch adds a valid_signal() check in kernel_clone() to reject exit_signal values in the range 65-255 that clone() can pass via the CSIGNAL mask but that are not valid POSIX signals. The fix is correct but leaves a stale comment in the kernel_clone() header that now contradicts the new behavior.</div><div class="subsystem-tags"><span class="subsystem-tag">kernel</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Author: Deepanshu Kartikey &lt;kartikey406@gmail.com&gt;
+
+kernel/fork: validate exit_signal in kernel_clone()
+
+I verified valid_signal(0) returns true (0 &lt;= _NSIG), so kernel_thread()
+and user_mode_thread() callers that pass exit_signal=0 are unaffected.
+I also confirmed that do_notify_parent() already has the guard
+`if (valid_signal(sig) &amp;&amp; sig)` before calling __send_signal_locked(),
+and that copy_clone_args_from_user() for clone3() already has the same
+valid_signal() check, so there is no double-validation concern.
+
+One issue:
+
+&gt; diff --git a/kernel/fork.c b/kernel/fork.c
+&gt; --- a/kernel/fork.c
+&gt; +++ b/kernel/fork.c
+
+[ ... ]
+
+&gt;  /*
+&gt;   *  Ok, this is the main fork-routine.
+&gt;   *
+&gt;   * It copies the process, and if successful kick-starts
+&gt;   * it and waits for it to finish using the VM if required.
+&gt;   *
+&gt;   * args-&gt;exit_signal is expected to be checked for sanity by the caller.
+&gt;   */
+&gt;  pid_t kernel_clone(struct kernel_clone_args *args)
+
+This comment says exit_signal sanity checking is the caller's
+responsibility, but the patch moves that responsibility into
+kernel_clone() itself.  Without updating this comment, future callers
+may read it and believe they need to validate exit_signal themselves
+(or worse, that kernel_clone() will not enforce it).  The comment
+should be updated to reflect that kernel_clone() now performs this
+check centrally.
+
+&gt; +	if (!valid_signal(args-&gt;exit_signal))
+&gt; +		return -EINVAL;
+&gt;  	/*
+&gt;  	 * Determine whether and which event to report to ptracer.  When
+
+Minor style nit: the surrounding code separates logical sections with a
+blank line, but there is no blank line between the new guard and the
+block comment that follows it.</pre></div>
         </div>
     </details><details class="series-row" id="s-19327f2c" data-title="mm: free contiguous order-0 pages efficiently" data-author="muhammad usama anjum" data-subsystems="include page_alloc vmalloc" data-verdict="skip">
         <summary>
@@ -368,11 +541,11 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">page_alloc</span> <span class="subsystem-tag">vmalloc</span></div><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316113209.945853-1-usama.anjum@arm.com/" target="_blank">[PATCH v2 0/3] mm: Free contiguous order-0 pages efficiently</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316113209.945853-2-usama.anjum@arm.com/" target="_blank">[PATCH v2 1/3] mm/page_alloc: Optimize free_contig_range()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316113209.945853-3-usama.anjum@arm.com/" target="_blank">[PATCH v2 2/3] vmalloc: Optimize vfree</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316113209.945853-4-usama.anjum@arm.com/" target="_blank">[PATCH v2 3/3] mm/page_alloc: Optimize __free_contig_frozen_range()</a></li></ul></details>
+            <div class="row-summary">Claude CLI error: error_max_structured_output_retries after 47 turns.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">page_alloc</span> <span class="subsystem-tag">vmalloc</span></div><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316113209.945853-1-usama.anjum@arm.com/" target="_blank">[PATCH v2 0/3] mm: Free contiguous order-0 pages efficiently</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316113209.945853-2-usama.anjum@arm.com/" target="_blank">[PATCH v2 1/3] mm/page_alloc: Optimize free_contig_range()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316113209.945853-3-usama.anjum@arm.com/" target="_blank">[PATCH v2 2/3] vmalloc: Optimize vfree</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316113209.945853-4-usama.anjum@arm.com/" target="_blank">[PATCH v2 3/3] mm/page_alloc: Optimize __free_contig_frozen_range()</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-f18392bf" data-title="mm/userfaultfd: re-validate vma in mfill_atomic() loop under config_per_vma_lock" data-author="deepanshu kartikey" data-subsystems="userfaultfd" data-verdict="skip">
+    </details><details class="series-row" id="s-f18392bf" data-title="mm/userfaultfd: re-validate vma in mfill_atomic() loop under config_per_vma_lock" data-author="deepanshu kartikey" data-subsystems="userfaultfd" data-verdict="minor_issues">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260316070039.549506-1-kartikey406@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/userfaultfd: re-validate vma in mfill_atomic() loop under CONFIG_PER_VMA_LOCK</a>
             <span class="row-right">
                 
@@ -383,7 +556,33 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">userfaultfd</span></div>
+            <div class="row-summary">Under CONFIG_PER_VMA_LOCK, a concurrent UFFDIO_UNREGISTER can split the VMA held by mfill_atomic() mid-loop, shrinking vm_end so that dst_addr falls outside the VMA bounds. The patch detects this per-iteration and re-looks up the VMA when stale.</div><div class="subsystem-tags"><span class="subsystem-tag">userfaultfd</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Deepanshu Kartikey &lt;kartikey406@gmail.com&gt;
+
+mm/userfaultfd: re-validate vma in mfill_atomic() loop under CONFIG_PER_VMA_LOCK
+
+Verified the fix by tracing mfill_get_vma(), mfill_put_vma(),
+uffd_mfill_lock(), and validate_dst_vma().  After the re-lookup,
+state.dst_start is set to state.dst_addr and state.len covers the
+remaining range to the original end, so uffd_mfill_lock() receives
+the correct [dst_addr, original_dst_end) range and validate_dst_vma()
+enforces the same VMA-containment invariant as the initial lookup.
+mfill_get_pmd() follows immediately and refreshes state-&gt;pmd, so
+there is no stale PMD pointer.  Error paths from mfill_get_vma()
+break the loop and return correctly via 'copied ? copied : err'.
+The check is a no-op under !CONFIG_PER_VMA_LOCK because mmap_read_lock
+prevents concurrent splits entirely.
+
+One minor style issue:
+
+&gt; 	while (state.src_addr &lt; src_start + len) {
+&gt; 		VM_WARN_ON_ONCE(state.dst_addr &gt;= dst_start + len);
+&gt; +	       /*
+&gt; +		* Under CONFIG_PER_VMA_LOCK, a concurrent UFFDIO_UNREGISTER can
+
+The opening '/*' is indented with one tab plus seven spaces instead
+of two tabs, misaligning it from both the '*' continuation lines and
+the 'if' statement it guards.  Should be '\t\t/*' to match the rest
+of the file and avoid a checkpatch WARNING.</pre></div>
         </div>
     </details><details class="series-row" id="s-f5d81ece" data-title="mm/memcontrol: batch memcg charging in __memcg_slab_post_alloc_hook" data-author="hui zhu" data-subsystems="memcontrol" data-verdict="skip">
         <summary>
@@ -398,11 +597,11 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">memcontrol</span></div>
+            <div class="row-summary">Claude CLI error: error_max_structured_output_retries after 15 turns.</div><div class="subsystem-tags"><span class="subsystem-tag">memcontrol</span></div>
         </div>
-    </details><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="skip">
+    </details><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-1-chuhu@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: skip several tests when thp is not available</a>
             <span class="row-right">
                 
@@ -413,11 +612,61 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">tests</span></div><details class="patches-detail"><summary>6 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-1-chuhu@redhat.com/" target="_blank">[PATCH v2 0/5] selftests/mm: skip several tests when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-2-chuhu@redhat.com/" target="_blank">[PATCH v2 1/5] selftests/mm/guard-regions: skip collapse test when thp not enabled</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-3-chuhu@redhat.com/" target="_blank">[PATCH v2 2/5] selftests/mm: soft-dirty: skip two tests when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-4-chuhu@redhat.com/" target="_blank">[PATCH v2 3/5] selftests/mm: move write_file helper to vm_util</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-5-chuhu@redhat.com/" target="_blank">[PATCH v2 4/5] selftests/mm: split_huge_page_test: skip the test when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-6-chuhu@redhat.com/" target="_blank">[PATCH v2 5/5] selftests/mm: transhuge_stress: skip the test when thp not available</a></li></ul></details>
+            <div class="row-summary">This series adds thp_is_enabled() guards to five selftest programs so they emit a proper TAP SKIP result instead of failing when THP is disabled at runtime (e.g., on realtime kernels). Patch 3 consolidates the duplicated write_file() helper from thp_settings.c and split_huge_page_test.c into vm_util.</div><div class="subsystem-tags"><span class="subsystem-tag">tests</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Chunyu Hu &lt;chuhu@redhat.com&gt;
+
+selftests/mm: skip several tests when thp is not available
+
+Verified the series against the source tree. No regressions found.
+
+&gt; diff --git a/tools/testing/selftests/mm/thp_settings.c b/tools/testing/selftests/mm/thp_settings.c
+&gt; --- a/tools/testing/selftests/mm/thp_settings.c
+&gt; +++ b/tools/testing/selftests/mm/thp_settings.c
+&gt; @@ -6,6 +6,7 @@
+&gt;  #include &lt;string.h&gt;
+&gt;  #include &lt;unistd.h&gt;
+&gt; 
+&gt; +#include &quot;vm_util.h&quot;
+&gt;  #include &quot;thp_settings.h&quot;
+&gt; 
+&gt; [ ... ]
+&gt; 
+&gt; -int write_file(const char *path, const char *buf, size_t buflen)
+&gt; +unsigned int write_file(const char *path, const char *buf, size_t buflen)
+
+Checked all callers: write_num() and thp_write_string() in thp_settings.c
+both test the return via &quot;if (!write_file(...))&quot;, and khugepaged.c discards
+it entirely.  The int -&gt; unsigned int change is safe for all of them.  The
+new implementation calls ksft_exit_fail_msg() on error; vm_util.c already
+includes kselftest.h so this compiles correctly.  write_num()'s own error
+path becomes dead code after the change (write_file() now exits before it
+can return 0), but that is harmless.
+
+&gt; diff --git a/tools/testing/selftests/mm/transhuge-stress.c b/tools/testing/selftests/mm/transhuge-stress.c
+&gt; @@ -37,6 +38,9 @@ int main(int argc, char **argv)
+&gt; 
+&gt;  	ksft_print_header();
+&gt; 
+&gt; +	if (!thp_is_enabled())
+&gt; +		ksft_exit_skip(&quot;Transparent Hugepages not available\n&quot;);
+&gt; +
+&gt;  	ram = sysconf(_SC_PHYS_PAGES);
+
+The guard is placed after ksft_print_header() and before ksft_set_plan(1),
+so ksft_exit_skip() produces the correct &quot;1..0 # SKIP&quot; TAP line without
+leaving a dangling plan.  Same placement verified in split_huge_page_test,
+where the check is correctly inserted before the read_pmd_pagesize() call
+that was the original failure point.
+
+The soft-dirty fix (patch 2) correctly emits two ksft_test_result_skip()
+calls to match the two sub-tests counted in the 1..19 plan, fixing the
+&quot;Planned tests != run tests (19 != 18)&quot; TAP error.
+
+Reviewed-by: Usman Arif &lt;uarif@meta.com&gt;
+</pre></div><details class="patches-detail"><summary>6 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-1-chuhu@redhat.com/" target="_blank">[PATCH v2 0/5] selftests/mm: skip several tests when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-2-chuhu@redhat.com/" target="_blank">[PATCH v2 1/5] selftests/mm/guard-regions: skip collapse test when thp not enabled</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-3-chuhu@redhat.com/" target="_blank">[PATCH v2 2/5] selftests/mm: soft-dirty: skip two tests when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-4-chuhu@redhat.com/" target="_blank">[PATCH v2 3/5] selftests/mm: move write_file helper to vm_util</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-5-chuhu@redhat.com/" target="_blank">[PATCH v2 4/5] selftests/mm: split_huge_page_test: skip the test when thp is not available</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-6-chuhu@redhat.com/" target="_blank">[PATCH v2 5/5] selftests/mm: transhuge_stress: skip the test when thp not available</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-845751a9" data-title="migrate on fault for device pages" data-author="mpenttil@redhat.com" data-subsystems="kconfig hmm include migrate_device tests" data-verdict="skip">
+    </details><details class="series-row" id="s-845751a9" data-title="migrate on fault for device pages" data-author="mpenttil@redhat.com" data-subsystems="kconfig hmm include migrate_device tests" data-verdict="needs_work">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-1-mpenttil@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Migrate on fault for device pages</a>
             <span class="row-right">
                 
@@ -428,11 +677,126 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">Kconfig</span> <span class="subsystem-tag">hmm</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">migrate_device</span> <span class="subsystem-tag">tests</span></div><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-1-mpenttil@redhat.com/" target="_blank">[PATCH v6 0/6] Migrate on fault for device pages</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-2-mpenttil@redhat.com/" target="_blank">[PATCH v6 1/6] mm:/Kconfig changes for migrate on fault for device pages</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-3-mpenttil@redhat.com/" target="_blank">[PATCH v6 2/6] mm: Add helper to convert HMM pfn to migrate pfn</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-4-mpenttil@redhat.com/" target="_blank">[PATCH v6 3/6] mm/hmm: do the plumbing for HMM to participate in migration</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-5-mpenttil@redhat.com/" target="_blank">[PATCH v6 4/6] mm: setup device page migration in HMM pagewalk</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-6-mpenttil@redhat.com/" target="_blank">[PATCH v6 5/6] mm: add new testcase for the migrate on fault case</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-7-mpenttil@redhat.com/" target="_blank">[PATCH v6 6/6] mm:/migrate_device.c: remove migrate_vma_collect_*()</a></li></ul></details>
+            <div class="row-summary">This series adds HMM_PFN_REQ_MIGRATE and associated plumbing so that hmm_range_fault() can install migration entries during the page walk, eliminating a separate migrate_vma_setup() pass. Three concrete bugs were found: a compile error in the !CONFIG_MIGRATION stub placement, a zero-npages bug in the test driver that silently skips all migration finalization leaving PTEs stuck as migration entries, and a potential NULL dereference in hmm_select_migrate().</div><div class="subsystem-tags"><span class="subsystem-tag">Kconfig</span> <span class="subsystem-tag">hmm</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">migrate_device</span> <span class="subsystem-tag">tests</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">From: Mika Penttilä &lt;mpenttil@redhat.com&gt;
+Subject: Re: [PATCH v6 0/6] Migrate on fault for device pages
+
+Hi Mika,
+
+Thanks for the v6.  I found three issues below that need addressing.
+
+--- [PATCH v6 3/6] mm/hmm: do the plumbing for HMM to participate in migration ---
+
+&gt; diff --git a/include/linux/migrate.h b/include/linux/migrate.h
+&gt; @@ -104,6 +104,15 @@ static inline void
+&gt;  softleaf_entry_wait_on_locked(softleaf_t entry, spinlock_t *p)
+&gt;  	WARN_ON_ONCE(1);
+&gt;
+&gt;  	spin_unlock(ptl);
+&gt; +
+&gt; +enum migrate_vma_info {
+&gt; +	MIGRATE_VMA_SELECT_NONE = 0,
+&gt; +	MIGRATE_VMA_SELECT_COMPOUND = MIGRATE_VMA_SELECT_NONE,
+&gt; +};
+&gt; +
+&gt; +static inline enum migrate_vma_info hmm_select_migrate(struct hmm_range *range)
+&gt; +{
+&gt; +	return MIGRATE_VMA_SELECT_NONE;
+&gt;  }
+&gt;
+&gt;  #endif /* CONFIG_MIGRATION */
+
+The hunk context confirms these additions land *inside* the body of
+softleaf_entry_wait_on_locked(), between spin_unlock(ptl) and its
+closing brace.  Defining a static inline function inside another
+function body is not valid C (GCC nested-function syntax is not
+used here), and the closing brace that was softleaf_entry_wait_on_locked's
+own brace now becomes hmm_select_migrate's closing brace, leaving
+softleaf_entry_wait_on_locked itself unclosed.  Any config that enables
+HMM_MIRROR without CONFIG_MIGRATION will hit a compile error;
+HMM_MIRROR depends only on MMU, so that combination is reachable
+independently of the DEVICE_MIGRATION select added in patch 1.
+
+The stub needs to appear after the closing brace of
+softleaf_entry_wait_on_locked, not before it.
+
+--- [PATCH v6 4/6] mm: setup device page migration in HMM pagewalk ---
+
+&gt; diff --git a/include/linux/migrate.h b/include/linux/migrate.h
+&gt; @@ -200,10 +201,14 @@ struct migrate_vma {
+&gt;  static inline enum migrate_vma_info hmm_select_migrate(struct hmm_range *range)
+&gt;  {
+&gt; -	return 0;
+&gt; +	enum migrate_vma_info minfo;
+&gt; +
+&gt; +	minfo = (range-&gt;default_flags &amp; HMM_PFN_REQ_MIGRATE) ?
+&gt; +		range-&gt;migrate-&gt;flags : 0;
+&gt; +
+&gt; +	return minfo;
+&gt;  }
+
+If HMM_PFN_REQ_MIGRATE is set in default_flags but range-&gt;migrate is
+NULL, this dereferences a NULL pointer.  HMM_PFN_REQ_MIGRATE and
+range-&gt;migrate are a coupled pair with no API enforcement between
+them.  hmm_select_migrate() is called from hmm_pfns_fill(),
+hmm_vma_handle_migrate_prepare_pmd(), and hmm_vma_handle_migrate_prepare(),
+so a misconfigured caller would crash the kernel in any of those paths.
+Should the condition also check range-&gt;migrate before dereferencing it?
+
+--- [PATCH v6 5/6] mm: add new testcase for the migrate on fault case ---
+
+&gt; +static int dmirror_fault_and_migrate_to_device(struct dmirror *dmirror,
+&gt; +					       struct hmm_dmirror_cmd *cmd)
+&gt; +{
+&gt; +	...
+&gt; +	struct migrate_vma migrate = { 0 };
+&gt; +	struct hmm_range range = { 0 };
+&gt; +	...
+&gt; +	migrate.pgmap_owner = dmirror-&gt;mdevice;
+&gt; +	migrate.src = src_pfns;
+&gt; +	migrate.dst = dst_pfns;
+&gt; +	migrate.flags = MIGRATE_VMA_SELECT_SYSTEM;
+
+Neither migrate.start nor migrate.end is ever written.  Both remain 0.
+
+&gt; +	for (next = start; next &lt; end; next = range.end) {
+&gt; +		range.start = next;
+&gt; +		range.end = min(end, next + (PFNS_ARRAY_SIZE &lt;&lt; PAGE_SHIFT));
+&gt; +		...
+&gt; +		ret = do_fault_and_migrate(dmirror, &amp;range);
+
+Inside do_fault_and_migrate(), migrate_hmm_range_setup() computes:
+
+    migrate-&gt;npages = (migrate-&gt;end - migrate-&gt;start) &gt;&gt; PAGE_SHIFT;
+
+With start=0 and end=0 this is always 0.  The for-loop in
+migrate_hmm_range_setup() never runs, migrate-&gt;cpages stays 0, and
+then migrate_vma_pages() and migrate_vma_finalize() both iterate over
+0 entries in __migrate_device_pages() / __migrate_device_finalize()
+and do nothing.
+
+This means any migration entries installed inside hmm_range_fault()
+are never removed.  Subsequent accesses to those virtual addresses
+will block on migration_entry_wait() indefinitely.
+
+Compare with dmirror_migrate_to_device(), which sets args.start and
+args.end explicitly on every loop iteration before calling
+migrate_vma_setup().  The new path skips that.
+
+Either migrate_hmm_range_setup() should derive npages from
+(range-&gt;end - range-&gt;start) &gt;&gt; PAGE_SHIFT rather than from
+migrate-&gt;end - migrate-&gt;start, or the caller must set migrate.start
+and migrate.end inside the loop.
+
+Also worth noting: do_fault_and_migrate() calls all four migration
+functions regardless of what dmirror_range_fault() returned.  If the
+range is invalidated and -EBUSY comes back with migration entries only
+partially installed, the cleanup chain still needs to run.
+
+Regards</pre></div><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-1-mpenttil@redhat.com/" target="_blank">[PATCH v6 0/6] Migrate on fault for device pages</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-2-mpenttil@redhat.com/" target="_blank">[PATCH v6 1/6] mm:/Kconfig changes for migrate on fault for device pages</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-3-mpenttil@redhat.com/" target="_blank">[PATCH v6 2/6] mm: Add helper to convert HMM pfn to migrate pfn</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-4-mpenttil@redhat.com/" target="_blank">[PATCH v6 3/6] mm/hmm: do the plumbing for HMM to participate in migration</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-5-mpenttil@redhat.com/" target="_blank">[PATCH v6 4/6] mm: setup device page migration in HMM pagewalk</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-6-mpenttil@redhat.com/" target="_blank">[PATCH v6 5/6] mm: add new testcase for the migrate on fault case</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316062407.3354636-7-mpenttil@redhat.com/" target="_blank">[PATCH v6 6/6] mm:/migrate_device.c: remove migrate_vma_collect_*()</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-8c96fad7" data-title="[lsf/mm/bpf topic]  mm/mempolicy: introduce socket-aware weighted interleave" data-author="rakie kim" data-subsystems="drivers include memory-tiers mempolicy" data-verdict="skip">
+    </details><details class="series-row" id="s-8c96fad7" data-title="[lsf/mm/bpf topic]  mm/mempolicy: introduce socket-aware weighted interleave" data-author="rakie kim" data-subsystems="drivers include memory-tiers mempolicy" data-verdict="needs_work">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260316051258.246-1-rakie.kim@sk.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">[LSF/MM/BPF TOPIC]  mm/mempolicy: introduce socket-aware weighted interleave</a>
             <span class="row-right">
                 
@@ -443,11 +807,153 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">drivers</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">memory-tiers</span> <span class="subsystem-tag">mempolicy</span></div><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-1-rakie.kim@sk.com/" target="_blank">[LSF/MM/BPF TOPIC] [RFC PATCH 0/4] mm/mempolicy: introduce socket-aware weighted interleave</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-2-rakie.kim@sk.com/" target="_blank">[RFC PATCH 1/4] mm/numa: introduce nearest_nodes_nodemask()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-3-rakie.kim@sk.com/" target="_blank">[RFC PATCH 2/4] mm/memory-tiers: introduce socket-aware topology management for NUMA nodes</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-4-rakie.kim@sk.com/" target="_blank">[RFC PATCH 3/4] mm/memory-tiers: register CXL nodes to socket-aware packages via initiator</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-5-rakie.kim@sk.com/" target="_blank">[RFC PATCH 4/4] mm/mempolicy: enhance weighted interleave with socket-aware locality</a></li></ul></details>
+            <div class="row-summary">This four-patch RFC introduces socket-aware weighted interleave by adding a NUMA helper to find all nearest nodes, a memory-package topology layer grouping NUMA nodes by physical socket, CXL driver integration to bind CXL nodes to their initiator's package, and mempolicy changes that filter weighted-interleave candidates to the current socket before applying weights. Several correctness issues in the stubs and the fallback path of policy_resolve_package_nodes() need fixing before this is ready.</div><div class="subsystem-tags"><span class="subsystem-tag">drivers</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">memory-tiers</span> <span class="subsystem-tag">mempolicy</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Rakie Kim &lt;rakie.kim@sk.com&gt;
+
+[RFC PATCH 0/4] mm/mempolicy: introduce socket-aware weighted interleave
+
+The concept is sound and the benchmark numbers are compelling.
+A few correctness issues need attention before this is ready.
+
+--- [RFC PATCH 1/4] mm/numa: introduce nearest_nodes_nodemask() ---
+
+&gt; diff --git a/include/linux/numa.h b/include/linux/numa.h
+&gt; +static inline int nearest_nodes_nodemask(int node, const nodemask_t *mask,
+&gt; +					 nodemask_t *out)
+&gt; +{
+&gt; +	return 0;
+&gt; +}
+
+The !CONFIG_NUMA stub returns 0 (success) without touching *out.
+Any caller that trusts the return code and then reads *out will use
+uninitialized stack memory.  The stub should clear *out via
+nodes_clear(*out) before returning, matching the real implementation's
+behavior on an empty mask.
+
+Minor: nearest_nodes_nodemask() is a NUMA topology utility declared
+in include/linux/numa.h but implemented in mm/mempolicy.c.  The
+existing nearest_node_nodemask() sets this precedent, but it is still
+an odd home for a generic NUMA helper.
+
+--- [RFC PATCH 2/4] mm/memory-tiers: introduce socket-aware topology ---
+
+&gt; diff --git a/include/linux/memory-tiers.h b/include/linux/memory-tiers.h
+
+[ ... ]
+
+&gt; +static inline int mp_next_demotion_node(int nid)
+&gt; +{
+&gt; +	return 0;
+&gt; +}
+&gt; +
+&gt; +static inline int mp_next_promotion_node(int nid)
+&gt; +{
+&gt; +	return 0;
+&gt; +}
+
+These stubs return 0, but 0 is a valid NUMA node number.  Callers that
+use the return value as a demotion or promotion target will think node 0
+is always a valid target, even when no demotion policy is configured.
+The existing next_demotion_node() stub returns NUMA_NO_NODE for exactly
+this reason.  mp_next_demotion_node() and mp_next_promotion_node() must
+do the same.
+
+&gt; +static inline int mp_get_package_nodes(int nid, nodemask_t *out)
+&gt; +{
+&gt; +	return 0;
+&gt; +}
+&gt; +
+&gt; +static inline int mp_get_package_cpu_nodes(int nid, nodemask_t *out)
+&gt; +{
+&gt; +	return 0;
+&gt; +}
+&gt; +
+&gt; +static inline int mp_get_package_memory_only_nodes(int nid, nodemask_t *out)
+&gt; +{
+&gt; +	return 0;
+&gt; +}
+
+Same problem: all three return 0 (success) without initializing *out.
+A caller that checks the return value and then reads *out gets garbage.
+These stubs should set *out = NODE_MASK_NONE before returning.
+
+--- [RFC PATCH 4/4] mm/mempolicy: enhance weighted interleave ---
+
+&gt; +static int policy_resolve_package_nodes(struct mempolicy *policy,
+&gt; +					nodemask_t *mask)
+&gt; +{
+
+[ ... ]
+
+&gt; +		if (nodes_empty(*mask)) {
+&gt; +			node = first_node(policy-&gt;nodes);
+&gt; +			ret = mp_get_package_nodes(node, &amp;package_mask);
+&gt; +			if (ret)
+&gt; +				goto out;
+&gt; +			nodes_and(*mask, package_mask, policy-&gt;nodes);
+&gt; +			if (nodes_empty(*mask))
+&gt; +				goto out;
+&gt; +		}
+&gt; +	}
+&gt; +
+&gt; +out:
+&gt; +	return ret;
+
+When the final nodes_and() yields an empty *mask, the code falls
+through to &quot;out&quot; with ret still 0 (success) but *mask empty.  The
+caller in weighted_interleave_nodes() only gates on a non-zero return:
+
+  if (policy_resolve_package_nodes(policy, &amp;mask))
+      mask = policy-&gt;nodes;
+
+So an empty mask slips through undetected.  The subsequent
+next_node_in(node, empty_mask) returns MAX_NUMNODES, which then
+propagates up through mempolicy_slab_node() and policy_nodemask()
+as an invalid node number.
+
+Reaching this path requires mp_get_package_nodes(X, ...) to return
+a package_mask that does not contain X, which would itself be a bug.
+But the current code silently produces an empty mask on a success
+return with no way for the caller to distinguish it from a real
+result.  Either document as a hard invariant that mp_get_package_nodes
+always includes the queried node in its output, or fall back to
+policy-&gt;nodes explicitly before the final goto out.
+
+--- [RFC PATCH 3/4] mm/memory-tiers: register CXL nodes via initiator ---
+
+&gt; +static int cxl_region_find_nearest_node(struct cxl_region *cxlr)
+&gt; +{
+&gt; +	for (i = 0; i &lt; p-&gt;nr_targets; i++) {
+&gt; +		cxled = p-&gt;targets[i];
+&gt; +		cxlmd = cxled_to_memdev(cxled);
+&gt; +		numa_node = dev_to_node(&amp;cxlmd-&gt;dev);
+&gt; +		if (numa_node != NUMA_NO_NODE)
+&gt; +			return numa_node;
+&gt; +	}
+
+For multi-target interleaved CXL regions, this returns the host CPU
+NUMA node of the first valid target only.  If different targets are
+attached to different sockets, the region ends up associated with only
+one package.  Is there a reason not to pick the target whose host node
+is nearest to the region's NUMA node, or to register the region against
+all relevant packages?
+
+&gt; diff --git a/drivers/dax/kmem.c b/drivers/dax/kmem.c
+&gt; +	mp_probe_package_id(numa_node);
+&gt; +
+&gt;  	for (i = 0; i &lt; dev_dax-&gt;nr_range; i++) {
+
+mp_probe_package_id() fires the notifier chain before the memory ranges
+are onlined via add_memory_driver_managed().  Inside the notifier,
+cxl_region_add_package_node() calls
+phys_to_target_node(cxlr-&gt;params.res-&gt;start) to match region_nid
+against dax_nid.  Does phys_to_target_node() return a valid nid at
+this point on all CXL bring-up paths, given that the memory has not
+yet been onlined?  Please confirm the ordering is safe.
+</pre></div><details class="patches-detail"><summary>5 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-1-rakie.kim@sk.com/" target="_blank">[LSF/MM/BPF TOPIC] [RFC PATCH 0/4] mm/mempolicy: introduce socket-aware weighted interleave</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-2-rakie.kim@sk.com/" target="_blank">[RFC PATCH 1/4] mm/numa: introduce nearest_nodes_nodemask()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-3-rakie.kim@sk.com/" target="_blank">[RFC PATCH 2/4] mm/memory-tiers: introduce socket-aware topology management for NUMA nodes</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-4-rakie.kim@sk.com/" target="_blank">[RFC PATCH 3/4] mm/memory-tiers: register CXL nodes to socket-aware packages via initiator</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316051258.246-5-rakie.kim@sk.com/" target="_blank">[RFC PATCH 4/4] mm/mempolicy: enhance weighted interleave with socket-aware locality</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-428ff56f" data-title="userfaultfd: unassigned vma leads to a potential unreleased locks" data-author="edward adam davis" data-subsystems="userfaultfd" data-verdict="skip">
+    </details><details class="series-row" id="s-428ff56f" data-title="userfaultfd: unassigned vma leads to a potential unreleased locks" data-author="edward adam davis" data-subsystems="userfaultfd" data-verdict="looks_good">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/tencent_C43C1BB425D6BA16BB6533FC9E001BC64B08@qq.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">userfaultfd: unassigned vma leads to a potential unreleased locks</a>
             <span class="row-right">
                 
@@ -458,11 +964,59 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">userfaultfd</span></div>
+            <div class="row-summary">The patch fixes a lock leak in mfill_get_vma() where mmap_lock and map_changing_lock were not released on error paths because state-&gt;vma was only assigned at the out: label, causing mfill_put_vma() to return early (seeing NULL) and skip both unlocks.</div><div class="subsystem-tags"><span class="subsystem-tag">userfaultfd</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">From: Edward Adam Davis &lt;eadavis@qq.com&gt;
+Subject: [PATCH next] userfaultfd: unassigned vma leads to a potential unreleased locks
+
+Verified by reading mm/userfaultfd.c in full. The analysis below
+confirms the fix is correct.
+
+&gt; diff --git a/mm/userfaultfd.c b/mm/userfaultfd.c
+&gt; @@ -218,6 +218,7 @@ static int mfill_get_vma(struct mfill_state *state)
+&gt;  	if (IS_ERR(dst_vma))
+&gt;  		return PTR_ERR(dst_vma);
+&gt;  
+&gt; +	state-&gt;vma = dst_vma;
+&gt;  	/*
+&gt;  	 * If memory mappings are changing because of non-cooperative
+&gt;  	 * operation (e.g. mremap) running in parallel, bail out and
+&gt; @@ -257,7 +258,6 @@ static int mfill_get_vma(struct mfill_state *state)
+&gt;  		goto out_unlock;
+&gt;  
+&gt;  out:
+&gt; -	state-&gt;vma = dst_vma;
+&gt;  	return 0;
+&gt;  
+&gt;  out_unlock:
+&gt;  	mfill_put_vma(state);
+
+The bug: mfill_put_vma() uses state-&gt;vma as a sentinel to decide
+whether to release locks:
+
+    static void mfill_put_vma(struct mfill_state *state)
+    {
+        if (!state-&gt;vma)
+            return;           /* skips both unlocks */
+        up_read(&amp;state-&gt;ctx-&gt;map_changing_lock);
+        uffd_mfill_unlock(state-&gt;vma);
+        ...
+    }
+
+Before this patch, every goto out_unlock after down_read() --
+the mmap_changing check, the WARN_ON_ONCE, the WP flag check,
+and the ops checks -- called mfill_put_vma() with state-&gt;vma still
+NULL, silently leaking both mmap_lock and map_changing_lock.
+
+The fix is correct. There is no code path between the new
+state-&gt;vma assignment and the subsequent down_read() that can
+reach out_unlock, so the invariant holds: whenever state-&gt;vma is
+non-NULL inside mfill_get_vma, both locks are held and
+mfill_put_vma() will release them symmetrically.
+
+Reviewed-by: [reviewer]</pre></div>
         </div>
-    </details><details class="series-row" id="s-18cfccfa" data-title="zram: propagate read_from_bdev_async() errors" data-author="sergey senozhatsky" data-subsystems="drivers" data-verdict="skip">
+    </details><details class="series-row" id="s-18cfccfa" data-title="zram: propagate read_from_bdev_async() errors" data-author="sergey senozhatsky" data-subsystems="drivers" data-verdict="looks_good">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260316015354.114465-1-senozhatsky@chromium.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">zram: propagate read_from_bdev_async() errors</a>
             <span class="row-right">
                 
@@ -473,11 +1027,40 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">drivers</span></div>
+            <div class="row-summary">The patch changes read_from_bdev_async() from void to int, returning -ENOMEM on kmalloc/bio_alloc failures and propagating that error through read_from_bdev() so that zram_bio_read() can set BLK_STS_IOERR on the parent bio instead of silently swallowing the error.</div><div class="subsystem-tags"><span class="subsystem-tag">drivers</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Sergey Senozhatsky &lt;senozhatsky@chromium.org&gt;
+
+zram: propagate read_from_bdev_async() errors
+
+Verified the full call chain and bio reference counting. The change
+looks correct.
+
+&gt; -static void read_from_bdev_async(struct zram *zram, struct page *page,
+&gt; -				 u32 index, unsigned long blk_idx,
+&gt; -				 struct bio *parent)
+&gt; +static int read_from_bdev_async(struct zram *zram, struct page *page,
+&gt; +				u32 index, unsigned long blk_idx,
+&gt; +				struct bio *parent)
+
+Checked bio_inc_remaining() accounting: it is only reached after both
+kmalloc_obj() and bio_alloc() succeed, so on the two new -ENOMEM
+returns the parent bio's remaining count is never incremented. The
+parent bio is therefore still completed exactly once by bio_endio(bio)
+at the end of zram_bio_read(), with bi_status set to BLK_STS_IOERR by
+the caller's error check.
+
+&gt; -	read_from_bdev_async(zram, page, index, blk_idx, parent);
+&gt; -	return 0;
+&gt; +	return read_from_bdev_async(zram, page, index, blk_idx, parent);
+
+read_from_bdev_async() has exactly one call site. The return value of
+read_from_bdev() is checked for &lt; 0 by every caller: zram_bio_read()
+and zram_bvec_write_partial() (via zram_read_page()). Error
+propagation is complete and consistent with the existing sync path.
+</pre></div>
         </div>
-    </details><details class="series-row" id="s-917614ae" data-title="mm/mglru: fix cgroup oom during mglru state switching" data-author="leno hou via b4 relay" data-subsystems="include rmap swap vmscan workingset" data-verdict="skip">
+    </details><details class="series-row" id="s-917614ae" data-title="mm/mglru: fix cgroup oom during mglru state switching" data-author="leno hou via b4 relay" data-subsystems="include rmap swap vmscan workingset" data-verdict="needs_discussion">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#8b5cf6">Needs Discussion</span>
             <a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-0-c846ce9a2321@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/mglru: fix cgroup OOM during MGLRU state switching</a>
             <span class="row-right">
                 
@@ -488,26 +1071,145 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">rmap</span> <span class="subsystem-tag">swap</span> <span class="subsystem-tag">vmscan</span> <span class="subsystem-tag">workingset</span></div><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-0-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 0/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-1-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 1/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-2-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 2/2] mm/mglru: maintain workingset refault context across state transitions</a></li></ul></details>
+            <div class="row-summary">Two-patch series introducing a 'draining' intermediate state (lru_drain_core static key) during MGLRU enable/disable transitions to prevent a reclaim vacuum causing cgroup OOM, plus shadow entry context tracking to dispatch workingset refaults to the correct handler after state changes.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">rmap</span> <span class="subsystem-tag">swap</span> <span class="subsystem-tag">vmscan</span> <span class="subsystem-tag">workingset</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">From: reviewer
+
+mm/mglru: fix cgroup OOM during MGLRU state switching
+mm/mglru: maintain workingset refault context across state transitions
+
+The problem being solved is real: lru_gen_change_state() flips the
+global static branch before draining/filling per-lruvec lists, leaving
+a window where the reclaimer sees one state but pages still live in the
+other set of lists.
+
+&gt; diff --git a/include/linux/mm_inline.h b/include/linux/mm_inline.h
+&gt; +static inline bool lru_gen_draining(void)
+&gt; +{
+&gt; +	DECLARE_STATIC_KEY_FALSE(lru_drain_core);
+&gt; +
+&gt; +	return static_branch_unlikely(&amp;lru_drain_core);
+&gt; +}
+
+The DECLARE_STATIC_KEY_FALSE here is an extern reference.  I grepped
+the entire tree and found no DEFINE_STATIC_KEY_FALSE(lru_drain_core)
+in any compiled .c file.  Without a definition this is a link error.
+Is the DEFINE in the truncated portion of the mm/vmscan.c hunk?  The
+patch as posted cannot be built as-is; please repost with the complete
+diff.
+
+&gt; diff --git a/mm/rmap.c b/mm/rmap.c
+&gt; -		if (lru_gen_enabled() &amp;&amp; pvmw.pte) {
+&gt; +		if (lru_gen_enabled() &amp;&amp; !lru_gen_draining() &amp;&amp; pvmw.pte) {
+
+When disabling MGLRU, lru_gen_enabled() is already flipped to false
+before draining begins (static_branch_disable_cpuslocked runs first in
+lru_gen_change_state()), so the outer lru_gen_enabled() check already
+blocks lru_gen_look_around() in that direction.  The
+!lru_gen_draining() guard is only effective during the enable direction
+(false -&gt; filling).  Is skipping look_around() during fill intentional,
+and is there a concrete hazard it prevents?
+
+&gt; diff --git a/mm/swap.c b/mm/swap.c
+&gt; -	if (lru_gen_enabled()) {
+&gt; +	if (folio_lru_gen(folio) != -1) {
+&gt;  		lru_gen_inc_refs(folio);
+&gt;  		return;
+&gt;  	}
+
+folio_mark_accessed() runs without any lock.  folio_lru_gen() reads
+folio-&gt;flags with READ_ONCE() while drain_evictable() holds lruvec_lock
+and clears LRU_GEN_MASK via set_mask_bits().  Since lru_gen_inc_refs()
+uses set_mask_bits() on LRU_REFS_MASK (a disjoint bit range in the same
+word), the cmpxchg loop handles concurrent writers correctly -- this is
+safe.
+
+However, there is a window where folio_lru_gen() returns -1 not because
+the folio is on a traditional LRU list but because it has been isolated
+from an MGLRU list (lru_gen_del_folio() clears LRU_GEN_MASK during
+isolation) and not yet putback.  In that narrow window the traditional
+folio_mark_accessed() path runs for a folio that originated in MGLRU.
+Is this double-counting or mis-accounting a concern, or is it harmless
+because the folio will be put back on the right list afterwards?
+
+&gt; -	bool active = folio_test_active(folio) || lru_gen_enabled();
+&gt; +	bool active = folio_test_active(folio) || (folio_lru_gen(folio) != -1);
+
+lru_deactivate_file() is called under lruvec_lock (via lru_deactivate_
+fn / folio_batch_move_lru), so folio_lru_gen() is stable here.
+The substitution is correct.
+
+&gt; diff --git a/mm/vmscan.c b/mm/vmscan.c
+&gt; +	/* whether in lru gen scan context */
+&gt; +	unsigned int lru_gen:1;
+
+&gt; +	sc-&gt;lru_gen = 0;
+&gt;  	nr_reclaimed = shrink_folio_list(&amp;folio_list, pgdat, sc, &amp;stat,
+&gt; 					 false, lruvec_memcg(lruvec));
+
+sc is passed by pointer down the call stack; shrink_inactive_list()
+writes sc-&gt;lru_gen = 0 and evict_folios() (in the truncated hunk)
+writes sc-&gt;lru_gen = 1.  For the joint-reclaim draining path the
+ordering must be exact: MGLRU path sets 1, traditional path resets 0.
+Consider whether lru_gen should be passed as an explicit local bool
+to __remove_mapping() instead of living in scan_control, to make the
+ownership clearer and prevent future callers from getting the ordering
+wrong.
+
+&gt; -	} else if (!mapping || !__remove_mapping(mapping, folio, true,
+&gt; +	} else if (!mapping || !__remove_mapping(mapping, folio, true,
+&gt;  						 sc-&gt;target_mem_cgroup, sc))
+
+&gt; +long remove_mapping(struct address_space *mapping, struct folio *folio)
+&gt; +{
+&gt; +	if (__remove_mapping(mapping, folio, false, NULL, NULL)) {
+
+remove_mapping() passes NULL for sc.  sc-&gt;lru_gen is only accessed
+inside the 'if (reclaimed &amp;&amp; ...)' blocks in __remove_mapping(), and
+reclaimed=false here, so sc is never dereferenced.  Safe, but the NULL
+contract is implicit.  A comment noting that sc may be NULL only when
+reclaimed=false would help future readers.
+
+&gt; diff --git a/mm/vmscan.c b/mm/vmscan.c (patch 2)
+&gt; +	.lru_gen = lru_gen_enabled(),
+
+In reclaim_clean_pages_from_list() and reclaim_folio_list(), folios
+are already isolated so folio_lru_gen() returns -1 for all of them.
+Using lru_gen_enabled() as a global snapshot is therefore the best
+available heuristic, but during a state transition it can encode the
+wrong context into shadow entries (e.g., MGLRU just disabled, pages
+already isolated before the flag flipped).  Is this an acceptable
+approximation given the retry-based mitigation described in the cover
+letter?
+
+[ ... ]
+
+The mm/workingset.c changes for patch 2 are not visible in the
+posted diff.  Please clarify:
+
+- Where is WORKINGSET_MGLRU_SHIFT defined, and how does adding one
+  bit to the shadow entry affect EVICTION_SHIFT and the available
+  timestamp range?  The existing BUILD_BUG_ON in lru_gen_eviction()
+  guards against LRU_GEN_WIDTH + LRU_REFS_WIDTH overflow, but not
+  against the timestamp precision loss caused by raising EVICTION_SHIFT.
+
+- How does workingset_eviction() choose between lru_gen_eviction() and
+  the traditional pack_shadow() path based on the new bool lru_gen
+  parameter?  The two functions produce incompatible shadow encodings;
+  the is_mglru bit must be detectable before any other field is
+  unpacked.
+
+- How does workingset_refault()/workingset_test_recent() extract and
+  dispatch on that bit when the current lru_gen_enabled() state no
+  longer matches the eviction-time state?
+
+The truncated vmscan.c hunk also hides the definition of lru_drain_core,
+the lru_gen_change_state() modifications that arm/disarm the draining
+state, and the shrink_lruvec() joint-reclaim path -- all of which are
+the core of patch 1.  Please repost with the full diff.
+</pre></div><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-0-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 0/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-1-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 1/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-2-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 2/2] mm/mglru: maintain workingset refault context across state transitions</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-b2ab3b63" data-title="mm/vma: convert vm_flags_t to vma_flags_t in vma code" data-author="&quot;lorenzo stoakes (oracle)&quot;" data-subsystems="arch fs include internal ksm madvise mlock mmap mprotect mremap mseal security tests tools userfaultfd vma vma_exec" data-verdict="skip">
+    </details><h2 class="date-header">2026-03-15 <span class="date-count">(4)</span></h2><details class="series-row" id="s-5b5461b9" data-title="docs: mmap_prepare: don't italicize structs" data-author="randy dunlap" data-subsystems="" data-verdict="looks_good">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
-            <a href="https://lore.kernel.org/linux-mm/cover.1773665966.git.ljs@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/vma: convert vm_flags_t to vma_flags_t in vma code</a>
-            <span class="row-right">
-                
-                
-                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-b2ab3b63')">&#128279;</span>
-                <span class="row-author">&quot;Lorenzo Stoakes (Oracle)&quot;</span>
-                <span class="row-patches">23p</span>
-            </span>
-        </summary>
-        <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">arch</span> <span class="subsystem-tag">fs</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">internal</span> <span class="subsystem-tag">ksm</span> <span class="subsystem-tag">madvise</span> <span class="subsystem-tag">mlock</span> <span class="subsystem-tag">mmap</span> <span class="subsystem-tag">mprotect</span> <span class="subsystem-tag">mremap</span> <span class="subsystem-tag">mseal</span> <span class="subsystem-tag">security</span> <span class="subsystem-tag">tests</span> <span class="subsystem-tag">tools</span> <span class="subsystem-tag">userfaultfd</span> <span class="subsystem-tag">vma</span> <span class="subsystem-tag">vma_exec</span></div><details class="patches-detail"><summary>24 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 00/23] mm/vma: convert vm_flags_t to vma_flags_t in vma code</a></li><li><a href="https://lore.kernel.org/linux-mm/ede9b0f8a2e2dc72e7fbc1a0ddbeb513364c28a2.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 01/23] mm/vma: add vma_flags_empty(), vma_flags_and(), vma_flags_diff_pair()</a></li><li><a href="https://lore.kernel.org/linux-mm/1d789fcc7dba9f93ec844aa87a48b13451dba211.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 02/23] tools/testing/vma: add unit tests flag empty, diff_pair, and[_mask]</a></li><li><a href="https://lore.kernel.org/linux-mm/a37030f2eefc90147e84f9273e325cc289cb9e1d.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 03/23] mm/vma: add further vma_flags_t unions</a></li><li><a href="https://lore.kernel.org/linux-mm/54d2f092b55e29e53916862faa191854b441d8e9.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 04/23] tools/testing/vma: convert bulk of test code to vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/005cac3e37830a33f473edc780a5dae5e00a3845.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 05/23] mm/vma: use new VMA flags for sticky flags logic</a></li><li><a href="https://lore.kernel.org/linux-mm/42b963d3229ed39a758f1bea218fd274a7cd3811.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 06/23] tools/testing/vma: fix VMA flag tests</a></li><li><a href="https://lore.kernel.org/linux-mm/756b9c46ee23e00c2fe64d453ff61dd3b98aa3fc.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 07/23] mm/vma: add append_vma_flags() helper</a></li><li><a href="https://lore.kernel.org/linux-mm/8253a553f354e6ef9b1ddea4831c0033e64eb796.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 08/23] tools/testing/vma: add simple test for append_vma_flags()</a></li><li><a href="https://lore.kernel.org/linux-mm/ba7d1eae0208551c05f4a2015133b926d6650484.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 09/23] mm: unexport vm_brk_flags() and eliminate vm_flags parameter</a></li><li><a href="https://lore.kernel.org/linux-mm/393378bdcbb49141304d5eff7b8dad2966b73c30.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 10/23] mm/vma: introduce vma_flags_same[_mask/_pair]()</a></li><li><a href="https://lore.kernel.org/linux-mm/19cfb4297cb691dc16c75e9e6a24f6564743407e.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 11/23] mm/vma: introduce [vma_flags,legacy]_to_[legacy,vma_flags]() helpers</a></li><li><a href="https://lore.kernel.org/linux-mm/4f1956b7e1e15293f75bffb5eda3d967a1da6f5d.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 12/23] tools/testing/vma: test that legacy flag helpers work correctly</a></li><li><a href="https://lore.kernel.org/linux-mm/8aeaf08d153c3c3196855fdc9ddbacccf673ef82.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 13/23] mm/vma: introduce vma_test[_any[_mask]](), and make inlining consistent</a></li><li><a href="https://lore.kernel.org/linux-mm/ecd6e0134c4495310d6914b8177e99886e17d22f.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 14/23] tools/testing/vma: update VMA flag tests to test vma_test[_any_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/96e7481026067766bfd7f2d4e395dd89ce845ab2.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 15/23] mm: introduce vma_flags_count() and vma[_flags]_test_single_mask()</a></li><li><a href="https://lore.kernel.org/linux-mm/140b9b77da1ef463f969cbeb2b5fb25627301cd6.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 16/23] tools/testing/vma: test vma_flags_count,vma[_flags]_test_single_mask</a></li><li><a href="https://lore.kernel.org/linux-mm/063af0422d99bee0195589aa63f8f44edaf409fa.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 17/23] mm: convert do_brk_flags() to use vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/2f82b5b93599e89b391ee4672928cefdfd2fb2f8.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 18/23] mm: update vma_supports_mlock() to use new VMA flags</a></li><li><a href="https://lore.kernel.org/linux-mm/397c67b154a4868e19db9be1012e976148901de2.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 19/23] mm/vma: introduce vma_clear_flags[_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/65bc0bbd98698f4dc68c046e6f867274b1497d8a.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 20/23] tools/testing/vma: update VMA tests to test vma_clear_flags[_mask]()</a></li><li><a href="https://lore.kernel.org/linux-mm/4d938877d17158a74858af98a6e5bf5d93292fc1.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 21/23] mm/vma: convert as much as we can in mm/vma.c to vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/0737c1b5e3b3688ec3839058b95203c9e7622de9.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 22/23] mm/vma: convert vma_modify_flags[_uffd]() to use vma_flags_t</a></li><li><a href="https://lore.kernel.org/linux-mm/0dfdae451f825437e042db9b434a7d509dce6841.1773665966.git.ljs@kernel.org/" target="_blank">[PATCH v2 23/23] mm/vma: convert __mmap_region() to use vma_flags_t</a></li></ul></details>
-        </div>
-    </details><h2 class="date-header">2026-03-15 <span class="date-count">(4)</span></h2><details class="series-row" id="s-5b5461b9" data-title="docs: mmap_prepare: don't italicize structs" data-author="randy dunlap" data-subsystems="" data-verdict="skip">
-        <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260315224506.1973566-1-rdunlap@infradead.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs: mmap_prepare: don't italicize structs</a>
             <span class="row-right">
                 
@@ -518,11 +1220,26 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div>
+            <div class="row-summary">Removes backtick quoting around 'struct page' references in mmap_prepare.rst so kernel-doc automarkup renders them as bold monospace rather than italic in the generated HTML output.</div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Randy Dunlap &lt;rdunlap@infradead.org&gt;
+
+Docs: mmap_prepare: don't italicize structs
+
+Documentation-only change. Verified: no code is modified, only RST
+formatting. The fix is correct -- in kernel-doc RST, backtick-quoted
+`struct foo` produces italic HTML output, while plain &quot;struct foo&quot; text
+triggers kernel-doc's automarkup to emit bold monospace instead.
+
+&gt; -* mmap_action_map_kernel_pages() - Maps a specified array of `struct page`
+&gt; +* mmap_action_map_kernel_pages() - Maps a specified array of struct page
+&gt;    pointers in the VMA from a specific offset.
+
+All three occurrences are handled consistently.
+
+Looks good to me.</pre></div>
         </div>
-    </details><details class="series-row" id="s-1a78bc84" data-title="mm/damon: let damon be paused and resumed" data-author="seongjae park" data-subsystems="damon/core damon/sysfs damon/tests/core-kunit docs include tests" data-verdict="skip">
+    </details><details class="series-row" id="s-1a78bc84" data-title="mm/damon: let damon be paused and resumed" data-author="seongjae park" data-subsystems="damon/core damon/sysfs damon/tests/core-kunit docs include tests" data-verdict="minor_issues">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260315210012.94846-1-sj@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/damon: let DAMON be paused and resumed</a>
             <span class="row-right">
                 
@@ -533,11 +1250,81 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">damon/core</span> <span class="subsystem-tag">damon/sysfs</span> <span class="subsystem-tag">damon/tests/core-kunit</span> <span class="subsystem-tag">docs</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">tests</span></div><details class="patches-detail"><summary>11 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-1-sj@kernel.org/" target="_blank">[RFC PATCH 00/10] mm/damon: let DAMON be paused and resumed</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-2-sj@kernel.org/" target="_blank">[RFC PATCH 01/10] mm/damon/core: introduce damon_ctx-&gt;paused</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-3-sj@kernel.org/" target="_blank">[RFC PATCH 02/10] mm/damon/sysfs: add pause file under context dir</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-4-sj@kernel.org/" target="_blank">[RFC PATCH 03/10] Docs/mm/damon/design: update for context pause/resume feature</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-5-sj@kernel.org/" target="_blank">[RFC PATCH 04/10] Docs/admin-guide/mm/damon/usage: update for pause file</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-6-sj@kernel.org/" target="_blank">[RFC PATCH 05/10] Docs/ABI/damon: update for pause sysfs file</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-7-sj@kernel.org/" target="_blank">[RFC PATCH 06/10] mm/damon/tests/core-kunit: test pause commitment</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-8-sj@kernel.org/" target="_blank">[RFC PATCH 07/10] selftests/damon/_damon_sysfs: support pause file staging</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-9-sj@kernel.org/" target="_blank">[RFC PATCH 08/10] selftests/damon/drgn_dump_damon_status: dump pause</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-10-sj@kernel.org/" target="_blank">[RFC PATCH 09/10] selftests/damon/sysfs.py: check pause on assert_ctx_committed()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-11-sj@kernel.org/" target="_blank">[RFC PATCH 10/10] selftets/damon/sysfs.py: pause DAMON before dumping status</a></li></ul></details>
+            <div class="row-summary">The series introduces a damon_ctx-&gt;pause flag so kdamond can be paused and resumed without losing self-trained state, and exposes it through a new sysfs 'pause' file under the context directory. The core mechanism is correct, but the sysfs context allocator leaves the new pause field uninitialized.</div><div class="subsystem-tags"><span class="subsystem-tag">damon/core</span> <span class="subsystem-tag">damon/sysfs</span> <span class="subsystem-tag">damon/tests/core-kunit</span> <span class="subsystem-tag">docs</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">tests</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">SeongJae Park &lt;sj@kernel.org&gt;
+
+mm/damon: let DAMON be paused and resumed
+
+Verified: error paths in damon_commit_ctx, locking (pause only written
+from kdamond thread via damon_call callback, no race), stop semantics
+(kdamond_need_stop in the pause inner loop handles kthread_stop
+correctly), and counter behaviour (passed_sample_intervals not
+advanced while paused).
+
+One issue found:
+
+&gt; diff --git a/mm/damon/sysfs.c b/mm/damon/sysfs.c
+&gt; --- a/mm/damon/sysfs.c
+&gt; +++ b/mm/damon/sysfs.c
+
+[ ... ]
+
+&gt; +	bool pause;
+&gt;  };
+&gt;  
+&gt;  static struct damon_sysfs_context *damon_sysfs_context_alloc(
+&gt;  		enum damon_ops_id ops_id)
+&gt;  {
+&gt;  	struct damon_sysfs_context *context = kmalloc_obj(*context);
+&gt;  	if (!context)
+&gt;  		return NULL;
+&gt;  	context-&gt;kobj = (struct kobject){};
+&gt;  	context-&gt;ops_id = ops_id;
+&gt;  	context-&gt;addr_unit = 1;
+&gt;  	return context;
+&gt;  }
+
+damon_sysfs_context_alloc() uses kmalloc_obj(), which maps to kmalloc()
+and does not zero the allocation.  The new pause field is not explicitly
+initialised here, unlike ops_id and addr_unit.  Two concrete problems
+follow:
+
+1. pause_show() returns a garbage 'Y'/'N' until the user first writes
+   to the file.
+
+2. damon_sysfs_apply_inputs() copies sys_ctx-&gt;pause into the live
+   damon_ctx before damon_start() is called:
+
+&gt;  +	ctx-&gt;pause = sys_ctx-&gt;pause;
+
+   If the user never writes to the pause sysfs file, ctx-&gt;pause
+   receives an uninitialised byte and DAMON may start in an
+   unexpectedly paused state.
+
+Should damon_sysfs_context_alloc() set context-&gt;pause = false
+explicitly, the same way it sets context-&gt;addr_unit = 1?
+
+[ ... ]
+
+&gt; +		while (ctx-&gt;pause) {
+&gt; +			if (kdamond_need_stop(ctx))
+&gt; +				goto done;
+&gt; +			kdamond_usleep(ctx-&gt;attrs.sample_interval);
+&gt; +			/* allow caller unset pause via damon_call() */
+&gt; +			kdamond_call(ctx, false);
+&gt; +		}
+
+The rest of the core change looks correct.  passed_sample_intervals is
+not incremented in the pause loop, so aggregation and interval-tuning
+counters do not advance while paused.  The kdamond_need_stop() check
+ensures kthread_stop() is honoured without blocking more than one
+sample_interval.  Since ctx-&gt;pause is only ever written by the kdamond
+thread (via damon_call callbacks executing damon_commit_ctx), there is
+no concurrent-access issue with the reads in the pause loop.
+</pre></div><details class="patches-detail"><summary>11 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-1-sj@kernel.org/" target="_blank">[RFC PATCH 00/10] mm/damon: let DAMON be paused and resumed</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-2-sj@kernel.org/" target="_blank">[RFC PATCH 01/10] mm/damon/core: introduce damon_ctx-&gt;paused</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-3-sj@kernel.org/" target="_blank">[RFC PATCH 02/10] mm/damon/sysfs: add pause file under context dir</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-4-sj@kernel.org/" target="_blank">[RFC PATCH 03/10] Docs/mm/damon/design: update for context pause/resume feature</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-5-sj@kernel.org/" target="_blank">[RFC PATCH 04/10] Docs/admin-guide/mm/damon/usage: update for pause file</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-6-sj@kernel.org/" target="_blank">[RFC PATCH 05/10] Docs/ABI/damon: update for pause sysfs file</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-7-sj@kernel.org/" target="_blank">[RFC PATCH 06/10] mm/damon/tests/core-kunit: test pause commitment</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-8-sj@kernel.org/" target="_blank">[RFC PATCH 07/10] selftests/damon/_damon_sysfs: support pause file staging</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-9-sj@kernel.org/" target="_blank">[RFC PATCH 08/10] selftests/damon/drgn_dump_damon_status: dump pause</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-10-sj@kernel.org/" target="_blank">[RFC PATCH 09/10] selftests/damon/sysfs.py: check pause on assert_ctx_committed()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260315210012.94846-11-sj@kernel.org/" target="_blank">[RFC PATCH 10/10] selftets/damon/sysfs.py: pause DAMON before dumping status</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-a4e3eeb3" data-title="mm/damon/stat: monitor all system ram resources" data-author="seongjae park" data-subsystems="damon/stat" data-verdict="skip">
+    </details><details class="series-row" id="s-a4e3eeb3" data-title="mm/damon/stat: monitor all system ram resources" data-author="seongjae park" data-subsystems="damon/stat" data-verdict="looks_good">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260315162717.80870-1-sj@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/damon/stat: monitor all System RAM resources</a>
             <span class="row-right">
                 
@@ -548,11 +1335,49 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">damon/stat</span></div>
+            <div class="row-summary">The patch fixes DAMON_STAT to monitor all System RAM resources by spanning from the lowest System RAM start to the highest System RAM end, instead of only the single biggest System RAM region. This matches the documented behavior on NUMA systems with multiple System RAM resources.</div><div class="subsystem-tags"><span class="subsystem-tag">damon/stat</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">SeongJae Park &lt;sj@kernel.org&gt;
+
+mm/damon/stat: monitor all System RAM resources
+
+Verified the following before reviewing:
+ - walk_system_ram_res() via walk_res_desc() advances start = res.end + 1
+   after each callback, so resources are visited in ascending address
+   order.
+ - damon_stat_system_ram_walk_fn() correctly latches res.start on the
+   first (lowest) resource and always overwrites res.end, so the
+   accumulated range spans [lowest_RAM_start, highest_RAM_end].
+ - The !arg.walked guard after walk_system_ram_res() maps cleanly to the
+   old res.end &lt; res.start guard in damon_find_biggest_system_ram().
+ - damon_stat_res_to_core_addr() is an exact copy of
+   damon_res_to_core_addr() in core.c, including the div_u64() guard.
+ - The res.end + 1 exclusive-end conversion matches the old code path in
+   damon_find_biggest_system_ram().
+
+&gt; +static int damon_stat_set_monitoring_region(struct damon_target *t,
+&gt; +		unsigned long addr_unit, unsigned long min_region_sz)
+&gt; +{
+&gt; +	struct damon_addr_range addr_range;
+&gt; +	struct damon_stat_system_ram_range_walk_arg arg = {};
+&gt; +
+&gt; +	walk_system_ram_res(0, -1, &amp;arg, damon_stat_system_ram_walk_fn);
+&gt; +	if (!arg.walked)
+&gt; +		return -EINVAL;
+&gt; +	addr_range.start = damon_stat_res_to_core_addr(
+&gt; +			arg.res.start, addr_unit);
+&gt; +	addr_range.end = damon_stat_res_to_core_addr(
+&gt; +			arg.res.end + 1, addr_unit);
+&gt; +	return damon_set_regions(t, &amp;addr_range, 1, min_region_sz);
+&gt; +}
+
+Passing 1 as nr_ranges to damon_set_regions() is correct for the single
+consolidated range. The v2 changelog notes this fixed a wrong argument
+(addr_unit passed instead of 1 in v1).
+
+Looks good to me.</pre></div>
         </div>
-    </details><details class="series-row" id="s-59f19e0f" data-title="docs/mm/damon: document exclusivity of special-purpose modules" data-author="seongjae park" data-subsystems="docs" data-verdict="skip">
+    </details><details class="series-row" id="s-59f19e0f" data-title="docs/mm/damon: document exclusivity of special-purpose modules" data-author="seongjae park" data-subsystems="docs" data-verdict="looks_good">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260315162945.80994-1-sj@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">Docs/mm/damon: document exclusivity of special-purpose modules</a>
             <span class="row-right">
                 
@@ -563,7 +1388,42 @@ footer {
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">docs</span></div>
+            <div class="row-summary">Documentation-only patch that adds a cross-reference label and note to design.rst documenting the exclusive-run behaviour of DAMON special-purpose modules, then links to it from lru_sort.rst, reclaim.rst, and stat.rst.</div><div class="subsystem-tags"><span class="subsystem-tag">docs</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">From: Liew Rui Yan &lt;aethernet65535@gmail.com&gt;
+
+Docs/mm/damon: document exclusivity of special-purpose modules
+
+Verified against the source code.  All three modules call
+damon_start() with exclusive=true:
+
+  reclaim.c:  err = damon_start(&amp;ctx, 1, true);
+  lru_sort.c: err = damon_start(&amp;ctx, 1, true);
+  stat.c:     err = damon_start(&amp;damon_stat_context, 1, true);
+
+And core.c enforces the constraint under damon_lock:
+
+  if ((exclusive &amp;&amp; nr_running_ctxs) ||
+          (!exclusive &amp;&amp; running_exclusive_ctxs)) {
+      mutex_unlock(&amp;damon_lock);
+      return -EBUSY;
+  }
+
+The documented -EBUSY return value and the exclusive-run wording are
+both accurate.
+
+&gt; diff --git a/Documentation/mm/damon/design.rst b/Documentation/mm/damon/design.rst
+&gt; +.. _damon_design_special_purpose_modules_exclusivity:
+&gt; +
+&gt; +Note that these modules currently run in an exclusive manner.  If one
+&gt; +of those is already running, others will return ``-EBUSY`` upon start
+&gt; +requests.
+
+The RST label and the cross-references in the three admin-guide files
+are syntactically correct.  A label placed before a plain paragraph
+(rather than a section heading) is valid Sphinx RST and matches
+patterns used elsewhere in the kernel docs.
+
+Looks good to me.
+</pre></div>
         </div>
     </details>
 
