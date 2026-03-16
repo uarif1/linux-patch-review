@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-15T18:39:12.393951+00:00",
+  "generated_at": "2026-03-16T10:58:26.650038+00:00",
   "days": 1,
-  "total_patches": 97,
+  "total_patches": 105,
   "series": [
     {
       "title": "Docs/mm/damon: document exclusivity of special-purpose modules",
@@ -3303,6 +3303,277 @@
         "issues": [],
         "verdict": "skip",
         "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":109935,\"duration_api_ms\":96846,\"num_turns\":28,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"34d6b842-2852-4b4e-880e-a7d80a9c1952\",\"total_cost_usd\":0.29228774999999996,\"usage\":{\"input_tokens\":82,\"cache_creation_input_tokens\":28251,\"cache_read_input_tokens\":308035,\"output_tokens\":6246,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"e"
+      },
+      "fetch_date": "2026-03-15"
+    },
+    {
+      "title": "mm/memcontrol: batch memcg charging in __memcg_slab_post_alloc_hook",
+      "author": "Hui Zhu <hui.zhu@linux.dev>",
+      "patches": [
+        {
+          "title": "[PATCH mm-unstable] mm/memcontrol: batch memcg charging in __memcg_slab_post_alloc_hook",
+          "link": "https://lore.kernel.org/linux-mm/20260316084839.1342163-1-hui.zhu@linux.dev/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260316084839.1342163-1-hui.zhu@linux.dev/",
+      "updated": "Mon, 16 Mar 2026 16:48:38 +0800",
+      "subsystems": [
+        "memcontrol"
+      ],
+      "review": {
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
+        "issues": [],
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":406622,\"duration_api_ms\":397233,\"num_turns\":18,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"6d66919c-fef0-4ddd-9ee5-889b648fa03b\",\"total_cost_usd\":0.7141970999999999,\"usage\":{\"input_tokens\":4006,\"cache_creation_input_tokens\":58412,\"cache_read_input_tokens\":402997,\"output_tokens\":24149,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0"
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "Docs: mmap_prepare: don't italicize structs",
+      "author": "Randy Dunlap <rdunlap@infradead.org>",
+      "patches": [
+        {
+          "title": "[PATCH] Docs: mmap_prepare: don't italicize structs",
+          "link": "https://lore.kernel.org/linux-mm/20260315224506.1973566-1-rdunlap@infradead.org/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260315224506.1973566-1-rdunlap@infradead.org/",
+      "updated": "Sun, 15 Mar 2026 15:45:06 -0700",
+      "subsystems": [],
+      "review": {
+        "summary": "Claude CLI failed: Claude Code at Meta (https://fburl.com/claude.code.users)\n'Latest' native version check (lookup was cached - delete /home/uarif/.cache/claude_code_native_versions/.available_versions to force refresh!",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-15"
+    },
+    {
+      "title": "mm/userfaultfd: re-validate vma in mfill_atomic() loop under CONFIG_PER_VMA_LOCK",
+      "author": "Deepanshu Kartikey <kartikey406@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH] mm/userfaultfd: re-validate vma in mfill_atomic() loop under CONFIG_PER_VMA_LOCK",
+          "link": "https://lore.kernel.org/linux-mm/20260316070039.549506-1-kartikey406@gmail.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260316070039.549506-1-kartikey406@gmail.com/",
+      "updated": "Mon, 16 Mar 2026 12:30:39 +0530",
+      "subsystems": [
+        "userfaultfd"
+      ],
+      "review": {
+        "summary": "Claude CLI failed: Claude Code at Meta (https://fburl.com/claude.code.users)\n'Latest' native version check (lookup was cached - delete /home/uarif/.cache/claude_code_native_versions/.available_versions to force refresh!",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "Migrate on fault for device pages",
+      "author": "mpenttil@redhat.com",
+      "patches": [
+        {
+          "title": "[PATCH v6 0/6] Migrate on fault for device pages",
+          "link": "https://lore.kernel.org/linux-mm/20260316062407.3354636-1-mpenttil@redhat.com/"
+        },
+        {
+          "title": "[PATCH v6 1/6] mm:/Kconfig changes for migrate on fault for device pages",
+          "link": "https://lore.kernel.org/linux-mm/20260316062407.3354636-2-mpenttil@redhat.com/"
+        },
+        {
+          "title": "[PATCH v6 2/6] mm: Add helper to convert HMM pfn to migrate pfn",
+          "link": "https://lore.kernel.org/linux-mm/20260316062407.3354636-3-mpenttil@redhat.com/"
+        },
+        {
+          "title": "[PATCH v6 3/6] mm/hmm: do the plumbing for HMM to participate in migration",
+          "link": "https://lore.kernel.org/linux-mm/20260316062407.3354636-4-mpenttil@redhat.com/"
+        },
+        {
+          "title": "[PATCH v6 4/6] mm: setup device page migration in HMM pagewalk",
+          "link": "https://lore.kernel.org/linux-mm/20260316062407.3354636-5-mpenttil@redhat.com/"
+        },
+        {
+          "title": "[PATCH v6 5/6] mm: add new testcase for the migrate on fault case",
+          "link": "https://lore.kernel.org/linux-mm/20260316062407.3354636-6-mpenttil@redhat.com/"
+        },
+        {
+          "title": "[PATCH v6 6/6] mm:/migrate_device.c: remove migrate_vma_collect_*()",
+          "link": "https://lore.kernel.org/linux-mm/20260316062407.3354636-7-mpenttil@redhat.com/"
+        }
+      ],
+      "patch_count": 6,
+      "link": "https://lore.kernel.org/linux-mm/20260316062407.3354636-1-mpenttil@redhat.com/",
+      "updated": "Mon, 16 Mar 2026 08:24:01 +0200",
+      "subsystems": [
+        "Kconfig",
+        "hmm",
+        "include",
+        "migrate_device",
+        "tests"
+      ],
+      "review": {
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
+        "issues": [],
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":723530,\"duration_api_ms\":708717,\"num_turns\":27,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"99bf764c-d5bd-4119-814e-fa46174bbf2e\",\"total_cost_usd\":1.6011734999999998,\"usage\":{\"input_tokens\":3712,\"cache_creation_input_tokens\":164314,\"cache_read_input_tokens\":1165250,\"output_tokens\":41619,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\""
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "[LSF/MM/BPF TOPIC]  mm/mempolicy: introduce socket-aware weighted interleave",
+      "author": "Rakie Kim <rakie.kim@sk.com>",
+      "patches": [
+        {
+          "title": "[LSF/MM/BPF TOPIC] [RFC PATCH 0/4] mm/mempolicy: introduce socket-aware weighted interleave",
+          "link": "https://lore.kernel.org/linux-mm/20260316051258.246-1-rakie.kim@sk.com/"
+        },
+        {
+          "title": "[RFC PATCH 1/4] mm/numa: introduce nearest_nodes_nodemask()",
+          "link": "https://lore.kernel.org/linux-mm/20260316051258.246-2-rakie.kim@sk.com/"
+        },
+        {
+          "title": "[RFC PATCH 2/4] mm/memory-tiers: introduce socket-aware topology management for NUMA nodes",
+          "link": "https://lore.kernel.org/linux-mm/20260316051258.246-3-rakie.kim@sk.com/"
+        },
+        {
+          "title": "[RFC PATCH 3/4] mm/memory-tiers: register CXL nodes to socket-aware packages via initiator",
+          "link": "https://lore.kernel.org/linux-mm/20260316051258.246-4-rakie.kim@sk.com/"
+        },
+        {
+          "title": "[RFC PATCH 4/4] mm/mempolicy: enhance weighted interleave with socket-aware locality",
+          "link": "https://lore.kernel.org/linux-mm/20260316051258.246-5-rakie.kim@sk.com/"
+        }
+      ],
+      "patch_count": 4,
+      "link": "https://lore.kernel.org/linux-mm/20260316051258.246-1-rakie.kim@sk.com/",
+      "updated": "Mon, 16 Mar 2026 14:12:48 +0900",
+      "subsystems": [
+        "drivers",
+        "include",
+        "memory-tiers",
+        "mempolicy"
+      ],
+      "review": {
+        "summary": "Claude CLI failed: Claude Code at Meta (https://fburl.com/claude.code.users)\n'Latest' native version check (lookup was cached - delete /home/uarif/.cache/claude_code_native_versions/.available_versions to force refresh!",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "userfaultfd: unassigned vma leads to a potential unreleased locks",
+      "author": "Edward Adam Davis <eadavis@qq.com>",
+      "patches": [
+        {
+          "title": "[PATCH next] userfaultfd: unassigned vma leads to a potential unreleased locks",
+          "link": "https://lore.kernel.org/linux-mm/tencent_C43C1BB425D6BA16BB6533FC9E001BC64B08@qq.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/tencent_C43C1BB425D6BA16BB6533FC9E001BC64B08@qq.com/",
+      "updated": "Mon, 16 Mar 2026 11:11:03 +0800",
+      "subsystems": [
+        "userfaultfd"
+      ],
+      "review": {
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
+        "issues": [],
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":151993,\"duration_api_ms\":144809,\"num_turns\":11,\"result\":\"**Verdict: looks_good**\\n\\n**Root cause confirmed:**\\n\\n- `mfill_state` is zero-initialized in `mfill_atomic()` (compound literal, no `.vma` field set), so `state->vma == NULL` on entry to `mfill_get_vma()`\\n- `mfill_put_vma()` early-returns on `!state->vma`, skipping both `up_read(&ctx->map_changing_lock)` and `uffd_mfill_unlock()`\\n- Every `goto out_unlock` path in `mfil"
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "zram: propagate read_from_bdev_async() errors",
+      "author": "Sergey Senozhatsky <senozhatsky@chromium.org>",
+      "patches": [
+        {
+          "title": "[PATCH] zram: propagate read_from_bdev_async() errors",
+          "link": "https://lore.kernel.org/linux-mm/20260316015354.114465-1-senozhatsky@chromium.org/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260316015354.114465-1-senozhatsky@chromium.org/",
+      "updated": "Mon, 16 Mar 2026 10:53:32 +0900",
+      "subsystems": [
+        "drivers"
+      ],
+      "review": {
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
+        "issues": [],
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":103786,\"duration_api_ms\":95911,\"num_turns\":11,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"fb48d779-7d2e-4258-945e-639518462f0b\",\"total_cost_usd\":0.21349395000000002,\"usage\":{\"input_tokens\":16,\"cache_creation_input_tokens\":25141,\"cache_read_input_tokens\":142124,\"output_tokens\":5102,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"e"
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "mm/damon: let DAMON be paused and resumed",
+      "author": "SeongJae Park <sj@kernel.org>",
+      "patches": [
+        {
+          "title": "[RFC PATCH 00/10] mm/damon: let DAMON be paused and resumed",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-1-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 01/10] mm/damon/core: introduce damon_ctx->paused",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-2-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 02/10] mm/damon/sysfs: add pause file under context dir",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-3-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 03/10] Docs/mm/damon/design: update for context pause/resume feature",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-4-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 04/10] Docs/admin-guide/mm/damon/usage: update for pause file",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-5-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 05/10] Docs/ABI/damon: update for pause sysfs file",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-6-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 06/10] mm/damon/tests/core-kunit: test pause commitment",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-7-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 07/10] selftests/damon/_damon_sysfs: support pause file staging",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-8-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 08/10] selftests/damon/drgn_dump_damon_status: dump pause",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-9-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 09/10] selftests/damon/sysfs.py: check pause on assert_ctx_committed()",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-10-sj@kernel.org/"
+        },
+        {
+          "title": "[RFC PATCH 10/10] selftets/damon/sysfs.py: pause DAMON before dumping status",
+          "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-11-sj@kernel.org/"
+        }
+      ],
+      "patch_count": 10,
+      "link": "https://lore.kernel.org/linux-mm/20260315210012.94846-1-sj@kernel.org/",
+      "updated": "Sun, 15 Mar 2026 13:59:59 -0700",
+      "subsystems": [
+        "damon/core",
+        "damon/sysfs",
+        "damon/tests/core-kunit",
+        "docs",
+        "include",
+        "tests"
+      ],
+      "review": {
+        "summary": "Failed to parse review JSON: Expecting value: line 1 column 1 (char 0)",
+        "issues": [],
+        "verdict": "skip",
+        "raw_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":233953,\"duration_api_ms\":223992,\"num_turns\":16,\"result\":\"\",\"stop_reason\":\"end_turn\",\"session_id\":\"09b79858-0ed9-438b-99ab-ca3ff727ef5b\",\"total_cost_usd\":0.4403229000000001,\"usage\":{\"input_tokens\":829,\"cache_creation_input_tokens\":40456,\"cache_read_input_tokens\":337203,\"output_tokens\":12331,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,"
       },
       "fetch_date": "2026-03-15"
     }
