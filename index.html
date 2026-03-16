@@ -310,7 +310,7 @@ footer {
 
 
 
-<h2 class="date-header">2026-03-16 <span class="date-count">(17)</span></h2><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
+<h2 class="date-header">2026-03-16 <span class="date-count">(18)</span></h2><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-1-chuhu@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: skip several tests when thp is not available</a>
@@ -1696,21 +1696,6 @@ mfill_atomic_hugetlb() and returns, which is unchanged.
 
 Looks good to me.</pre></div>
         </div>
-    </details><details class="series-row" id="s-334aa884" data-title="mm: vmscan: add pid and cgroup id to vmscan tracepoints" data-author="thomas ballasi" data-subsystems="include shrinker vmscan" data-verdict="skip">
-        <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
-            <a href="https://lore.kernel.org/linux-mm/20260316160908.42727-1-tballasi@linux.microsoft.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: vmscan: add PID and cgroup ID to vmscan tracepoints</a>
-            <span class="row-right">
-                
-                
-                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-334aa884')">&#128279;</span>
-                <span class="row-author">Thomas Ballasi</span>
-                <span class="row-patches">3p</span>
-            </span>
-        </summary>
-        <div class="row-detail">
-            <div class="row-summary">Claude CLI error: error_max_structured_output_retries after 27 turns.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">shrinker</span> <span class="subsystem-tag">vmscan</span></div><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-1-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 0/3] mm: vmscan: add PID and cgroup ID to vmscan tracepoints</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-2-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 1/3] tracing: Add __event_in_*irq() helpers</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-3-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 2/3] mm: vmscan: add cgroup IDs to vmscan tracepoints</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-4-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 3/3] mm: vmscan: add PIDs to vmscan tracepoints</a></li></ul></details>
-        </div>
     </details><details class="series-row" id="s-917614ae" data-title="mm/mglru: fix cgroup oom during mglru state switching" data-author="leno hou via b4 relay" data-subsystems="include rmap swap vmscan workingset" data-verdict="needs_work">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
@@ -1828,6 +1813,36 @@ The workingset.c diff is truncated.  The modifications to pack_shadow(),
 unpack_shadow(), workingset_test_recent(), and workingset_refault() that
 carry and dispatch the is_mglru bit are not visible.  Please send the
 complete diff for review.</pre></div><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-0-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 0/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-1-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 1/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-2-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 2/2] mm/mglru: maintain workingset refault context across state transitions</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-658fd60f" data-title="mm/damon: support madv_collapse via damos_collapse scheme action" data-author="&lt;gutierrez.asier@huawei-partners.com&gt;" data-subsystems="damon/sysfs-schemes damon/vaddr docs include" data-verdict="skip">
+        <summary>
+            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <a href="https://lore.kernel.org/linux-mm/20260316183805.2090297-1-gutierrez.asier@huawei-partners.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/damon: support MADV_COLLAPSE via DAMOS_COLLAPSE scheme action</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-658fd60f')">&#128279;</span>
+                <span class="row-author">&lt;gutierrez.asier@huawei-partners.com&gt;</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">damon/sysfs-schemes</span> <span class="subsystem-tag">damon/vaddr</span> <span class="subsystem-tag">docs</span> <span class="subsystem-tag">include</span></div>
+        </div>
+    </details><details class="series-row" id="s-334aa884" data-title="mm: vmscan: add pid and cgroup id to vmscan tracepoints" data-author="thomas ballasi" data-subsystems="include shrinker vmscan" data-verdict="skip">
+        <summary>
+            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <a href="https://lore.kernel.org/linux-mm/20260316160908.42727-1-tballasi@linux.microsoft.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: vmscan: add PID and cgroup ID to vmscan tracepoints</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-334aa884')">&#128279;</span>
+                <span class="row-author">Thomas Ballasi</span>
+                <span class="row-patches">3p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">shrinker</span> <span class="subsystem-tag">vmscan</span></div><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-1-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 0/3] mm: vmscan: add PID and cgroup ID to vmscan tracepoints</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-2-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 1/3] tracing: Add __event_in_*irq() helpers</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-3-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 2/3] mm: vmscan: add cgroup IDs to vmscan tracepoints</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-4-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 3/3] mm: vmscan: add PIDs to vmscan tracepoints</a></li></ul></details>
         </div>
     </details><h2 class="date-header">2026-03-15 <span class="date-count">(2)</span></h2><details class="series-row" id="s-5b5461b9" data-title="docs: mmap_prepare: don't italicize structs" data-author="randy dunlap" data-subsystems="" data-verdict="looks_good">
         <summary>
