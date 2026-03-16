@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-16T20:00:24.199865+00:00",
+  "generated_at": "2026-03-16T22:00:25.426776+00:00",
   "days": 1,
-  "total_patches": 20,
+  "total_patches": 21,
   "series": [
     {
       "title": "selftests/mm: skip several tests when thp is not available",
@@ -666,6 +666,64 @@
         "verdict": "needs_work",
         "summary": "This two-patch series introduces a 'draining' intermediate state for MGLRU enable/disable transitions to prevent a reclaim vacuum that causes spurious cgroup OOM kills, and adds shadow entry context tracking to correctly dispatch workingset refaults after state transitions. The approach is sound but the visible diff is missing critical pieces that make it impossible to verify correctness.",
         "review_inline": "From: Leno Hou <lenohou@gmail.com>\nSubject: [PATCH v3 1/2] mm/mglru: fix cgroup OOM during MGLRU state switching\n\nThanks for the patch.  The problem statement is real and the draining-state\napproach is a reasonable way to fix it.  However there are several issues\nin the visible diff that need addressing.\n\n> diff --git a/include/linux/mm_inline.h b/include/linux/mm_inline.h\n> +static inline bool lru_gen_draining(void)\n> +{\n> +\tDECLARE_STATIC_KEY_FALSE(lru_drain_core);\n> +\n> +\treturn static_branch_unlikely(&lru_drain_core);\n> +}\n\nDECLARE_STATIC_KEY_FALSE() here is an extern declaration; the key must be\ndefined somewhere with DEFINE_STATIC_KEY_FALSE(lru_drain_core).  The base\ntree (vmscan.c:2629) only defines lru_gen_caps.  The visible portion of\nthe vmscan.c diff does not show a DEFINE for lru_drain_core.  Is the\ndefinition in the truncated portion of the hunk?  Without it the patch\nwould not link.\n\nSimilarly, the base lru_gen_change_state() never calls\nstatic_branch_enable/disable on lru_drain_core, so the draining window\nis never actually opened.  Are those calls in the truncated part of the\nvmscan.c diff?  Please post the full diff so reviewers can verify the\ncomplete mechanism end-to-end.\n\n> diff --git a/mm/swap.c b/mm/swap.c\n> -\tif (lru_gen_enabled()) {\n> +\tif (folio_lru_gen(folio) != -1) {\n>  \t\tlru_gen_inc_refs(folio);\n>  \t\treturn;\n>  \t}\n\nThis changes behavior for folios not yet added to any LRU list.  A folio\nsitting in a per-cpu folio_batch has LRU_GEN_MASK == 0, so\nfolio_lru_gen() == -1.  Under the old code lru_gen_inc_refs() was called\nfor all folios while MGLRU is enabled; under the new code it is skipped\nfor those folios.  The LRU_REFS bits set by lru_gen_inc_refs() affect the\neviction tier in lru_gen_eviction() via lru_tier_from_refs().  For a\nfolio accessed several times before its folio_batch drains, the tier will\nbe underestimated.  Is this intentional?  The commit message does not\ncall it out.\n\n> -\tbool active = folio_test_active(folio) || lru_gen_enabled();\n> +\tbool active = folio_test_active(folio) || (folio_lru_gen(folio) != -1);\n\nThis change in lru_deactivate_file() is correct: it uses per-folio state\nrather than the global flag, which is the right behaviour during the\ndraining window when some folios remain on MGLRU lists and others have\nalready been moved to the traditional LRU.\n\n> diff --git a/mm/vmscan.c b/mm/vmscan.c\n> +\t/* whether in lru gen scan context */\n> +\tunsigned int lru_gen:1;\n\n[ ... ]\n\n> +\tsc->lru_gen = 0;\n>  \tnr_reclaimed = shrink_folio_list(&folio_list, pgdat, sc, &stat,\n\nThe sc object is stack-allocated by the top-level caller and shared\nacross the full shrink_lruvec() call chain.  Mutating sc->lru_gen inside\nboth shrink_inactive_list() and evict_folios() is correct only because\neach write immediately precedes its corresponding shrink_folio_list()\ncall and no downstream caller reads sc->lru_gen outside of\n__remove_mapping().  This invariant is non-obvious.  A comment, or\npassing lru_gen as a direct parameter to shrink_folio_list(), would make\nthe intent clearer and less fragile.\n\n> +retry:\n> +\tsc->lru_gen = 1;\n>  \treclaimed = shrink_folio_list(&list, pgdat, sc, &stat, false, memcg);\n\nThis is in evict_folios(), so sc->lru_gen=1 is correct.  The retry label\nis also jumped to from a later goto after move_folios_to_lru() has run.\nsc->lru_gen=1 is right before the label so it is reset on each pass\nthrough retry -- that looks correct, just worth confirming.\n\n> diff --git a/mm/rmap.c b/mm/rmap.c\n> -\t\tif (lru_gen_enabled() && pvmw.pte) {\n> +\t\tif (lru_gen_enabled() && !lru_gen_draining() && pvmw.pte) {\n\nSuppressing lru_gen_look_around() for the entire draining window is safe\nbut potentially wide.  On large systems with many memcgs and nodes,\nlru_gen_change_state() iterates every lruvec while draining.  During\nthat whole window look_around is disabled system-wide.  Is this\nperformance tradeoff acceptable, or should the suppression be scoped more\ntightly (e.g., per-lruvec)?\n\n> --- [PATCH v3 2/2] mm/mglru: maintain workingset refault context\n\nAdding WORKINGSET_MGLRU_SHIFT increases EVICTION_SHIFT by 1, shrinking\nEVICTION_MASK by 1 bit and reducing eviction timestamp precision for all\nshadow entries on all systems.  The BUILD_BUG_ON in lru_gen_eviction()\nguards against actual overflow, but the precision loss on 64-bit systems\nthat don't hit the BUILD_BUG_ON is still a real tradeoff.  Please\ndocument it in the commit message.\n\nThe workingset.c diff is truncated.  The modifications to pack_shadow(),\nunpack_shadow(), workingset_test_recent(), and workingset_refault() that\ncarry and dispatch the is_mglru bit are not visible.  Please send the\ncomplete diff for review."
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "RDMA: Enable operation with DMA debug enabled",
+      "author": "Leon Romanovsky <leon@kernel.org>",
+      "patches": [
+        {
+          "title": "[PATCH v3 0/8] RDMA: Enable operation with DMA debug enabled",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-0-1dde90a7f08b@nvidia.com/"
+        },
+        {
+          "title": "[PATCH v3 1/8] dma-debug: Allow multiple invocations of overlapping entries",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-1-1dde90a7f08b@nvidia.com/"
+        },
+        {
+          "title": "[PATCH v3 2/8] dma-mapping: handle DMA_ATTR_CPU_CACHE_CLEAN in trace output",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-2-1dde90a7f08b@nvidia.com/"
+        },
+        {
+          "title": "[PATCH v3 3/8] dma-mapping: Clarify valid conditions for CPU cache line overlap",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-3-1dde90a7f08b@nvidia.com/"
+        },
+        {
+          "title": "[PATCH v3 4/8] dma-mapping: Introduce DMA require coherency attribute",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-4-1dde90a7f08b@nvidia.com/"
+        },
+        {
+          "title": "[PATCH v3 5/8] dma-direct: prevent SWIOTLB path when DMA_ATTR_REQUIRE_COHERENT is set",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-5-1dde90a7f08b@nvidia.com/"
+        },
+        {
+          "title": "[PATCH v3 6/8] iommu/dma: add support for DMA_ATTR_REQUIRE_COHERENT attribute",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-6-1dde90a7f08b@nvidia.com/"
+        },
+        {
+          "title": "[PATCH v3 7/8] RDMA/umem: Tell DMA mapping that UMEM requires coherency",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-7-1dde90a7f08b@nvidia.com/"
+        },
+        {
+          "title": "[PATCH v3 8/8] mm/hmm: Indicate that HMM requires DMA coherency",
+          "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-8-1dde90a7f08b@nvidia.com/"
+        }
+      ],
+      "patch_count": 8,
+      "link": "https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-0-1dde90a7f08b@nvidia.com/",
+      "updated": "Mon, 16 Mar 2026 21:06:44 +0200",
+      "subsystems": [
+        "docs",
+        "drivers",
+        "hmm",
+        "include",
+        "kernel"
+      ],
+      "review": {
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
     },

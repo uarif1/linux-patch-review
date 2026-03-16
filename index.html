@@ -310,7 +310,7 @@ footer {
 
 
 
-<h2 class="date-header">2026-03-16 <span class="date-count">(18)</span></h2><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
+<h2 class="date-header">2026-03-16 <span class="date-count">(19)</span></h2><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-1-chuhu@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: skip several tests when thp is not available</a>
@@ -1813,6 +1813,21 @@ The workingset.c diff is truncated.  The modifications to pack_shadow(),
 unpack_shadow(), workingset_test_recent(), and workingset_refault() that
 carry and dispatch the is_mglru bit are not visible.  Please send the
 complete diff for review.</pre></div><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-0-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 0/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-1-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 1/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-2-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 2/2] mm/mglru: maintain workingset refault context across state transitions</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-48be0410" data-title="rdma: enable operation with dma debug enabled" data-author="leon romanovsky" data-subsystems="docs drivers hmm include kernel" data-verdict="skip">
+        <summary>
+            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-0-1dde90a7f08b@nvidia.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">RDMA: Enable operation with DMA debug enabled</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-48be0410')">&#128279;</span>
+                <span class="row-author">Leon Romanovsky</span>
+                <span class="row-patches">8p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">docs</span> <span class="subsystem-tag">drivers</span> <span class="subsystem-tag">hmm</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">kernel</span></div><details class="patches-detail"><summary>9 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-0-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 0/8] RDMA: Enable operation with DMA debug enabled</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-1-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 1/8] dma-debug: Allow multiple invocations of overlapping entries</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-2-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 2/8] dma-mapping: handle DMA_ATTR_CPU_CACHE_CLEAN in trace output</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-3-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 3/8] dma-mapping: Clarify valid conditions for CPU cache line overlap</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-4-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 4/8] dma-mapping: Introduce DMA require coherency attribute</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-5-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 5/8] dma-direct: prevent SWIOTLB path when DMA_ATTR_REQUIRE_COHERENT is set</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-6-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 6/8] iommu/dma: add support for DMA_ATTR_REQUIRE_COHERENT attribute</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-7-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 7/8] RDMA/umem: Tell DMA mapping that UMEM requires coherency</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-dma-debug-overlap-v3-8-1dde90a7f08b@nvidia.com/" target="_blank">[PATCH v3 8/8] mm/hmm: Indicate that HMM requires DMA coherency</a></li></ul></details>
         </div>
     </details><details class="series-row" id="s-658fd60f" data-title="mm/damon: support madv_collapse via damos_collapse scheme action" data-author="&lt;gutierrez.asier@huawei-partners.com&gt;" data-subsystems="damon/sysfs-schemes damon/vaddr docs include" data-verdict="skip">
         <summary>
