@@ -310,7 +310,22 @@ footer {
 
 
 
-<h2 class="date-header">2026-03-17 <span class="date-count">(1)</span></h2><details class="series-row" id="s-dbf972fd" data-title="mm: introduce a new page type for page pool in page type" data-author="byungchul park" data-subsystems="drivers include net page_alloc" data-verdict="skip">
+<h2 class="date-header">2026-03-17 <span class="date-count">(2)</span></h2><details class="series-row" id="s-d4eb19ca" data-title="zram: change scan_slots to return void" data-author="sergey senozhatsky" data-subsystems="drivers" data-verdict="skip">
+        <summary>
+            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317032349.753645-1-senozhatsky@chromium.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">zram: change scan_slots to return void</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-d4eb19ca')">&#128279;</span>
+                <span class="row-author">Sergey Senozhatsky</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">drivers</span></div>
+        </div>
+    </details><details class="series-row" id="s-dbf972fd" data-title="mm: introduce a new page type for page pool in page type" data-author="byungchul park" data-subsystems="drivers include net page_alloc" data-verdict="skip">
         <summary>
             <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
             <a href="https://lore.kernel.org/linux-mm/20260316223113.20097-1-byungchul@sk.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: introduce a new page type for page pool in page type</a>
@@ -325,7 +340,7 @@ footer {
         <div class="row-detail">
             <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">drivers</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">net</span> <span class="subsystem-tag">page_alloc</span></div>
         </div>
-    </details><h2 class="date-header">2026-03-16 <span class="date-count">(23)</span></h2><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
+    </details><h2 class="date-header">2026-03-16 <span class="date-count">(25)</span></h2><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-1-chuhu@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: skip several tests when thp is not available</a>
@@ -1829,36 +1844,6 @@ unpack_shadow(), workingset_test_recent(), and workingset_refault() that
 carry and dispatch the is_mglru bit are not visible.  Please send the
 complete diff for review.</pre></div><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-0-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 0/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-1-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 1/2] mm/mglru: fix cgroup OOM during MGLRU state switching</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316-b4-switch-mglru-v2-v3-2-c846ce9a2321@gmail.com/" target="_blank">[PATCH v3 2/2] mm/mglru: maintain workingset refault context across state transitions</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-7f37b8aa" data-title="liveupdate: fix module unloading and unregister api" data-author="pasha tatashin" data-subsystems="include kernel tests" data-verdict="skip">
-        <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
-            <a href="https://lore.kernel.org/linux-mm/20260317025049.494931-1-pasha.tatashin@soleen.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">liveupdate: Fix module unloading and unregister API</a>
-            <span class="row-right">
-                
-                
-                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-7f37b8aa')">&#128279;</span>
-                <span class="row-author">Pasha Tatashin</span>
-                <span class="row-patches">6p</span>
-            </span>
-        </summary>
-        <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">kernel</span> <span class="subsystem-tag">tests</span></div><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-1-pasha.tatashin@soleen.com/" target="_blank">[PATCH 0/6] liveupdate: Fix module unloading and unregister API</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-2-pasha.tatashin@soleen.com/" target="_blank">[PATCH 1/6] liveupdate: Protect file handler list with rwsem</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-3-pasha.tatashin@soleen.com/" target="_blank">[PATCH 2/6] liveupdate: Protect FLB lists with rwsem</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-4-pasha.tatashin@soleen.com/" target="_blank">[PATCH 3/6] liveupdate: Defer file handler module refcounting to active sessions</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-5-pasha.tatashin@soleen.com/" target="_blank">[PATCH 4/6] liveupdate: Defer FLB module refcounting to active sessions</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-6-pasha.tatashin@soleen.com/" target="_blank">[PATCH 5/6] liveupdate: Make unregister functions return void</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-7-pasha.tatashin@soleen.com/" target="_blank">[PATCH 6/6] liveupdate: Remove luo_session_quiesce()</a></li></ul></details>
-        </div>
-    </details><details class="series-row" id="s-47fafa05" data-title="zswap pool per-cpu acomp_ctx simplifications" data-author="&quot;kanchana p. sridhar&quot;" data-subsystems="zswap" data-verdict="skip">
-        <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
-            <a href="https://lore.kernel.org/linux-mm/20260317014802.27591-1-kanchanapsridhar2026@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">zswap pool per-CPU acomp_ctx simplifications</a>
-            <span class="row-right">
-                
-                
-                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-47fafa05')">&#128279;</span>
-                <span class="row-author">&quot;Kanchana P. Sridhar&quot;</span>
-                <span class="row-patches">2p</span>
-            </span>
-        </summary>
-        <div class="row-detail">
-            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">zswap</span></div><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260317014802.27591-1-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH v2 0/2] zswap pool per-CPU acomp_ctx simplifications</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317014802.27591-2-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH v2 1/2] mm: zswap: Remove redundant checks in zswap_cpu_comp_dead().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317014802.27591-3-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH v2 2/2] mm: zswap: Tie per-CPU acomp_ctx lifetime to the pool.</a></li></ul></details>
-        </div>
     </details><details class="series-row" id="s-658fd60f" data-title="mm/damon: support madv_collapse via damos_collapse scheme action" data-author="&lt;gutierrez.asier@huawei-partners.com&gt;" data-subsystems="damon/sysfs-schemes damon/vaddr docs include" data-verdict="skip">
         <summary>
             <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
@@ -1889,6 +1874,36 @@ complete diff for review.</pre></div><details class="patches-detail"><summary>3 
         <div class="row-detail">
             <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">damon/stat</span></div>
         </div>
+    </details><details class="series-row" id="s-9f58ffb5" data-title="mm/kasan: adjust documentation" data-author="seongjae park" data-subsystems="damon/stat docs" data-verdict="skip">
+        <summary>
+            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <a href="" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/kasan: adjust documentation</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-9f58ffb5')">&#128279;</span>
+                <span class="row-author">SeongJae Park</span>
+                <span class="row-patches">2p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">damon/stat</span> <span class="subsystem-tag">docs</span></div><details class="patches-detail"><summary>2 patches</summary><ul><li><a href="" target="_blank">[PATCH] mm/damon/stat: return error if monitoring target region is invalid</a></li><li><a href="" target="_blank">[PATCH] mm/kasan: adjust documentation</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-a683f317" data-title="mm/mempolicy: track user-defined mempolicy allocations" data-author="&quot;jp kobryn (meta)&quot;" data-subsystems="include mempolicy vmstat" data-verdict="skip">
+        <summary>
+            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317050657.47494-1-jp.kobryn@linux.dev/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/mempolicy: track user-defined mempolicy allocations</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-a683f317')">&#128279;</span>
+                <span class="row-author">&quot;JP Kobryn (Meta)&quot;</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">mempolicy</span> <span class="subsystem-tag">vmstat</span></div>
+        </div>
     </details><details class="series-row" id="s-6ae8e011" data-title="mm: expand mmap_prepare functionality and usage" data-author="&quot;lorenzo stoakes (oracle)&quot;" data-subsystems="docs drivers fs include internal memory tests util vma" data-verdict="skip">
         <summary>
             <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
@@ -1903,6 +1918,36 @@ complete diff for review.</pre></div><details class="patches-detail"><summary>3 
         </summary>
         <div class="row-detail">
             <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">docs</span> <span class="subsystem-tag">drivers</span> <span class="subsystem-tag">fs</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">internal</span> <span class="subsystem-tag">memory</span> <span class="subsystem-tag">tests</span> <span class="subsystem-tag">util</span> <span class="subsystem-tag">vma</span></div><details class="patches-detail"><summary>17 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/cover.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 00/16] mm: expand mmap_prepare functionality and usage</a></li><li><a href="https://lore.kernel.org/linux-mm/afcb42b88acac93c6437b0dbbc71bba0b0e7429e.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 01/16] mm: various small mmap_prepare cleanups</a></li><li><a href="https://lore.kernel.org/linux-mm/a921c8cdef8e934fb662cd585071a585e1cb3cf5.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 02/16] mm: add documentation for the mmap_prepare file operation callback</a></li><li><a href="https://lore.kernel.org/linux-mm/3cec125f9eaf9dc44e638a56c76d12c58684af87.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 03/16] mm: document vm_operations_struct-&gt;open the same as close()</a></li><li><a href="https://lore.kernel.org/linux-mm/700b3a31185c1b4255c8410c7724ffd123488467.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 04/16] mm: add vm_ops-&gt;mapped hook</a></li><li><a href="https://lore.kernel.org/linux-mm/7adcb09e6817fadf9572a96893e95eacfe6fc4cc.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 05/16] fs: afs: correctly drop reference count on mapping failure</a></li><li><a href="https://lore.kernel.org/linux-mm/1e58aaf3cdb61cc317d890c12c9a558dfc206913.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 06/16] mm: add mmap_action_simple_ioremap()</a></li><li><a href="https://lore.kernel.org/linux-mm/77fbdae93f250fa1551f3052fc9034739795ff20.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 07/16] misc: open-dice: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/a8debbca3fc7b765937e6b5b76bd9002c66b225b.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 08/16] hpet: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/e3071ae43af79277d3919bafb71f009694d0854d.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 09/16] mtdchar: replace deprecated mmap hook with mmap_prepare, clean up</a></li><li><a href="https://lore.kernel.org/linux-mm/d34056a65bd387286f4e155d52449106ddc99f78.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 10/16] stm: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/48c6d25e374b57dba6df4fdddd4830d3fc1105be.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 11/16] staging: vme_user: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/72750af6906fd96fb6f18e83ac3e694cf357a2c1.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 12/16] mm: allow handling of stacked mmap_prepare hooks in more drivers</a></li><li><a href="https://lore.kernel.org/linux-mm/816d3c06ca3ec201ac8439a83383b9cb5e407ee9.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 13/16] drivers: hv: vmbus: replace deprecated mmap hook with mmap_prepare</a></li><li><a href="https://lore.kernel.org/linux-mm/892a8b32e5ef64c69239ccc2d1bd364716fd7fdf.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 14/16] uio: replace deprecated mmap hook with mmap_prepare in uio_info</a></li><li><a href="https://lore.kernel.org/linux-mm/8e28e4b63bae67bfa1a59ccbac9dc6db1442d75d.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 15/16] mm: add mmap_action_map_kernel_pages[_full]()</a></li><li><a href="https://lore.kernel.org/linux-mm/4e152e7b8e1a93baf0777628eef9409d031cf8f6.1773695307.git.ljs@kernel.org/" target="_blank">[PATCH v2 16/16] mm: on remap assert that input range within the proposed VMA</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-7f37b8aa" data-title="liveupdate: fix module unloading and unregister api" data-author="pasha tatashin" data-subsystems="include kernel tests" data-verdict="skip">
+        <summary>
+            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317025049.494931-1-pasha.tatashin@soleen.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">liveupdate: Fix module unloading and unregister API</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-7f37b8aa')">&#128279;</span>
+                <span class="row-author">Pasha Tatashin</span>
+                <span class="row-patches">6p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">include</span> <span class="subsystem-tag">kernel</span> <span class="subsystem-tag">tests</span></div><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-1-pasha.tatashin@soleen.com/" target="_blank">[PATCH 0/6] liveupdate: Fix module unloading and unregister API</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-2-pasha.tatashin@soleen.com/" target="_blank">[PATCH 1/6] liveupdate: Protect file handler list with rwsem</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-3-pasha.tatashin@soleen.com/" target="_blank">[PATCH 2/6] liveupdate: Protect FLB lists with rwsem</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-4-pasha.tatashin@soleen.com/" target="_blank">[PATCH 3/6] liveupdate: Defer file handler module refcounting to active sessions</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-5-pasha.tatashin@soleen.com/" target="_blank">[PATCH 4/6] liveupdate: Defer FLB module refcounting to active sessions</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-6-pasha.tatashin@soleen.com/" target="_blank">[PATCH 5/6] liveupdate: Make unregister functions return void</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317025049.494931-7-pasha.tatashin@soleen.com/" target="_blank">[PATCH 6/6] liveupdate: Remove luo_session_quiesce()</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-47fafa05" data-title="zswap pool per-cpu acomp_ctx simplifications" data-author="&quot;kanchana p. sridhar&quot;" data-subsystems="zswap" data-verdict="skip">
+        <summary>
+            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317014802.27591-1-kanchanapsridhar2026@gmail.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">zswap pool per-CPU acomp_ctx simplifications</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-47fafa05')">&#128279;</span>
+                <span class="row-author">&quot;Kanchana P. Sridhar&quot;</span>
+                <span class="row-patches">2p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Review timed out.</div><div class="subsystem-tags"><span class="subsystem-tag">zswap</span></div><details class="patches-detail"><summary>3 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260317014802.27591-1-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH v2 0/2] zswap pool per-CPU acomp_ctx simplifications</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317014802.27591-2-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH v2 1/2] mm: zswap: Remove redundant checks in zswap_cpu_comp_dead().</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317014802.27591-3-kanchanapsridhar2026@gmail.com/" target="_blank">[PATCH v2 2/2] mm: zswap: Tie per-CPU acomp_ctx lifetime to the pool.</a></li></ul></details>
         </div>
     </details><details class="series-row" id="s-48be0410" data-title="rdma: enable operation with dma debug enabled" data-author="leon romanovsky" data-subsystems="docs drivers hmm include kernel" data-verdict="skip">
         <summary>

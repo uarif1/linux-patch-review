@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-17T06:00:29.047325+00:00",
+  "generated_at": "2026-03-17T11:00:28.075371+00:00",
   "days": 1,
-  "total_patches": 26,
+  "total_patches": 29,
   "series": [
     {
       "title": "selftests/mm: skip several tests when thp is not available",
@@ -670,84 +670,6 @@
       "fetch_date": "2026-03-16"
     },
     {
-      "title": "liveupdate: Fix module unloading and unregister API",
-      "author": "Pasha Tatashin <pasha.tatashin@soleen.com>",
-      "patches": [
-        {
-          "title": "[PATCH 0/6] liveupdate: Fix module unloading and unregister API",
-          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-1-pasha.tatashin@soleen.com/"
-        },
-        {
-          "title": "[PATCH 1/6] liveupdate: Protect file handler list with rwsem",
-          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-2-pasha.tatashin@soleen.com/"
-        },
-        {
-          "title": "[PATCH 2/6] liveupdate: Protect FLB lists with rwsem",
-          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-3-pasha.tatashin@soleen.com/"
-        },
-        {
-          "title": "[PATCH 3/6] liveupdate: Defer file handler module refcounting to active sessions",
-          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-4-pasha.tatashin@soleen.com/"
-        },
-        {
-          "title": "[PATCH 4/6] liveupdate: Defer FLB module refcounting to active sessions",
-          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-5-pasha.tatashin@soleen.com/"
-        },
-        {
-          "title": "[PATCH 5/6] liveupdate: Make unregister functions return void",
-          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-6-pasha.tatashin@soleen.com/"
-        },
-        {
-          "title": "[PATCH 6/6] liveupdate: Remove luo_session_quiesce()",
-          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-7-pasha.tatashin@soleen.com/"
-        }
-      ],
-      "patch_count": 6,
-      "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-1-pasha.tatashin@soleen.com/",
-      "updated": "Mon, 16 Mar 2026 22:50:43 -0400",
-      "subsystems": [
-        "include",
-        "kernel",
-        "tests"
-      ],
-      "review": {
-        "summary": "Review timed out.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-16"
-    },
-    {
-      "title": "zswap pool per-CPU acomp_ctx simplifications",
-      "author": "\"Kanchana P. Sridhar\" <kanchanapsridhar2026@gmail.com>",
-      "patches": [
-        {
-          "title": "[PATCH v2 0/2] zswap pool per-CPU acomp_ctx simplifications",
-          "link": "https://lore.kernel.org/linux-mm/20260317014802.27591-1-kanchanapsridhar2026@gmail.com/"
-        },
-        {
-          "title": "[PATCH v2 1/2] mm: zswap: Remove redundant checks in zswap_cpu_comp_dead().",
-          "link": "https://lore.kernel.org/linux-mm/20260317014802.27591-2-kanchanapsridhar2026@gmail.com/"
-        },
-        {
-          "title": "[PATCH v2 2/2] mm: zswap: Tie per-CPU acomp_ctx lifetime to the pool.",
-          "link": "https://lore.kernel.org/linux-mm/20260317014802.27591-3-kanchanapsridhar2026@gmail.com/"
-        }
-      ],
-      "patch_count": 2,
-      "link": "https://lore.kernel.org/linux-mm/20260317014802.27591-1-kanchanapsridhar2026@gmail.com/",
-      "updated": "Mon, 16 Mar 2026 18:48:00 -0700",
-      "subsystems": [
-        "zswap"
-      ],
-      "review": {
-        "summary": "Review timed out.",
-        "issues": [],
-        "verdict": "skip"
-      },
-      "fetch_date": "2026-03-16"
-    },
-    {
       "title": "mm/damon: support MADV_COLLAPSE via DAMOS_COLLAPSE scheme action",
       "author": "<gutierrez.asier@huawei-partners.com>",
       "patches": [
@@ -795,29 +717,55 @@
       "fetch_date": "2026-03-16"
     },
     {
-      "title": "mm: introduce a new page type for page pool in page type",
-      "author": "Byungchul Park <byungchul@sk.com>",
+      "title": "mm/kasan: adjust documentation",
+      "author": "SeongJae Park <sj@kernel.org>",
       "patches": [
         {
-          "title": "[PATCH v5] mm: introduce a new page type for page pool in page type",
-          "link": "https://lore.kernel.org/linux-mm/20260316223113.20097-1-byungchul@sk.com/"
+          "title": "[PATCH] mm/damon/stat: return error if monitoring target region is invalid",
+          "link": ""
+        },
+        {
+          "title": "[PATCH] mm/kasan: adjust documentation",
+          "link": ""
         }
       ],
-      "patch_count": 1,
-      "link": "https://lore.kernel.org/linux-mm/20260316223113.20097-1-byungchul@sk.com/",
-      "updated": "Tue, 17 Mar 2026 07:31:13 +0900",
+      "patch_count": 2,
+      "link": "",
+      "updated": "Mon, 16 Mar 2026 22:11:22 -0700",
       "subsystems": [
-        "drivers",
-        "include",
-        "net",
-        "page_alloc"
+        "damon/stat",
+        "docs"
       ],
       "review": {
         "summary": "Review timed out.",
         "issues": [],
         "verdict": "skip"
       },
-      "fetch_date": "2026-03-17"
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "mm/mempolicy: track user-defined mempolicy allocations",
+      "author": "\"JP Kobryn (Meta)\" <jp.kobryn@linux.dev>",
+      "patches": [
+        {
+          "title": "[PATCH v3] mm/mempolicy: track user-defined mempolicy allocations",
+          "link": "https://lore.kernel.org/linux-mm/20260317050657.47494-1-jp.kobryn@linux.dev/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260317050657.47494-1-jp.kobryn@linux.dev/",
+      "updated": "Mon, 16 Mar 2026 22:06:57 -0700",
+      "subsystems": [
+        "include",
+        "mempolicy",
+        "vmstat"
+      ],
+      "review": {
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-16"
     },
     {
       "title": "mm: expand mmap_prepare functionality and usage",
@@ -912,6 +860,131 @@
         "verdict": "skip"
       },
       "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "zram: change scan_slots to return void",
+      "author": "Sergey Senozhatsky <senozhatsky@chromium.org>",
+      "patches": [
+        {
+          "title": "[PATCH] zram: change scan_slots to return void",
+          "link": "https://lore.kernel.org/linux-mm/20260317032349.753645-1-senozhatsky@chromium.org/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260317032349.753645-1-senozhatsky@chromium.org/",
+      "updated": "Tue, 17 Mar 2026 12:23:19 +0900",
+      "subsystems": [
+        "drivers"
+      ],
+      "review": {
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-17"
+    },
+    {
+      "title": "liveupdate: Fix module unloading and unregister API",
+      "author": "Pasha Tatashin <pasha.tatashin@soleen.com>",
+      "patches": [
+        {
+          "title": "[PATCH 0/6] liveupdate: Fix module unloading and unregister API",
+          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-1-pasha.tatashin@soleen.com/"
+        },
+        {
+          "title": "[PATCH 1/6] liveupdate: Protect file handler list with rwsem",
+          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-2-pasha.tatashin@soleen.com/"
+        },
+        {
+          "title": "[PATCH 2/6] liveupdate: Protect FLB lists with rwsem",
+          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-3-pasha.tatashin@soleen.com/"
+        },
+        {
+          "title": "[PATCH 3/6] liveupdate: Defer file handler module refcounting to active sessions",
+          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-4-pasha.tatashin@soleen.com/"
+        },
+        {
+          "title": "[PATCH 4/6] liveupdate: Defer FLB module refcounting to active sessions",
+          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-5-pasha.tatashin@soleen.com/"
+        },
+        {
+          "title": "[PATCH 5/6] liveupdate: Make unregister functions return void",
+          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-6-pasha.tatashin@soleen.com/"
+        },
+        {
+          "title": "[PATCH 6/6] liveupdate: Remove luo_session_quiesce()",
+          "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-7-pasha.tatashin@soleen.com/"
+        }
+      ],
+      "patch_count": 6,
+      "link": "https://lore.kernel.org/linux-mm/20260317025049.494931-1-pasha.tatashin@soleen.com/",
+      "updated": "Mon, 16 Mar 2026 22:50:43 -0400",
+      "subsystems": [
+        "include",
+        "kernel",
+        "tests"
+      ],
+      "review": {
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "zswap pool per-CPU acomp_ctx simplifications",
+      "author": "\"Kanchana P. Sridhar\" <kanchanapsridhar2026@gmail.com>",
+      "patches": [
+        {
+          "title": "[PATCH v2 0/2] zswap pool per-CPU acomp_ctx simplifications",
+          "link": "https://lore.kernel.org/linux-mm/20260317014802.27591-1-kanchanapsridhar2026@gmail.com/"
+        },
+        {
+          "title": "[PATCH v2 1/2] mm: zswap: Remove redundant checks in zswap_cpu_comp_dead().",
+          "link": "https://lore.kernel.org/linux-mm/20260317014802.27591-2-kanchanapsridhar2026@gmail.com/"
+        },
+        {
+          "title": "[PATCH v2 2/2] mm: zswap: Tie per-CPU acomp_ctx lifetime to the pool.",
+          "link": "https://lore.kernel.org/linux-mm/20260317014802.27591-3-kanchanapsridhar2026@gmail.com/"
+        }
+      ],
+      "patch_count": 2,
+      "link": "https://lore.kernel.org/linux-mm/20260317014802.27591-1-kanchanapsridhar2026@gmail.com/",
+      "updated": "Mon, 16 Mar 2026 18:48:00 -0700",
+      "subsystems": [
+        "zswap"
+      ],
+      "review": {
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-16"
+    },
+    {
+      "title": "mm: introduce a new page type for page pool in page type",
+      "author": "Byungchul Park <byungchul@sk.com>",
+      "patches": [
+        {
+          "title": "[PATCH v5] mm: introduce a new page type for page pool in page type",
+          "link": "https://lore.kernel.org/linux-mm/20260316223113.20097-1-byungchul@sk.com/"
+        }
+      ],
+      "patch_count": 1,
+      "link": "https://lore.kernel.org/linux-mm/20260316223113.20097-1-byungchul@sk.com/",
+      "updated": "Tue, 17 Mar 2026 07:31:13 +0900",
+      "subsystems": [
+        "drivers",
+        "include",
+        "net",
+        "page_alloc"
+      ],
+      "review": {
+        "summary": "Review timed out.",
+        "issues": [],
+        "verdict": "skip"
+      },
+      "fetch_date": "2026-03-17"
     },
     {
       "title": "RDMA: Enable operation with DMA debug enabled",
