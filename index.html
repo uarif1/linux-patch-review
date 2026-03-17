@@ -310,7 +310,7 @@ footer {
 
 
 
-<h2 class="date-header">2026-03-17 <span class="date-count">(4)</span></h2><details class="series-row" id="s-dbf972fd" data-title="mm: introduce a new page type for page pool in page type" data-author="byungchul park" data-subsystems="drivers include net page_alloc" data-verdict="minor_issues">
+<h2 class="date-header">2026-03-17 <span class="date-count">(11)</span></h2><details class="series-row" id="s-dbf972fd" data-title="mm: introduce a new page type for page pool in page type" data-author="byungchul park" data-subsystems="drivers include net page_alloc" data-verdict="minor_issues">
         <summary>
             <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
             <a href="https://lore.kernel.org/linux-mm/20260316223113.20097-1-byungchul@sk.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: introduce a new page type for page pool in page type</a>
@@ -584,9 +584,546 @@ in patch 2. Data integrity is checked at each step. The bit 12 (id
 Overall the series looks correct.
 </pre></div><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260317-vmalloc-shrink-v5-0-bbfbf54c5265@zohomail.in/" target="_blank">[PATCH v5 0/3] mm/vmalloc: free unused pages on vrealloc() shrink</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317-vmalloc-shrink-v5-1-bbfbf54c5265@zohomail.in/" target="_blank">[PATCH v5 1/3] mm/vmalloc: extract vm_area_free_pages() helper from vfree()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317-vmalloc-shrink-v5-2-bbfbf54c5265@zohomail.in/" target="_blank">[PATCH v5 2/3] mm/vmalloc: free unused pages on vrealloc() shrink</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317-vmalloc-shrink-v5-3-bbfbf54c5265@zohomail.in/" target="_blank">[PATCH v5 3/3] lib/test_vmalloc: add vrealloc test case</a></li></ul></details>
         </div>
-    </details><details class="series-row" id="s-d4eb19ca" data-title="zram: change scan_slots to return void" data-author="sergey senozhatsky" data-subsystems="drivers" data-verdict="skip">
+    </details><details class="series-row" id="s-70494698" data-title="do_notify_parent: sanitize the valid_signal() checks" data-author="oleg nesterov" data-subsystems="kernel" data-verdict="looks_good">
         <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
+            <a href="https://lore.kernel.org/linux-mm/abld-ilvMEZ7VgMw@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">do_notify_parent: sanitize the valid_signal() checks</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-70494698')">&#128279;</span>
+                <span class="row-author">Oleg Nesterov</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">The patch tightens do_notify_parent()'s input validation by replacing the narrow 'sig == -1' WARN with a full valid_signal() guard that returns early, and removes the now-redundant valid_signal() check before __send_signal_locked().</div><div class="subsystem-tags"><span class="subsystem-tag">kernel</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Oleg Nesterov &lt;oleg@redhat.com&gt;\n\ndo_notify_parent: sanitize the valid_signal() checks\n\nVerified the following:\n\n- All callers pass either tsk-&gt;exit_signal (validated by kernel_clone\n  via valid_signal() at fork.c) or the literal SIGCHLD, so the new\n  WARN path is correctly unreachable under normal operation.\n\n- valid_signal() is defined as sig &lt;= _NSIG, so sig=0 passes the new\n  guard.  Inside the function the only mutations to sig are\n  sig = SIGCHLD (always valid) and sig = 0 (set when parent's SIGCHLD\n  handler is SIG_IGN).  The surviving 'if (sig)' guard before\n  __send_signal_locked() still excludes the sig=0 case, so removing\n  the redundant valid_signal() there is safe.\n\n- Returning false early on an invalid sig is conservative: the task\n  stays as EXIT_ZOMBIE rather than being auto-reaped.  This is the\n  right behaviour on a bug path since __wake_up_parent() is also\n  skipped, but the WARN already signals a kernel bug at that point.\n\n&gt; -\tWARN_ON_ONCE(sig == -1);\n&gt; +\tif (WARN_ON_ONCE(!valid_signal(sig)))\n&gt; +\t\treturn false;\n\nCorrect.  The old check only caught sig == -1; the new one catches all\nout-of-range values including other negative numbers.  Early return\navoids executing the rest of the function with a bogus sig.\n\n&gt; -\tif (valid_signal(sig) &amp;&amp; sig)\n&gt; +\tif (sig)\n&gt;  \t\t__send_signal_locked(sig, &amp;info, tsk-&gt;parent,\n&gt;  \t\t\t\t     PIDTYPE_TGID, false);\n\nSafe removal: the entry guard ensures sig is valid on arrival, and the\nonly internal mutations produce SIGCHLD or 0, both of which are valid.\nThe valid_signal() here was dead code.\n\nLooks good to me.</pre></div>
+        </div>
+    </details><details class="series-row" id="s-4cbbb72a" data-title="direct map removal support for guest_memfd" data-author="&quot;kalyazin, nikita&quot;" data-subsystems="arch docs execmem gup include kernel lib memory mlock secretmem tests virt vmalloc" data-verdict="looks_good">
+        <summary>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317141031.514-1-kalyazin@amazon.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Direct Map Removal Support for guest_memfd</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-4cbbb72a')">&#128279;</span>
+                <span class="row-author">&quot;Kalyazin, Nikita&quot;</span>
+                <span class="row-patches">16p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">This 16-patch series adds direct map removal support to guest_memfd, letting KVM VMs opt in to Spectre-class mitigation via GUEST_MEMFD_FLAG_NO_DIRECT_MAP. It refactors set_direct_map_* to take addresses instead of struct page pointers, generalizes secretmem's direct-map-removal pattern into generic folio_{zap,restore}_direct_map helpers, introduces AS_NO_DIRECT_MAP to replace per-subsystem secretmem checks in GUP/mlock/buildid, and wires the new flag into guest_memfd with arch support stubs for x86 and arm64.</div><div class="subsystem-tags"><span class="subsystem-tag">arch</span> <span class="subsystem-tag">docs</span> <span class="subsystem-tag">execmem</span> <span class="subsystem-tag">gup</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">kernel</span> <span class="subsystem-tag">lib</span> <span class="subsystem-tag">memory</span> <span class="subsystem-tag">mlock</span> <span class="subsystem-tag">secretmem</span> <span class="subsystem-tag">tests</span> <span class="subsystem-tag">virt</span> <span class="subsystem-tag">vmalloc</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">On Mon, Mar 17 2026, Nikita Kalyazin wrote:
+
+Series: Direct Map Removal Support for guest_memfd (v11)
+
+Cross-referenced the diff against the kernel tree.  Checked error
+paths, TLB flush ordering, refcount symmetry, locking, and call site
+coverage for patches 01-07.  Details below; no regressions found.
+
+[ Patch 01: set_memory: set_direct_map_* to take address ]
+
+Verified all call sites in the tree before this patch:
+
+  mm/secretmem.c          - 3 sites (secretmem_fault x2, secretmem_free_folio)
+  mm/execmem.c            - 2 sites (set_direct_map_valid_noflush with pages[])
+  mm/vmalloc.c            - 2 sites via set_area_direct_map function pointer
+  kernel/power/snapshot.c - 2 sites
+  arch/{arm64,x86,s390,riscv,loongarch} - implementations and headers
+  include/linux/set_memory.h - stubs
+
+All are accounted for in the 15-file diffstat.  The numpages parameter
+promotion from 'unsigned' to 'unsigned long' in
+set_direct_map_valid_noflush() is applied consistently across all five
+arch implementations.
+
+[ Patch 02: set_memory: add folio_{zap,restore}_direct_map helpers ]
+
+&gt; +int folio_zap_direct_map(struct folio *folio)
+&gt; +{
+&gt; +	const void *addr = folio_address(folio);
+&gt; +	int ret;
+&gt; +
+&gt; +	ret = set_direct_map_valid_noflush(addr, folio_nr_pages(folio), false);
+&gt; +	flush_tlb_kernel_range((unsigned long)addr,
+&gt; +			       (unsigned long)addr + folio_size(folio));
+&gt; +
+&gt; +	return ret;
+&gt; +}
+
+The TLB flush is unconditional even when set_direct_map_valid_noflush
+returns an error.  This is correct: for a multi-page folio, if the
+call fails partway (e.g. ENOMEM while splitting a huge page), the
+sub-pages that were already invalidated need their TLB entries flushed
+before returning.  For order-0 folios (all current callers), a failure
+means the page table was not modified at all, so the flush is a
+vacuous but harmless no-op.
+
+&gt; +void folio_restore_direct_map(struct folio *folio)
+&gt; +{
+&gt; +	WARN_ON_ONCE(set_direct_map_valid_noflush(folio_address(folio),
+&gt; +						  folio_nr_pages(folio), true));
+&gt; +}
+
+The kdoc comment correctly constrains this to be called only after a
+prior successful folio_zap_direct_map().  Verified all call sites in
+secretmem_fault honor this: folio_restore_direct_map() is only reached
+via the filemap_add_folio() error path, which is guarded by a prior
+successful folio_zap_direct_map() returning 0.  The WARN_ON_ONCE is
+appropriate since failure here would indicate a kernel bug (the huge
+page split already happened in the zap, so restoration only updates
+protection bits and cannot need new allocations).
+
+[ Patch 03: mm/secretmem: make use of folio_{zap,restore}_direct_map ]
+
+&gt; -		err = set_direct_map_invalid_noflush(folio_address(folio));
+&gt; +		err = folio_zap_direct_map(folio);
+&gt;  		if (err) {
+
+&gt; -		addr = (unsigned long)folio_address(folio);
+&gt; -		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+
+The TLB flush now occurs inside folio_zap_direct_map() rather than
+after filemap_add_folio().  This is correct: the direct map PTE is
+invalid as soon as set_direct_map_valid_noflush returns successfully,
+so deferring the flush to after filemap_add_folio() provided no
+benefit.  The flush range changes from PAGE_SIZE to folio_size(folio),
+which for order-0 secretmem folios is identical.
+
+Note that secretmem_free_folio() still calls
+set_direct_map_default_noflush() directly.  This is fine: the free
+path is not subject to the 'after successful zap' precondition that
+folio_restore_direct_map() documents, and the direct call is correct.
+
+[ Patches 04+05: mm/gup: refactor gup_fast_folio_allowed ]
+
+Verified semantic equivalence of the refactored function for all
+relevant combinations:
+
+  - anon folios:          both paths return true at the mapping_flags check
+  - hugetlb:             both return true early
+  - secretmem:           both return false
+  - shmem + longterm writable pin: both return true (shmem_mapping())
+  - other file-backed + longterm writable pin: both return false
+  - other file-backed, no longterm pin: both return true
+
+Removing the '!folio_test_large(folio)' secretmem short-circuit is
+necessary: future large-folio NO_DIRECT_MAP guest_memfd folios would
+bypass the mapping check under the old code.
+
+[ Patch 06: mm: introduce AS_NO_DIRECT_MAP ]
+
+Bit 12 is free.  Current enum ends at AS_NO_DATA_INTEGRITY=11; bits
+16-25 are reserved for FOLIO_ORDER.  No conflict.
+
+&gt; +static inline bool vma_has_no_direct_map(const struct vm_area_struct *vma)
+&gt; +{
+&gt; +	return vma-&gt;vm_file &amp;&amp; mapping_no_direct_map(vma-&gt;vm_file-&gt;f_mapping);
+&gt; +}
+
+This correctly replaces vma_is_secretmem() (which checked vm_ops) in
+check_vma_flags() and mlock, since patch 06 makes secretmem_file_create()
+call mapping_set_no_direct_map() on the inode's mapping, making the
+two predicates semantically equivalent for all secretmem VMAs.
+
+In lib/buildid.c, the new mapping_no_direct_map() check in
+freader_get_folio() is a belt-and-suspenders addition: it avoids
+taking a folio reference to memory that freader_fetch() would reject
+anyway.  The check in freader_fetch() still guards the
+may_fault/__kernel_read branch and is independently necessary.
+
+[ Patch 07: KVM: guest_memfd: Add stub for kvm_arch_gmem_invalidate ]
+
+&gt; -#ifdef CONFIG_HAVE_KVM_ARCH_GMEM_INVALIDATE
+&gt;  static void kvm_gmem_free_folio(struct folio *folio)
+&gt; +{
+&gt; +	...
+&gt; +	kvm_arch_gmem_invalidate(pfn, pfn + (1ul &lt;&lt; order));
+&gt; +}
+&gt; -#endif
+
+Clean.  The inline no-op stub in kvm_host.h means kvm_gmem_free_folio
+is now always registered in kvm_gmem_aops with zero cost on platforms
+lacking CONFIG_HAVE_KVM_ARCH_GMEM_INVALIDATE, and the ifdef clutter is
+gone.
+
+Reviewed patches 01-07.  Error paths, TLB flush ordering, refcount
+symmetry, AS flag bit allocation, and all set_direct_map_* call sites
+verified against the source tree.
+</pre></div><details class="patches-detail"><summary>17 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-1-kalyazin@amazon.com/" target="_blank">[PATCH v11 00/16] Direct Map Removal Support for guest_memfd</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-2-kalyazin@amazon.com/" target="_blank">[PATCH v11 01/16] set_memory: set_direct_map_* to take address</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-3-kalyazin@amazon.com/" target="_blank">[PATCH v11 02/16] set_memory: add folio_{zap,restore}_direct_map helpers</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-4-kalyazin@amazon.com/" target="_blank">[PATCH v11 03/16] mm/secretmem: make use of folio_{zap,restore}_direct_map</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-5-kalyazin@amazon.com/" target="_blank">[PATCH v11 04/16] mm/gup: drop secretmem optimization from gup_fast_folio_allowed</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-6-kalyazin@amazon.com/" target="_blank">[PATCH v11 05/16] mm/gup: drop local variable in gup_fast_folio_allowed</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-7-kalyazin@amazon.com/" target="_blank">[PATCH v11 06/16] mm: introduce AS_NO_DIRECT_MAP</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-8-kalyazin@amazon.com/" target="_blank">[PATCH v11 07/16] KVM: guest_memfd: Add stub for kvm_arch_gmem_invalidate</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-9-kalyazin@amazon.com/" target="_blank">[PATCH v11 08/16] KVM: x86: define kvm_arch_gmem_supports_no_direct_map()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-10-kalyazin@amazon.com/" target="_blank">[PATCH v11 09/16] KVM: arm64: define kvm_arch_gmem_supports_no_direct_map()</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-11-kalyazin@amazon.com/" target="_blank">[PATCH v11 10/16] KVM: guest_memfd: Add flag to remove from direct map</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-12-kalyazin@amazon.com/" target="_blank">[PATCH v11 11/16] KVM: selftests: load elf via bounce buffer</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-13-kalyazin@amazon.com/" target="_blank">[PATCH v11 12/16] KVM: selftests: set KVM_MEM_GUEST_MEMFD in vm_mem_add() if guest_memfd != -1</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-14-kalyazin@amazon.com/" target="_blank">[PATCH v11 13/16] KVM: selftests: Add guest_memfd based vm_mem_backing_src_types</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-15-kalyazin@amazon.com/" target="_blank">[PATCH v11 14/16] KVM: selftests: cover GUEST_MEMFD_FLAG_NO_DIRECT_MAP in existing selftests</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-16-kalyazin@amazon.com/" target="_blank">[PATCH v11 15/16] KVM: selftests: stuff vm_mem_backing_src_type into vm_shape</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317141031.514-17-kalyazin@amazon.com/" target="_blank">[PATCH v11 16/16] KVM: selftests: Test guest execution from direct map removed gmem</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-6ab405f4" data-title="mm/pagewalk: fix race between concurrent split and refault" data-author="max boone via b4 relay" data-subsystems="pagewalk" data-verdict="looks_good">
+        <summary>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317-pagewalk-check-pmd-refault-v1-1-f699a010f2b3@akamai.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/pagewalk: fix race between concurrent split and refault</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-6ab405f4')">&#128279;</span>
+                <span class="row-author">Max Boone via B4 Relay</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">The patch fixes a race in walk_pud_range() where split_huge_pud() clears a PUD entry and a concurrent thread (VFIO DMA setup) re-installs a huge PUD leaf before walk_pmd_range() runs, causing pmd_offset() to treat the leaf entry bits as a PMD table address and crash. The fix snapshots the PUD value via pudp_get() at the top of walk_pmd_range() and retries via ACTION_AGAIN if the PUD is non-present or a leaf, mirroring the existing PMD-level retry pattern.</div><div class="subsystem-tags"><span class="subsystem-tag">pagewalk</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">From: Max Boone &amp;lt;mboone@akamai.com&amp;gt;
+Subject: [PATCH] mm/pagewalk: fix race between concurrent split and refault
+
+&gt; diff --git a/mm/pagewalk.c b/mm/pagewalk.c
+&gt; --- a/mm/pagewalk.c
+&gt; +++ b/mm/pagewalk.c
+&gt; @@ -97,6 +97,7 @@ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+&gt;  static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
+&gt;  			  struct mm_walk *walk)
+&gt;  {
+&gt; +	pud_t pudval = pudp_get(pud);
+
+[ ... ]
+
+&gt; +	if (!pud_present(pudval) || pud_leaf(pudval)) {
+&gt; +		walk-&gt;action = ACTION_AGAIN;
+&gt; +		return 0;
+&gt; +	}
+
+Verified the race path. __split_huge_pud_locked() calls
+pudp_huge_clear_flush(), which atomically clears the PUD to zero.
+Between that clear and the call to walk_pmd_range(), a concurrent
+thread can install a fresh huge-page PUD leaf, making *pud a leaf
+entry again. The old guard in walk_pud_range() only checked
+pud_none(*pud) and would miss this case. The new check correctly
+catches both:
+
+  - the &quot;still-none&quot; case via !pud_present(pudval)
+  - the &quot;refaulted-as-leaf&quot; case via pud_leaf(pudval)
+
+One thing worth noting: the generic pmd_offset(pud, addr) re-reads
+*pud via pud_pgtable(*pud) after the pudp_get() snapshot, so a
+narrow TOCTOU between the check and the use remains. This matches
+the accepted pattern used in folio_walk_start() (pudp_get() check
+followed by pmd_offset(pudp, addr)), and the window is just a
+couple of instructions wide. A PMD table observed as a valid
+table-pointer PUD cannot be freed while the mmap_lock read is held,
+so this is safe in practice.
+
+&gt; @@ -218,12 +231,13 @@ static int walk_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
+&gt;  		else if (pud_leaf(*pud) || !pud_present(*pud))
+&gt;  			continue; /* Nothing to do. */
+&gt;
+&gt; -		if (pud_none(*pud))
+&gt; -			goto again;
+&gt; -
+&gt;  		err = walk_pmd_range(pud, addr, next, walk);
+&gt;  		if (err)
+&gt;  			break;
+&gt; +
+&gt; +		if (walk-&gt;action == ACTION_AGAIN)
+&gt; +			goto again;
+
+Removal of the pud_none() guard is correct: that case is now
+subsumed by !pud_present(pudval) inside walk_pmd_range(). The
+ACTION_AGAIN placement is right -- walk-&gt;action is reset to
+ACTION_SUBTREE at the top of the retry iteration before pud_entry()
+is called, so there is no stale action visible to walk_p4d_range()
+on the normal exit path.
+
+Looks good to me.</pre></div>
+        </div>
+    </details><details class="series-row" id="s-0f14faa4" data-title="mm: remove '!root_reclaim' checking in should_abort_scan()" data-author="&quot;zhaoyang.huang&quot;" data-subsystems="vmscan" data-verdict="looks_good">
+        <summary>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317123037.1651424-1-zhaoyang.huang@unisoc.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: remove '!root_reclaim' checking in should_abort_scan()</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-0f14faa4')">&#128279;</span>
+                <span class="row-author">&quot;zhaoyang.huang&quot;</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">The patch removes the !root_reclaim(sc) early-return from should_abort_scan(), allowing MGLRU non-root memcg reclaim (e.g. memory.reclaim, reclaim_high) to abort scanning once sc-&gt;nr_reclaimed &gt;= sc-&gt;nr_to_reclaim, preventing the overreclaim observed when iterating large lruvecs.</div><div class="subsystem-tags"><span class="subsystem-tag">vmscan</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">On [date], Zhaoyang Huang wrote:
+
+mm: remove '!root_reclaim' checking in should_abort_scan()
+
+Verified the two call sites of should_abort_scan() and their callers:
+
+  - try_to_shrink_lruvec() &lt;- lru_gen_shrink_lruvec()
+    which asserts VM_WARN_ON_ONCE(root_reclaim(sc)), confirming this
+    is exclusively a non-root memcg reclaim path.
+
+  - try_to_shrink_lruvec() &lt;- shrink_one() &lt;- lru_gen_shrink_node()
+    and shrink_many() &lt;- lru_gen_shrink_node(), which asserts
+    VM_WARN_ON_ONCE(!root_reclaim(sc)) -- root reclaim only. No
+    behavioral change on this caller: the old !root_reclaim(sc) guard
+    was already a no-op when root_reclaim() returned true.
+
+&gt; -	/* don't abort memcg reclaim to ensure fairness */
+&gt; -	if (!root_reclaim(sc))
+&gt; -		return false;
+&gt; -
+&gt;  	if (sc-&gt;nr_reclaimed &gt;= max(sc-&gt;nr_to_reclaim, compact_gap(sc-&gt;order)))
+&gt;  		return true;
+
+For the !root_reclaim path, sc-&gt;nr_to_reclaim is properly bounded:
+try_to_free_mem_cgroup_pages() sets it to max(nr_pages, SWAP_CLUSTER_MAX),
+so the abort condition is well-defined and not accidentally zero.
+
+The second check in should_abort_scan() -- the kswapd watermark loop --
+is guarded by current_is_kswapd(), which is false for memcg reclaim
+contexts, so it falls through to return false correctly when
+nr_reclaimed &lt; nr_to_reclaim.
+
+The fairness argument holds: after b82b530740b9 (&quot;mm: vmscan: restore
+incremental cgroup iteration&quot;), proportional reclaim fairness across
+memcgs no longer requires a full single-pass, so aborting early for
+one lruvec does not starve siblings.
+
+Patch looks correct.
+
+Reviewed-by: &lt;your-name&gt; &lt;your-email&gt;</pre></div>
+        </div>
+    </details><details class="series-row" id="s-b4e0fe47" data-title="encapsulate the populate and alloc as one atomic" data-author="hubert mazur" data-subsystems="execmem" data-verdict="looks_good">
+        <summary>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317125020.1293472-1-hmazur@google.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">Encapsulate the populate and alloc as one atomic</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-b4e0fe47')">&#128279;</span>
+                <span class="row-author">Hubert Mazur</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">The patch fixes a race in the execmem ROX cache where a freshly populated memory block could be stolen by a concurrent allocation between the populate and alloc steps. It makes the two operations atomic by holding execmem_cache.mutex across both execmem_cache_add_locked() and the new __execmem_cache_alloc_locked() inside __execmem_cache_populate_alloc().</div><div class="subsystem-tags"><span class="subsystem-tag">execmem</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Hubert Mazur &lt;hmazur@google.com&gt;
+
+mm/execmem: Make the populate and alloc atomic
+
+Verified locking, error paths, and memory management against the
+full execmem.c source.
+
+&gt; +static void *__execmem_cache_populate_alloc(struct execmem_range *range, size_t size)
+&gt;  {
+&gt;  	unsigned long vm_flags = VM_ALLOW_HUGE_VMAP;
+&gt; +	struct mutex *mutex = &amp;execmem_cache.mutex;
+
+[ ... ]
+
+&gt; +	mutex_lock(mutex);
+&gt; +	err = execmem_cache_add_locked(p, alloc_size, GFP_KERNEL);
+&gt; +	if (err) {
+&gt; +		mutex_unlock(mutex);
+&gt; +		goto err_reset_direct_map;
+&gt; +	}
+&gt; +
+&gt; +	p = __execmem_cache_alloc_locked(range, size);
+&gt; +	if (!p) {
+&gt; +		mutex_unlock(mutex);
+&gt; +		return NULL;
+&gt; +	}
+&gt; +	mutex_unlock(mutex);
+
+All three mutex_unlock() sites (add failure, alloc_locked failure,
+success) are correct; no double-unlock is possible.
+
+When execmem_cache_add_locked() succeeds but __execmem_cache_alloc_locked()
+returns NULL (maple tree OOM in mas_store_gfp), the block remains in
+free_areas and is recoverable by the next caller -- correct behaviour.
+
+The err_reset_direct_map label is only reachable before p is
+overwritten by __execmem_cache_alloc_locked(), so vm and the original
+vmalloc pointer are consistent there.
+
+Both maple trees carry MT_FLAGS_LOCK_EXTERN tied to execmem_cache.mutex;
+all callers of the _locked helpers now hold that mutex. The removal of
+execmem_cache_add() is safe -- it had exactly one call site, which is
+replaced by execmem_cache_add_locked() called directly under the mutex.
+
+Fix looks correct to me.</pre></div><details class="patches-detail"><summary>2 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260317125020.1293472-1-hmazur@google.com/" target="_blank">[PATCH v2 0/1] Encapsulate the populate and alloc as one atomic</a></li><li><a href="https://lore.kernel.org/linux-mm/20260317125020.1293472-2-hmazur@google.com/" target="_blank">[PATCH v2 1/1] mm/execmem: Make the populate and alloc atomic</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-05942bb1" data-title="mm/hugetlb: remove fake head pages" data-author="&quot;kiryl shutsemau (meta)&quot;" data-subsystems="hugetlb_vmemmap include internal sparse-vmemmap" data-verdict="minor_issues">
+        <summary>
+            <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317114729.138321-1-kas@kernel.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/hugetlb: Remove fake head pages</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-05942bb1')">&#128279;</span>
+                <span class="row-author">&quot;Kiryl Shutsemau (Meta)&quot;</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">Introduces per-zone per-order shared tail pages (vmemmap_tails[]) to replace fake head pages in HVO, allowing truly shared read-only vmemmap tails. Changes MAX_FOLIO_ORDER to use ilog2() for a compile-time constant suitable as an array dimension.</div><div class="subsystem-tags"><span class="subsystem-tag">hugetlb_vmemmap</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">internal</span> <span class="subsystem-tag">sparse-vmemmap</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">From: Kiryl Shutsemau &lt;kas@kernel.org&gt;
+Subject: [PATCHv7.1 12/18] mm/hugetlb: Remove fake head pages
+
+Verified: cmpxchg race in vmemmap_get_tail(), order bounds enforced by
+vmemmap_should_optimize_folio() -&gt; hugetlb_vmemmap_optimizable(), error
+paths and static_branch symmetry, and the two-phase init design (early
+alloc in sparse-vmemmap.c vs. late_initcall reinit in
+hugetlb_vmemmap_init()).  One functional question below.
+
+&gt; diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
+
+[ ... ]
+
+&gt; +static struct page *vmemmap_get_tail(unsigned int order, struct zone *zone)
+&gt; +{
+&gt; +	const unsigned int idx = order - VMEMMAP_TAIL_MIN_ORDER;
+&gt; +	struct page *tail, *p;
+&gt; +	int node = zone_to_nid(zone);
+&gt; +
+&gt; +	tail = READ_ONCE(zone-&gt;vmemmap_tails[idx]);
+&gt; +	if (likely(tail))
+&gt; +		return tail;
+&gt; +
+&gt; +	tail = alloc_pages_node(node, GFP_KERNEL | __GFP_ZERO, 0);
+&gt; +	if (!tail)
+&gt; +		return NULL;
+&gt; +
+&gt; +	p = page_to_virt(tail);
+&gt; +	for (int i = 0; i &lt; PAGE_SIZE / sizeof(struct page); i++)
+&gt; +		init_compound_tail(p + i, NULL, order, zone);
+&gt; +
+&gt; +	if (cmpxchg(&amp;zone-&gt;vmemmap_tails[idx], NULL, tail)) {
+&gt; +		__free_page(tail);
+&gt; +		tail = READ_ONCE(zone-&gt;vmemmap_tails[idx]);
+&gt; +	}
+
+The cmpxchg race looks correct: cmpxchg provides a full barrier so the
+winner's init_compound_tail() stores are visible to any CPU that
+subsequently reads the non-NULL pointer; nothing ever clears
+vmemmap_tails[idx] back to NULL, so the READ_ONCE after a losing
+cmpxchg always sees a valid page.
+
+Minor: alloc_pages_node() here is not followed by memmap_pages_add(1).
+The vmemmap_head allocation a few lines later does call
+memmap_pages_add(1), but the shared tail page is left uncounted.  Is
+that intentional?  It means /proc/meminfo Vmemmap underreports by one
+page per zone per optimizable order.
+
+&gt; diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+
+[ ... ]
+
+&gt; +static __meminit struct page *vmemmap_get_tail(unsigned int order,
+&gt; +					    struct zone *zone)
+&gt; +{
+&gt; +	...
+&gt; +	/*
+&gt; +	 * Only allocate the page, but do not initialize it.
+&gt; +	 *
+&gt; +	 * Any initialization done here will be overwritten by memmap_init().
+&gt; +	 *
+&gt; +	 * hugetlb_vmemmap_init() will take care of initialization after
+&gt; +	 * memmap_init().
+&gt; +	 */
+&gt; +	p = vmemmap_alloc_block_zero(PAGE_SIZE, node);
+&gt; +	...
+&gt; +	zone-&gt;vmemmap_tails[idx] = tail;
+&gt; +	return tail;
+&gt; +}
+
+The comment says hugetlb_vmemmap_init() (late_initcall) will reinitialize
+the tail page after memmap_init() overwrites it.  The concern is that
+hugetlb_init() is a subsys_initcall, which runs before late_initcall.
+
+hugetlb_init() -&gt; gather_bootmem_prealloc() -&gt;
+prep_and_add_bootmem_folios() -&gt;
+hugetlb_vmemmap_optimize_bootmem_folios() -&gt;
+__hugetlb_vmemmap_optimize_folio() -&gt; vmemmap_get_tail() [runtime,
+hugetlb_vmemmap.c].
+
+That runtime vmemmap_get_tail() finds the slot already non-NULL and
+returns it immediately, without calling init_compound_tail().  At that
+point memmap_init() has already run and zeroed compound_info in the
+shared tail page via __init_single_page() -&gt; mm_zero_struct_page().
+
+With compound_info == 0 and the mask-based _compound_head() path:
+
+    mask = (0 &amp; 1) - 1;   /* = -1UL, i.e. treated as non-tail */
+    mask |= 0;
+    return (unsigned long)page &amp; mask;  /* returns page itself */
+
+So compound_head() on any tail struct page of a non-pre-HVO bootmem
+page that was HVO'd during hugetlb_init() returns the tail page itself
+rather than the folio head, until hugetlb_vmemmap_init() eventually
+reinitializes the shared tail page.
+
+This window only opens when CONFIG_SPARSEMEM_VMEMMAP_PREINIT is enabled
+and there are both pre-HVO pages (which create the early
+vmemmap_tails[] entry without init_compound_tail()) and non-pre-HVO
+bootmem pages of the same order in the same zone.  Can that combination
+arise in practice?  If so, is the kernel guaranteed not to call
+compound_head() on a tail page of those enqueued HVO'd pages between
+subsys_initcall and late_initcall?
+
+One way to close the window: have the runtime vmemmap_get_tail() call
+init_compound_tail() even when an existing slot is found, or have the
+early path store the page under a separate flag so the runtime path
+knows to initialize on first use.
+</pre></div>
+        </div>
+    </details><details class="series-row" id="s-18a9c08e" data-title="mm: fix a hmm_range_fault() livelock / starvation problem" data-author="=?utf-8?q?thomas=20hellstr=c3=b6m?=" data-subsystems="filemap include memory" data-verdict="minor_issues">
+        <summary>
+            <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
+            <a href="https://lore.kernel.org/linux-mm/20260317113930.193553-1-thomas.hellstrom@linux.intel.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: Fix a hmm_range_fault() livelock / starvation problem</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-18a9c08e')">&#128279;</span>
+                <span class="row-author">=?UTF-8?q?Thomas=20Hellstr=C3=B6m?=</span>
+                <span class="row-patches">1p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">This patch fixes a livelock in do_swap_page() where a failed folio_trylock() on a device-private folio caused hmm_range_fault() to spin indefinitely if the lock holder was blocked waiting for work items scheduled on the same CPU. The fix replaces the implicit spin-retry with a proper sleep on PG_locked via softleaf_entry_wait_on_locked().</div><div class="subsystem-tags"><span class="subsystem-tag">filemap</span> <span class="subsystem-tag">include</span> <span class="subsystem-tag">memory</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">Thomas Hellstrom &lt;thomas.hellstrom@linux.intel.com&gt;
+
+mm: Fix a hmm_range_fault() livelock / starvation problem
+
+Verified the locking protocol around softleaf_entry_wait_on_locked():
+the ptl is held across the wait-queue registration (spin_lock_irq on
+q-&gt;lock, folio_set_waiters, folio_trylock_flag, __add_wait_queue),
+and spin_unlock(ptl) happens only after that critical section.
+Since any path dropping the last device-private page reference must
+hold the ptl to remove the PTE entry, the folio pointer obtained from
+softleaf_to_folio(entry) remains valid until ptl is released inside
+the function.
+
+Control flow in do_swap_page() after the fix: pte_unmap(vmf-&gt;pte)
+precedes the call, ptl is released inside softleaf_entry_wait_on_locked,
+and we fall through to 'goto out' with si==NULL (get_swap_device was
+not yet called in this branch), so no resource leak on this path.
+Return value stays 0 (VM_FAULT_NONE), causing a clean retry after the
+device-private folio is unlocked by the migration path.
+
+Wake-up correctness: wait-&gt;flags=0 (no WQ_FLAG_EXCLUSIVE), so
+wake_page_function does not attempt to acquire PG_locked -- it just
+observes it becoming clear and sets WQ_FLAG_WOKEN. wake_page_match()
+matches on wait_page.folio == key-&gt;folio and bit_nr == PG_locked,
+both set correctly for the device-private folio via
+softleaf_to_folio(entry).
+
+One nit in the updated kdoc:
+
+&gt; diff --git a/mm/filemap.c b/mm/filemap.c
+&gt; --- a/mm/filemap.c
+&gt; +++ b/mm/filemap.c
+
+[ ... ]
+
+&gt; + * entry referencing a dvice_private page to be unlocked. This is
+                         ^^^^
+
+Typo: &quot;dvice_private&quot; should be &quot;device_private&quot;.
+
+The !CONFIG_MIGRATION stub correctly calls WARN_ON_ONCE(1) and then
+spin_unlock(ptl) to avoid a deadlock in the impossible case;
+device-private memory cannot exist without CONFIG_MIGRATION so the
+warning is appropriate.
+</pre></div>
+        </div>
+    </details><details class="series-row" id="s-d4eb19ca" data-title="zram: change scan_slots to return void" data-author="sergey senozhatsky" data-subsystems="drivers" data-verdict="looks_good">
+        <summary>
+            <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260317032349.753645-1-senozhatsky@chromium.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">zram: change scan_slots to return void</a>
             <span class="row-right">
                 
@@ -597,9 +1134,40 @@ Overall the series looks correct.
             </span>
         </summary>
         <div class="row-detail">
-            <div class="row-summary">Claude CLI error: error_max_structured_output_retries after 17 turns.</div><div class="subsystem-tags"><span class="subsystem-tag">drivers</span></div>
+            <div class="row-summary">Converts scan_slots_for_writeback() and scan_slots_for_recompress() from returning int (always 0) to void, since neither function ever returned a non-zero value and no caller checked the return status.</div><div class="subsystem-tags"><span class="subsystem-tag">drivers</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">On Mon, Mar 17 2026, Sergey Senozhatsky wrote:
+
+&gt; scan_slots_for_writeback() and scan_slots_for_recompress()
+&gt; work in a &quot;best effort&quot; fashion, if they cannot allocate
+&gt; memory for a new pp-slot candidate they just return and
+&gt; post-processing selects slots that were successfully
+&gt; scanned thus far.  scan_slots functions never return
+&gt; errors and their callers never check the return status,
+&gt; so convert them to return void.
+
+Verified the following:
+
+- Both functions contained only `return 0` as their sole return
+  statement, so no error path is silenced by this change.
+
+- All four call sites of scan_slots_for_writeback() in
+  writeback_store() and the single call site of
+  scan_slots_for_recompress() in recompress_store() already
+  discarded the return value, so there is no functional change.
+
+&gt; -static int scan_slots_for_writeback(struct zram *zram, u32 mode,
+&gt; +static void scan_slots_for_writeback(struct zram *zram, u32 mode,
+
+&gt; -static int scan_slots_for_recompress(struct zram *zram, u32 mode,
+&gt; +static void scan_slots_for_recompress(struct zram *zram, u32 mode,
+
+&gt; -	return 0;
+
+Clean-up looks correct.
+
+Reviewed-by: &lt;reviewer&gt;
+</pre></div>
         </div>
-    </details><h2 class="date-header">2026-03-16 <span class="date-count">(25)</span></h2><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
+    </details><h2 class="date-header">2026-03-16 <span class="date-count">(26)</span></h2><details class="series-row" id="s-3a1209ef" data-title="selftests/mm: skip several tests when thp is not available" data-author="chunyu hu" data-subsystems="tests" data-verdict="looks_good">
         <summary>
             <span class="row-verdict" style="background:#22c55e">Looks Good</span>
             <a href="https://lore.kernel.org/linux-mm/20260316044335.1390608-1-chuhu@redhat.com/" target="_blank" class="row-title" onclick="event.stopPropagation()">selftests/mm: skip several tests when thp is not available</a>
@@ -3027,6 +3595,116 @@ mm_shrink_slab_end). A format like &quot;%s%s&quot; where the first string
 is either &quot; (in-irq)&quot; or &quot;&quot; (empty, no leading space) is one way
 to avoid the trailing space in the common case.
 </pre></div><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-1-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 0/3] mm: vmscan: add PID and cgroup ID to vmscan tracepoints</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-2-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 1/3] tracing: Add __event_in_*irq() helpers</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-3-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 2/3] mm: vmscan: add cgroup IDs to vmscan tracepoints</a></li><li><a href="https://lore.kernel.org/linux-mm/20260316160908.42727-4-tballasi@linux.microsoft.com/" target="_blank">[PATCH v8 3/3] mm: vmscan: add PIDs to vmscan tracepoints</a></li></ul></details>
+        </div>
+    </details><details class="series-row" id="s-9f58ffb5" data-title="mm/kasan: adjust documentation" data-author="seongjae park" data-subsystems="damon/core damon/stat docs zswap" data-verdict="minor_issues">
+        <summary>
+            <span class="row-verdict" style="background:#f59e0b">Minor Issues</span>
+            <a href="" target="_blank" class="row-title" onclick="event.stopPropagation()">mm/kasan: adjust documentation</a>
+            <span class="row-right">
+                
+                
+                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-9f58ffb5')">&#128279;</span>
+                <span class="row-author">SeongJae Park</span>
+                <span class="row-patches">4p</span>
+            </span>
+        </summary>
+        <div class="row-detail">
+            <div class="row-summary">A mixed series of four independent fixes: two DAMON patches adding post-conversion overflow guards for 32-bit PAE address arithmetic, a zswap patch adding flush_dcache_folio after kmap-based decompression, and a KASAN documentation patch that moves kasan=on/off to the general boot-parameters section while incorrectly labeling it a generic parameter.</div><div class="subsystem-tags"><span class="subsystem-tag">damon/core</span> <span class="subsystem-tag">damon/stat</span> <span class="subsystem-tag">docs</span> <span class="subsystem-tag">zswap</span></div><div class="review-inline-wrap"><button class="copy-btn" onclick="copyReview(this)">Copy reply</button><pre class="review-inline">On the series &quot;mm/kasan: adjust documentation&quot; (4 patches):
+
+--- [PATCH 1/4] mm/damon/core: verify found biggest system ram ---
+
+&gt; diff --git a/mm/damon/core.c b/mm/damon/core.c
+
+[ ... ]
+
+&gt; -	if (res.end &lt; res.start)
+&gt; -		return false;
+&gt; -
+&gt;  	*start = damon_res_to_core_addr(res.start, addr_unit);
+&gt;  	*end = damon_res_to_core_addr(res.end + 1, addr_unit);
+&gt; +	if (*end &lt;= *start)
+&gt; +		return false;
+&gt;  	return true;
+
+Verified in damon_find_biggest_system_ram(): struct resource res is
+zero-initialised (res = {}), so the old check res.end &lt; res.start
+evaluated to 0 &lt; 0 = false and was dead code.  The new check after
+damon_res_to_core_addr() correctly catches the overflow case on 32-bit
+PAE, where a large physical address can truncate to zero or wrap below
+*start after unsigned-long conversion.  The caller
+damon_set_region_biggest_system_ram_default() tests the return value
+before using *start/*end, so writing those before returning false is
+safe.  Fix looks correct.
+
+--- [PATCH 2/4] fix ---
+
+&gt; diff --git a/mm/zswap.c b/mm/zswap.c
+
+[ ... ]
+
+&gt;  	if (entry-&gt;length == PAGE_SIZE) {
+&gt;  		void *dst;
+&gt;
+&gt;  		dst = kmap_local_folio(folio, 0);
+&gt;  		memcpy_from_sglist(dst, input, 0, PAGE_SIZE);
+&gt;  		dlen = PAGE_SIZE;
+&gt;  		kunmap_local(dst);
+&gt; +		flush_dcache_folio(folio);
+&gt;  	} else {
+&gt;  		sg_init_table(&amp;output, 1);
+&gt;  		sg_set_folio(&amp;output, folio, PAGE_SIZE, 0);
+&gt;  		acomp_request_set_params(acomp_ctx-&gt;req, input, &amp;output,
+&gt;  					 entry-&gt;length, PAGE_SIZE);
+&gt;  		ret = crypto_acomp_decompress(acomp_ctx-&gt;req);
+
+Adding flush_dcache_folio() after kmap_local_folio + memcpy +
+kunmap_local is the correct fix for VIPT-cache architectures (arm,
+mips) where writes through a kernel virtual address may not be visible
+through the user virtual mapping without a cache flush.
+
+The else branch (compressed path) also writes decompressed data into
+the folio via kernel addresses; software acomp implementations
+(lz4, zstd, zlib) internally kmap the output scatterlist pages.  Does
+that path not also require flush_dcache_folio() on VIPT systems?  If
+the acomp layer already guarantees coherency for the compressed path,
+a short comment here would help future readers understand why only the
+uncompressed branch needs the explicit flush.
+
+--- [PATCH 3/4] mm/damon/stat: return error if monitoring target region
+    is invalid ---
+
+&gt; +	if (addr_range.end &lt;= addr_range.start)
+&gt; +		return -EINVAL;
+&gt;  	return damon_set_regions(t, &amp;addr_range, 1, min_region_sz);
+
+Analogous to patch 1.  damon_stat_set_monitoring_region() already
+guards the no-RAM-found case via the arg.walked check before this
+point, so the new check is purely for the post-conversion overflow
+case.  Looks correct.
+
+--- [PATCH 4/4] mm/kasan: adjust documentation ---
+
+&gt; +The generic ``kasan=off`` or ``=on`` command line parameter controls
+&gt; +whether KASAN is enabled (default: ``on``).
+
+&gt; -disabling KASAN altogether or controlling its features:
+&gt; -
+&gt; -- ``kasan=off`` or ``=on`` controls whether KASAN is enabled
+&gt; -  (default: ``on``).
+&gt; +controlling its features:
+
+The commit message says &quot;To reflect the change of kasan=on|off&quot;, but
+in this tree early_param(&quot;kasan&quot;, early_kasan_flag) lives exclusively
+in mm/kasan/hw_tags.c and is compiled only under CONFIG_KASAN_HW_TAGS.
+Calling it a &quot;generic&quot; parameter appears incorrect: passing kasan=off
+has no effect on Generic KASAN or SW Tag-Based KASAN kernels.
+
+If a companion patch in this cycle moved the early_param registration
+to a shared file (e.g. mm/kasan/common.c) and wired it to the
+kasan_flag_enabled static key for all modes, please add a dependency
+or forward-reference so this doc change can be evaluated together with
+that code change.  As-is the documentation contradicts the source.
+</pre></div><details class="patches-detail"><summary>4 patches</summary><ul><li><a href="" target="_blank">[PATCH] mm/damon/core: verify found biggest system ram</a></li><li><a href="" target="_blank">[PATCH] fix</a></li><li><a href="" target="_blank">[PATCH] mm/damon/stat: return error if monitoring target region is invalid</a></li><li><a href="" target="_blank">[PATCH] mm/kasan: adjust documentation</a></li></ul></details>
         </div>
     </details><h2 class="date-header">2026-03-15 <span class="date-count">(3)</span></h2><details class="series-row" id="s-5b5461b9" data-title="docs: mmap_prepare: don't italicize structs" data-author="randy dunlap" data-subsystems="" data-verdict="looks_good">
         <summary>
@@ -5615,7 +6293,7 @@ overwritten before use inside the if (found &amp;&amp; ...) block.
 Looks good to me.
 </pre></div>
         </div>
-    </details><h2 class="date-header">2026-03-11 <span class="date-count">(20)</span></h2><details class="series-row" id="s-b47fbbf9" data-title="mm: thp: reduce unnecessary start_stop_khugepaged() calls" data-author="breno leitao" data-subsystems="huge_memory internal khugepaged page_alloc" data-verdict="needs_work">
+    </details><h2 class="date-header">2026-03-11 <span class="date-count">(19)</span></h2><details class="series-row" id="s-b47fbbf9" data-title="mm: thp: reduce unnecessary start_stop_khugepaged() calls" data-author="breno leitao" data-subsystems="huge_memory internal khugepaged page_alloc" data-verdict="needs_work">
         <summary>
             <span class="row-verdict" style="background:#ef4444">Needs Work</span>
             <a href="https://lore.kernel.org/linux-mm/20260311-thp_logs-v6-0-421e30d881e0@debian.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">mm: thp: reduce unnecessary start_stop_khugepaged() calls</a>
@@ -7292,21 +7970,6 @@ Looks good to me.
 
 Reviewed-by: &lt;reviewer&gt;
 </pre></div>
-        </div>
-    </details><details class="series-row" id="s-d614b19f" data-title="zram: recompression cleanups and tweaks" data-author="sergey senozhatsky" data-subsystems="docs drivers" data-verdict="skip">
-        <summary>
-            <span class="row-verdict" style="background:#6b7280">Not Reviewed</span>
-            <a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-1-senozhatsky@chromium.org/" target="_blank" class="row-title" onclick="event.stopPropagation()">zram: recompression cleanups and tweaks</a>
-            <span class="row-right">
-                
-                
-                <span class="share-btn" title="Copy link" onclick="event.stopPropagation();shareRow('s-d614b19f')">&#128279;</span>
-                <span class="row-author">Sergey Senozhatsky</span>
-                <span class="row-patches">6p</span>
-            </span>
-        </summary>
-        <div class="row-detail">
-            <div class="row-summary">Claude CLI error: error_max_structured_output_retries after 19 turns.</div><div class="subsystem-tags"><span class="subsystem-tag">docs</span> <span class="subsystem-tag">drivers</span></div><details class="patches-detail"><summary>7 patches</summary><ul><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-1-senozhatsky@chromium.org/" target="_blank">[PATCH v2 0/6] zram: recompression cleanups and tweaks</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-2-senozhatsky@chromium.org/" target="_blank">[PATCH v2 1/6] zram: do not permit params change after init</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-3-senozhatsky@chromium.org/" target="_blank">[PATCH v2 2/6] zram: do not autocorrect bad recompression parameters</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-4-senozhatsky@chromium.org/" target="_blank">[PATCH v2 3/6] zram: drop -&gt;num_active_comps</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-5-senozhatsky@chromium.org/" target="_blank">[PATCH v2 4/6] zram: update recompression documentation</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-6-senozhatsky@chromium.org/" target="_blank">[PATCH v2 5/6] zram: remove chained recompression</a></li><li><a href="https://lore.kernel.org/linux-mm/20260311084312.1766036-7-senozhatsky@chromium.org/" target="_blank">[PATCH v2 6/6] zram: unify and harden algo/priority params handling</a></li></ul></details>
         </div>
     </details><details class="series-row" id="s-5b8636f2" data-title="binfmt_misc: restore write access before closing files opened by open_exec()" data-author="robert garcia" data-subsystems="fs" data-verdict="looks_good">
         <summary>
